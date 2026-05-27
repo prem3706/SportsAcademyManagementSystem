@@ -30,28 +30,29 @@
              onclick="coreui.Sidebar.getInstance(document.querySelector('#sidebar')).toggle()"></button>
      </div>
      <ul class="sidebar-nav" data-coreui="navigation" data-simplebar>
+
+         <!-- Dashboard -->
          <li class="nav-item">
              <a class="nav-link" href="/">
-                 <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-                     <path fill="var(--ci-primary-color, currentcolor)"
-                         d="M425.706 142.294A240 240 0 0 0 16 312v88h144v-32H48v-56c0-114.691 93.309-208 208-208s208 93.309 208 208v56H352v32h144v-88a238.43 238.43 0 0 0-70.294-169.706"
-                         class="ci-primary" />
-                     <path fill="var(--ci-primary-color, currentcolor)"
-                         d="M80 264h32v32H80zm160-136h32v32h-32zm-104 40h32v32h-32zm264 96h32v32h-32zm-102.778 71.1 69.2-144.173-28.85-13.848-69.183 144.135a64.141 64.141 0 1 0 28.833 13.886M256 416a32 32 0 1 1 32-32 32.036 32.036 0 0 1-32 32"
-                         class="ci-primary" />
-                 </svg>
+                 <i class="bi bi-speedometer2 nav-icon"></i>
                  Dashboard
-                 <span class="badge badge-sm bg-info ms-auto">NEW</span>
              </a>
-             <a class="nav-link" href="{{ route('users.index') }}">
-                 <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-                     <path fill="var(--ci-primary-color, currentcolor)"
-                         d="M448 32H64a32 32 0 0 0-32 32v384a32 32 0 0 0 32 32h384a32 32 0 0 0 32-32V64a32 32 0 0 0-32-32ZM128 384H96v-48h32zm0-80H96v-48h32zm80 80h-48v-48h48zm0-80h-48v-48h48zm80 80h-48v-48h48zm0-80h-48v-48h48z"
-                         class="ci-primary" />
-                 </svg>
-                 User Management
-             </a>
+         </li>
 
+         <!-- User Management -->
+         <li class="nav-item">
+             <a class="nav-link" href="{{ route('users.index') }}">
+                 <i class="bi bi-people-fill nav-icon"></i>
+                 User
+             </a>
+         </li>
+
+         <!-- Sports Management -->
+         <li class="nav-item">
+             <a class="nav-link" href="{{ route('sports.index') }}">
+                 <i class="bi bi-trophy-fill nav-icon"></i>
+                 Sports
+             </a>
          </li>
 
      </ul>

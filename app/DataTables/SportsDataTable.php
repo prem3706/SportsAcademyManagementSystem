@@ -2,7 +2,7 @@
 
 namespace App\DataTables;
 
-use App\Models\User;
+use App\Models\Sport;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
@@ -10,27 +10,28 @@ use Yajra\DataTables\Html\Button;
 use Yajra\DataTables\Html\Column;
 use Yajra\DataTables\Services\DataTable;
 
-class UsersDataTable extends DataTable
+class SportsDataTable extends DataTable
 {
     /**
      * Build the DataTable class.
      *
-     * @param  QueryBuilder<User>  $query  Results from query() method.
+     * @param  QueryBuilder<Sport>  $query  Results from query() method.
      */
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
+
         return (new EloquentDataTable($query))
-            ->addColumn('select', function (User $user) {
-                return '<input type="checkbox" class="user-checkbox" name="select[]" value="'.$user->id.'">';
+            ->addColumn('select', function (Sport $Sport) {
+                return '<input type="checkbox" class="user-checkbox" name="select[]" value="'.$Sport->id.'">';
             })
-            ->addColumn('action', function (User $user) {
+            ->addColumn('action', function (Sport $Sport) {
                 return '<div class="btn-group align-items-center gap-2">
                 <!-- Edit Button -->
                 <button type="button"
                     class="btn btn-link p-0 border-0 bi bi-pencil-square mx-2 "
-                    id="editUserBtn"
+                    id="editSportBtn"
                     data-title="Edit User"
-                    data-url="'.route('users.edit', $user->id).'"
+                    data-url="'.route('sports.edit', $Sport->id).'"
                     data-bs-toggle="offcanvas"
                     data-bs-target="#offcanvasScrolling"
                     aria-controls="offcanvasScrolling">
@@ -39,42 +40,28 @@ class UsersDataTable extends DataTable
                 <!-- Delete Button -->
                 <button type="button"
                     class="btn btn-link p-0 border-0 bi bi-trash text-danger "
-                    id="deleteUserBtn"
-                    data-id="'.$user->id.'"
-                    data-url="'.route('users.destroy', $user->id).'">
+                    id="deleteSportBtn"
+                    data-id="'.$Sport->id.'"
+                    data-url="'.route('sports.destroy', $Sport->id).'">
                 </button>
             </div>';
             })
-            ->editColumn('created_at', function (User $user) {
-                return $user->created_at->format('Y-m-d');
-            })
-            ->editColumn('updated_at', function (User $user) {
-                return $user->updated_at->format('Y-m-d');
-            })
-            ->editColumn('Name', function (User $user) {
-                return $user->firstname.' '.$user->lastname;
-            })
-            ->setRowId('id')
-            ->rawColumns(['select', 'action']); // Keeps HTML elements active
+            ->rawColumns(['action', 'select']) // Required to render HTML
+            ->setRowId('id');
     }
 
     /**
      * Get the query source of dataTable.
      *
-     * @return QueryBuilder<User>
+     * @return QueryBuilder<Sport>
      */
-    public function query(User $model): QueryBuilder
+    public function query(Sport $model): QueryBuilder
     {
         $query = $model->newQuery();
 
         if (request()->filled('status')) {
 
             $query->where('status', request('status'));
-        }
-
-        if (request()->filled('role')) {
-
-            $query->where('role', request('role'));
         }
 
         return $query;
@@ -86,7 +73,7 @@ class UsersDataTable extends DataTable
     public function html(): HtmlBuilder
     {
         return $this->builder()
-            ->setTableId('users-table')
+            ->setTableId('sports-table')
             ->columns($this->getColumns())
             ->minifiedAjax()
             ->orderBy(1)
@@ -115,11 +102,9 @@ class UsersDataTable extends DataTable
                 ->exportable(false)
                 ->printable(false),
             Column::make('id'),
-            Column::make('Name')->data('Name')->name('firstname'),
-            Column::make('phone'),
-            Column::make('gender'),
+            Column::make('name'),
+            Column::make('description'),
             Column::make('status'),
-            Column::make('role'),
             Column::make('action')
                 ->orderable(false)
                 ->searchable(false)
@@ -133,6 +118,6 @@ class UsersDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'Users_'.date('YmdHis');
+        return 'Sports_'.date('YmdHis');
     }
 }

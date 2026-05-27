@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\DataTables\UsersDataTable;
+use App\Http\Requests\StoreUserRequest;
+use App\Http\Requests\UpdateUserRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -28,19 +30,10 @@ class UserController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreUserRequest $request)
     {
-        $validatedData = $request->validate([
-            'firstname' => 'required|string|max:255',
-            'lastname' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'phone' => 'required|string|max:20|unique:users,phone',
-            'password' => 'required|string|min:8',
-            'role' => 'required|in:admin,player,coach',
-            'gender' => 'required|in:male,female,other',
-            'status' => 'required|in:active,inactive',
-            'joined_at' => 'nullable|date',
-        ]);
+        // dd($request);
+        $validatedData = $request->validated();
 
         // Hash Password
         $validatedData['password'] = Hash::make($validatedData['password']);
@@ -72,27 +65,13 @@ class UserController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, User $user)
+    public function update(UpdateUserRequest $request, User $user)
     {
-        $validatedData = $request->validate([
-            'firstname' => 'required|string|max:255',
-            'lastname' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,'.$user->id,
-            'phone' => 'required|string|max:20|unique:users,phone,'.$user->id,
-            'password' => 'nullable|string|min:8',
-            'role' => 'required|in:admin,player,coach',
-            'gender' => 'required|in:male,female,other',
-            'status' => 'required|in:active,inactive',
-            'joined_at' => 'nullable|date',
-        ]);
+        $validatedData = $request->validated();
 
-        // Check Password
         if (! empty($validatedData['password'])) {
-
             $validatedData['password'] = Hash::make($validatedData['password']);
-
         } else {
-
             unset($validatedData['password']);
         }
 

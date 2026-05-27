@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ForgotPasswordController;
+use App\Http\Controllers\SportsController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -42,4 +43,6 @@ Route::middleware('auth')->group(function () {
         ->name('users.bulkUpdate');
 
     Route::resource('users', UserController::class);
+    Route::resource('sports', SportsController::class);
+
 });

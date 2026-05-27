@@ -41,7 +41,7 @@ $(document).ready(function () {
 
     $(document).on('click', '#togglePassword', function () {
 
-        const passwordField = $('#password', '#password_confirmation');
+        const passwordField = $('#password');
         const icon = $('#toggleIcon');
 
         // Check current type attribute
@@ -52,23 +52,31 @@ $(document).ready(function () {
         icon.toggleClass('bi-eye-slash bi-eye');
     });
 
-    // DataTable Filters
+    // User DataTable Filters
     $('#users-table').on('preXhr.dt', function (e, settings, data) {
 
         data.status = $('#statusFilter').val();
         data.role = $('#roleFilter').val();
+    });
+    // Sports DataTable Filters
+    $('#sports-table').on('preXhr.dt', function (e, settings, data) {
+
+        data.status = $('#statusFilter').val();
     });
 
     // Status Filter
     $(document).on('change', '#statusFilter', function () {
 
         $('#users-table').DataTable().ajax.reload();
+        $('#sports-table').DataTable().ajax.reload();
+
     });
 
     // Role Filter
     $(document).on('change', '#roleFilter', function () {
 
         $('#users-table').DataTable().ajax.reload();
+
     });
 
     // Refresh Button
@@ -80,6 +88,8 @@ $(document).ready(function () {
         $('#roleFilter').val('');
 
         $('#users-table').DataTable().ajax.reload();
+        $('#sports-table').DataTable().ajax.reload();
+
 
         $(this).addClass('d-none');
 
@@ -273,7 +283,9 @@ $(document).ready(function () {
 
         e.preventDefault();
 
+
         let formData = new FormData(this);
+        console.log(formData);
 
         $.ajax({
             url: $('#url').val(),
@@ -312,7 +324,7 @@ $(document).ready(function () {
     });
 
     // Delete Single User
-    $(document).on('click', '.deleteUserBtn', function () {
+    $(document).on('click', '#deleteUserBtn', function () {
 
         let url = $(this).data('url');
 
@@ -352,9 +364,9 @@ $(document).ready(function () {
 
     // Edit User Form Open
     $(document).on('click', '#editUserBtn', function () {
-
         let url = $(this).data('url');
         let title = $(this).data('title');
+        console.log(url);
 
         $('#offcanvasScrollingLabel').text(title);
 
@@ -409,5 +421,171 @@ $(document).ready(function () {
             }
         });
     });
+
+
+
+
+    // Add Sport Form Open
+    $(document).on('click', '#addSportBtn', function () {
+
+        let url = $(this).data('url');
+        let title = $(this).data('title');
+
+        $('#offcanvasScrollingLabel').text(title);
+
+        $.ajax({
+            type: 'GET',
+            url: url,
+
+            success: function (response) {
+
+                $('#offCanvasContent').html(response);
+            }
+        });
+    });
+    // edit Sport Form Open
+
+    $(document).on('click', '#editSportBtn', function () {
+        let url = $(this).data('url');
+        let title = $(this).data('title');
+        // console.log(url);
+
+        $('#offcanvasScrollingLabel').text(title);
+
+        $.ajax({
+            type: 'GET',
+            url: url,
+
+            success: function (response) {
+
+                $('#offCanvasContent').html(response);
+            }
+        });
+    });
+
+    // Add Sports Form Submit
+    $(document).on('submit', '#addSportForm', function (e) {
+
+        e.preventDefault();
+
+
+        let formData = new FormData(this);
+        console.log(formData);
+
+        $.ajax({
+            url: $('#url').val(),
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+
+            success: function (response) {
+
+                toastr.success(response.message);
+
+                $('#offcanvasScrolling').offcanvas('hide');
+
+                $('#sports-table').DataTable().ajax.reload();
+
+                $('#addSportForm')[0].reset();
+            },
+
+            error: function (xhr) {
+
+                let errors = xhr.responseJSON.errors;
+
+                $('.text-danger').text('');
+
+                if (errors) {
+
+                    $.each(errors, function (key, value) {
+
+                        $('#' + key + 'Error').text(
+                            value[0]);
+                    });
+                }
+            }
+        });
+    });
+    // Edit Sport Form Submit
+    $(document).on('submit', '#editSportForm', function (e) {
+
+        e.preventDefault();
+
+        let formData = new FormData(this);
+
+        $.ajax({
+            url: $('#url').val(),
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+
+            success: function (response) {
+
+                toastr.success(response.message);
+
+                $('#offcanvasScrolling').offcanvas('hide');
+
+                $('#sports-table').DataTable().ajax.reload();
+            },
+
+            error: function (xhr) {
+
+                let errors = xhr.responseJSON.errors;
+
+                $('.text-danger').text('');
+
+                if (errors) {
+
+                    $.each(errors, function (key, value) {
+
+                        $('#' + key + 'Error').text(
+                            value[0]);
+                    });
+                }
+            }
+        });
+    });
+
+    // Delete Single Sport
+    $(document).on('click', '#deleteSportBtn', function () {
+
+        let url = $(this).data('url');
+
+        swalWithBootstrapButtons.fire({
+            title: "Are you sure?",
+            text: "This Sport will be deleted permanently!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, delete!",
+            cancelButtonText: "Cancel",
+            reverseButtons: true
+        }).then((result) => {
+
+            if (result.isConfirmed) {
+
+                $.ajax({
+                    url: url,
+                    type: "DELETE",
+
+                    success: function (response) {
+
+                        toastr.success(response.message);
+
+                        $('#sports-table').DataTable().ajax
+                            .reload();
+                    },
+
+                    error: function () {
+
+                        toastr.error(
+                            'Something went wrong.');
+                    }
+                });
+            }
+        });
+    });
+
 
 });
