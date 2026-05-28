@@ -54,6 +54,12 @@
                  Sports
              </a>
          </li>
+         <li class="nav-item">
+             <a class="nav-link" href="{{ route('levels.index') }}">
+                 <i class="bi bi-bar-chart nav-icon"></i>
+                 Levels
+             </a>
+         </li>
 
      </ul>
      <div class="sidebar-footer border-top d-none d-md-flex">

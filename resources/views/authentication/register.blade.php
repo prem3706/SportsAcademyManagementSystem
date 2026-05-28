@@ -26,9 +26,7 @@
                             </div>
 
                             <!-- Form -->
-                            <form class="row g-3"
-                                action="{{ route('register') }}"
-                                method="POST"
+                            <form class="row g-3" action="{{ route('register') }}" method="POST"
                                 enctype="multipart/form-data">
 
                                 @csrf
@@ -46,10 +44,7 @@
                                             <i class="bi bi-person text-secondary"></i>
                                         </span>
 
-                                        <input
-                                            type="text"
-                                            name="firstname"
-                                            value="{{ old('firstname') }}"
+                                        <input type="text" name="firstname" value="{{ old('firstname') }}"
                                             placeholder="First name"
                                             class="form-control border-0 py-2 @error('firstname') is-invalid @enderror">
 
@@ -76,10 +71,7 @@
                                             <i class="bi bi-person text-secondary"></i>
                                         </span>
 
-                                        <input
-                                            type="text"
-                                            name="lastname"
-                                            value="{{ old('lastname') }}"
+                                        <input type="text" name="lastname" value="{{ old('lastname') }}"
                                             placeholder="Last name"
                                             class="form-control border-0 py-2 @error('lastname') is-invalid @enderror">
 
@@ -106,10 +98,7 @@
                                             <i class="bi bi-envelope text-secondary"></i>
                                         </span>
 
-                                        <input
-                                            type="email"
-                                            name="email"
-                                            value="{{ old('email') }}"
+                                        <input type="email" name="email" value="{{ old('email') }}"
                                             placeholder="your@email.com"
                                             class="form-control border-0 py-2 @error('email') is-invalid @enderror">
 
@@ -136,10 +125,7 @@
                                             <i class="bi bi-telephone text-secondary"></i>
                                         </span>
 
-                                        <input
-                                            type="tel"
-                                            name="phone"
-                                            value="{{ old('phone') }}"
+                                        <input type="tel" name="phone" value="{{ old('phone') }}"
                                             placeholder="Phone number"
                                             class="form-control border-0 py-2 @error('phone') is-invalid @enderror">
 
@@ -162,26 +148,22 @@
 
                                     <div class="shadow-sm rounded-3">
 
-                                        <select
-                                            name="gender"
+                                        <select name="gender"
                                             class="form-select border-0 py-2 @error('gender') is-invalid @enderror">
 
                                             <option value="">
                                                 Select gender
                                             </option>
 
-                                            <option value="male"
-                                                {{ old('gender') == 'male' ? 'selected' : '' }}>
+                                            <option value="male" {{ old('gender') == 'male' ? 'selected' : '' }}>
                                                 Male
                                             </option>
 
-                                            <option value="female"
-                                                {{ old('gender') == 'female' ? 'selected' : '' }}>
+                                            <option value="female" {{ old('gender') == 'female' ? 'selected' : '' }}>
                                                 Female
                                             </option>
 
-                                            <option value="other"
-                                                {{ old('gender') == 'other' ? 'selected' : '' }}>
+                                            <option value="other" {{ old('gender') == 'other' ? 'selected' : '' }}>
                                                 Other
                                             </option>
 
@@ -206,9 +188,7 @@
 
                                     <div class="shadow-sm rounded-3">
 
-                                        <input
-                                            type="file"
-                                            name="profile_picture"
+                                        <input type="file" name="profile_picture"
                                             class="form-control border-0 py-2 @error('profile_picture') is-invalid @enderror">
 
                                     </div>
@@ -234,19 +214,14 @@
                                             <i class="bi bi-lock text-secondary"></i>
                                         </span>
 
-                                        <input
-                                            id="password"
-                                            type="password"
-                                            name="password"
+                                        <input id="password" type="password" name="password"
                                             placeholder="Enter password"
                                             class="form-control border-0 py-2 @error('password') is-invalid @enderror">
 
-                                        <span class="input-group-text bg-white border-0"
-                                            id="togglePassword"
+                                        <span class="input-group-text bg-white border-0" id="togglePassword"
                                             style="cursor:pointer;">
 
-                                            <i class="bi bi-eye-slash text-secondary"
-                                                id="toggleIcon"></i>
+                                            <i class="bi bi-eye-slash text-secondary" id="toggleIcon"></i>
 
                                         </span>
 
@@ -273,12 +248,8 @@
                                             <i class="bi bi-shield-lock text-secondary"></i>
                                         </span>
 
-                                        <input
-                                            id="password_confirmation"
-                                            type="password"
-                                            name="password_confirmation"
-                                            placeholder="Confirm password"
-                                            class="form-control border-0 py-2">
+                                        <input id="password_confirmation" type="password" name="password_confirmation"
+                                            placeholder="Confirm password" class="form-control border-0 py-2">
 
                                     </div>
 
@@ -289,17 +260,13 @@
 
                                     <div class="form-check">
 
-                                        <input
-                                            type="checkbox"
-                                            name="terms"
-                                            class="form-check-input">
+                                        <input type="checkbox" name="terms" class="form-check-input">
 
                                         <label class="form-check-label small text-secondary">
 
                                             I accept the
 
-                                            <a href="#"
-                                                class="text-decoration-none fw-semibold text-dark">
+                                            <a href="#" class="text-decoration-none fw-semibold text-dark">
 
                                                 terms & conditions
 
@@ -314,8 +281,7 @@
                                 <!-- Submit -->
                                 <div class="col-12">
 
-                                    <button
-                                        type="submit"
+                                    <button type="submit"
                                         class="btn btn-dark w-100 py-2 rounded-3 fw-semibold shadow-sm">
 
                                         <i class="bi bi-check-circle me-1"></i>
@@ -333,8 +299,7 @@
 
                                 Already have an account?
 
-                                <a href="{{ route('login') }}"
-                                    class="text-decoration-none fw-semibold text-dark">
+                                <a href="{{ route('login') }}" class="text-decoration-none fw-semibold text-dark">
 
                                     Sign In
 

@@ -4,6 +4,7 @@ namespace App\DataTables;
 
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
+use Illuminate\Support\Facades\Auth;
 use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
 use Yajra\DataTables\Html\Button;
@@ -24,26 +25,20 @@ class UsersDataTable extends DataTable
                 return '<input type="checkbox" class="user-checkbox" name="select[]" value="'.$user->id.'">';
             })
             ->addColumn('action', function (User $user) {
-                return '<div class="btn-group align-items-center gap-2">
+                $actions = '<div class="btn-group align-items-center gap-2">
                 <!-- Edit Button -->
-                <button type="button"
-                    class="btn btn-link p-0 border-0 bi bi-pencil-square mx-2 "
-                    id="editUserBtn"
-                    data-title="Edit User"
-                    data-url="'.route('users.edit', $user->id).'"
-                    data-bs-toggle="offcanvas"
-                    data-bs-target="#offcanvasScrolling"
-                    aria-controls="offcanvasScrolling">
-                </button>
+                <button type="button" class="btn btn-link p-0 border-0 bi bi-pencil-square mx-2" id="editUserBtn" data-title="Edit User" data-url="'.route('users.edit', $user->id).'" data-bs-toggle="offcanvas" data-bs-target="#offcanvasScrolling" aria-controls="offcanvasScrolling">
+                </button>';
 
-                <!-- Delete Button -->
-                <button type="button"
-                    class="btn btn-link p-0 border-0 bi bi-trash text-danger "
-                    id="deleteUserBtn"
-                    data-id="'.$user->id.'"
-                    data-url="'.route('users.destroy', $user->id).'">
-                </button>
-            </div>';
+                // Hides delete button for the currently logged-in user
+                if (Auth::id() !== $user->id) {
+                    $actions .= '<button type="button" class="btn btn-link p-0 border-0 bi bi-trash text-danger" id="deleteUserBtn" data-id="'.$user->id.'" data-url="'.route('users.destroy', $user->id).'">
+                </button>';
+                }
+
+                $actions .= '</div>';
+
+                return $actions;
             })
             ->editColumn('created_at', function (User $user) {
                 return $user->created_at->format('Y-m-d');
@@ -52,10 +47,16 @@ class UsersDataTable extends DataTable
                 return $user->updated_at->format('Y-m-d');
             })
             ->editColumn('Name', function (User $user) {
-                return $user->firstname.' '.$user->lastname;
+                $fullName = $user->firstname.' '.$user->lastname;
+
+                if (Auth::id() === $user->id) {
+                    $fullName .= ' <span class="badge bg-secondary">You</span>';
+                }
+
+                return $fullName;
             })
             ->setRowId('id')
-            ->rawColumns(['select', 'action']); // Keeps HTML elements active
+            ->rawColumns(['select', 'action', 'Name']);
     }
 
     /**
@@ -86,7 +87,7 @@ class UsersDataTable extends DataTable
     public function html(): HtmlBuilder
     {
         return $this->builder()
-            ->setTableId('users-table')
+            ->setTableId('datatable')
             ->columns($this->getColumns())
             ->minifiedAjax()
             ->orderBy(1)

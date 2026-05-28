@@ -4,6 +4,7 @@ namespace App\DataTables;
 
 use App\Models\Sport;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
+use Illuminate\Support\Str;
 use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
 use Yajra\DataTables\Html\Button;
@@ -23,6 +24,9 @@ class SportsDataTable extends DataTable
         return (new EloquentDataTable($query))
             ->addColumn('select', function (Sport $Sport) {
                 return '<input type="checkbox" class="user-checkbox" name="select[]" value="'.$Sport->id.'">';
+            })
+            ->editColumn('description', function (Sport $sport) {
+                return Str::limit($sport->description, 15);
             })
             ->addColumn('action', function (Sport $Sport) {
                 return '<div class="btn-group align-items-center gap-2">
@@ -73,7 +77,7 @@ class SportsDataTable extends DataTable
     public function html(): HtmlBuilder
     {
         return $this->builder()
-            ->setTableId('sports-table')
+            ->setTableId('datatable')
             ->columns($this->getColumns())
             ->minifiedAjax()
             ->orderBy(1)
@@ -103,6 +107,7 @@ class SportsDataTable extends DataTable
                 ->printable(false),
             Column::make('id'),
             Column::make('name'),
+            Column::make('slug'),
             Column::make('description'),
             Column::make('status'),
             Column::make('action')

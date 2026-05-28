@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\DataTables\SportsDataTable;
 use App\Models\Sport;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class SportsController extends Controller
 {
@@ -30,17 +31,16 @@ class SportsController extends Controller
      */
     public function store(Request $request)
     {
-        // dd($request);
+        $request->merge([
+            'slug' => Str::lower($request->input('slug')),
+        ]);
+
+        // 2. Validate the updated request data
         $validatedData = $request->validate([
-
             'name' => 'required|string|max:255',
-
             'slug' => 'required|string|max:255|unique:sports,slug',
-
             'description' => 'nullable|string|max:1000',
-
             'status' => 'required|in:active,inactive',
-
         ]);
 
         Sport::create($validatedData);
@@ -96,11 +96,63 @@ class SportsController extends Controller
      */
     public function destroy(Sport $sport)
     {
+
         $sport->delete();
 
         return response()->json([
             'success' => true,
-            'message' => 'Sport deleted successfully.',
+            'message' => 'Sports deleted successfully.',
         ]);
+    }
+
+    public function bulkDelete(Request $request)
+    {
+        $ids = $request->input('select', []);
+
+        // Convert comma separated string into array
+        if (! is_array($ids)) {
+
+            $ids = array_filter(explode(',', $ids));
+        }
+
+        // Check selected users
+        if (count($ids) > 0) {
+
+            $deletedCount = Sport::destroy($ids);
+
+            return response()->json([
+                'success' => true,
+                'message' => $deletedCount.' Sports deleted successfully.',
+            ]);
+        }
+    }
+
+    public function bulkUpdate(Request $request)
+    {
+        $validated = $request->validate([
+            'select' => 'required',
+            'status' => 'required|string|in:active,inactive',
+        ]);
+
+        $ids = $request->input('select', []);
+        $status = $request->input('status');
+
+        if (! is_array($ids)) {
+            $ids = array_filter(explode(',', $ids));
+        }
+
+        if (count($ids) > 0) {
+            $updatedCount = Sport::whereIn('id', $ids)->update(['status' => $status]);
+
+            return response()->json([
+                'success' => true,
+                'message' => $updatedCount.' Sports updated successfully.',
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'No valid Sports selected for update.',
+        ], 422);
     }
 }

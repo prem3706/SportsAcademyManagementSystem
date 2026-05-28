@@ -1,14 +1,25 @@
-@props(['heading', 'subheading', 'id', 'title', 'url'])
+@props([
+    'heading',
+    'subheading',
+    'id',
+    'title',
+    'url',
+    'bulkDeleteUrl',
+    'bulkUpdateUrl',
+    'statusFilter' => 'False',
+    'roleFilter' => 'False',
+])
+
 <div class="card border-0 shadow-sm rounded-4">
 
     <!-- Header -->
-    <div class="card-header bg-white border-0 pt-4 pb-3 px-4">
+    <div class="card-header  border-0 pt-4 pb-3 px-4">
 
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
 
             <!-- Title -->
             <div>
-                <h5 class="fw-bold mb-1 text-dark">
+                <h5 class="fw-bold mb-1">
                     {{-- Users Management --}}
                     {{ $heading }}
                 </h5>
@@ -23,27 +34,31 @@
             <div class="d-flex align-items-center flex-wrap gap-2">
 
                 <!-- Status Filter -->
-                <div style="min-width: 150px;">
-                    <select id="statusFilter" class="form-select rounded-3 shadow-sm border-0">
+                @if ($statusFilter === 'True')
+                    <div style="min-width: 150px;">
+                        <select id="statusFilter" class="form-select rounded-3 shadow-sm border-0">
 
-                        <option value="">All Status</option>
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
+                            <option value="">All Status</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
 
-                    </select>
-                </div>
+                        </select>
+                    </div>
+                @endif
 
-                <!-- Role Filter -->
-                <div style="min-width: 150px;">
-                    <select id="roleFilter" class="form-select rounded-3 shadow-sm border-0">
+                @if ($roleFilter === 'True')
+                    <!-- Role Filter -->
+                    <div style="min-width: 150px;">
+                        <select id="roleFilter" class="form-select rounded-3 shadow-sm border-0">
 
-                        <option value="">All Roles</option>
-                        <option value="admin">Admin</option>
-                        <option value="player">Player</option>
-                        <option value="coach">Coach</option>
+                            <option value="">All Roles</option>
+                            <option value="admin">Admin</option>
+                            <option value="player">Player</option>
+                            <option value="coach">Coach</option>
 
-                    </select>
-                </div>
+                        </select>
+                    </div>
+                @endif
 
                 <!-- Refresh -->
                 <button type="button"
@@ -72,7 +87,7 @@
     </div>
 
     <!-- Table -->
-    <div class="card-body bg-white p-3">
+    <div class="card-body  p-3">
 
         <form id="bulkDeleteForm">
 
@@ -136,7 +151,7 @@
         <div class="d-flex align-items-center gap-2">
 
             <!-- Update Button -->
-            <button type="button" id="bulkUpdateBtn"
+            <button type="button" id="bulkUpdateBtn" data-url="{{ $bulkUpdateUrl }}"
                 class="btn btn-success rounded-3 px-4 fw-semibold d-flex align-items-center gap-2">
 
                 <i class="bi bi-check-circle"></i>
@@ -146,7 +161,7 @@
             </button>
 
             <!-- Delete Button -->
-            <button type="button" id="bulkDeleteBtn"
+            <button type="button" id="bulkDeleteBtn" data-url="{{ $bulkDeleteUrl }}"
                 class="btn btn-danger rounded-3 px-4 fw-semibold d-flex align-items-center gap-2">
 
                 <i class="bi bi-trash"></i>

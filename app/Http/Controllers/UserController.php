@@ -7,7 +7,6 @@ use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -34,9 +33,6 @@ class UserController extends Controller
     {
         // dd($request);
         $validatedData = $request->validated();
-
-        // Hash Password
-        $validatedData['password'] = Hash::make($validatedData['password']);
 
         User::create($validatedData);
 
@@ -69,9 +65,7 @@ class UserController extends Controller
     {
         $validatedData = $request->validated();
 
-        if (! empty($validatedData['password'])) {
-            $validatedData['password'] = Hash::make($validatedData['password']);
-        } else {
+        if (empty($validatedData['password'])) {
             unset($validatedData['password']);
         }
 
