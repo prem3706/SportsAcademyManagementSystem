@@ -1,10 +1,11 @@
 <div class="d-flex justify-content-center">
 
-    <form method="POST" id="addLevelForm">
+    <form method="POST" id="editLevelForm">
 
         @csrf
-        <input type="hidden" name="url" id="url" value="{{ route('levels.store') }}">
+        @method('PUT')
 
+        <input type="hidden" name="url" id="url" value="{{ route('levels.update', $level->id) }}">
 
         <div class="row g-3">
 
@@ -21,8 +22,13 @@
                         <i class="bi bi-layers text-secondary"></i>
                     </span>
 
-                    <input type="text" class="form-control py-2" name="name" placeholder="Enter level name">
+                    <input type="text" class="form-control py-2" name="name"
+                        value="{{ old('name', $level->name) }}" placeholder="Enter level name">
 
+                </div>
+
+                <div style="height:10px;">
+                    <p class="text-danger small mb-0" id="nameError"></p>
                 </div>
 
             </div>
@@ -40,11 +46,17 @@
                         <i class="bi bi-link-45deg text-secondary"></i>
                     </span>
 
-                    <input type="text" class="form-control py-2" name="slug" placeholder="Enter slug">
+                    <input type="text" class="form-control py-2" name="slug"
+                        value="{{ old('slug', $level->slug) }}" placeholder="Enter slug">
 
                 </div>
 
+                <div style="height:10px;">
+                    <p class="text-danger small mb-0" id="slugError"></p>
+                </div>
+
             </div>
+
             <!-- Status -->
             <div class="col-md-12">
 
@@ -54,11 +66,11 @@
 
                 <select class="form-select py-2" id="status" name="status">
 
-                    <option value="active" selected>
+                    <option value="active" {{ old('status', $level->status) == 'active' ? 'selected' : '' }}>
                         Active
                     </option>
 
-                    <option value="inactive">
+                    <option value="inactive" {{ old('status', $level->status) == 'inactive' ? 'selected' : '' }}>
                         Inactive
                     </option>
 
@@ -75,9 +87,9 @@
 
                 <button type="submit" class="btn btn-dark w-100 py-2 fw-semibold rounded-3">
 
-                    <i class="bi bi-check-circle me-1"></i>
+                    <i class="bi bi-pencil-square me-1"></i>
 
-                    Create Level
+                    Update Level
 
                 </button>
 
@@ -85,10 +97,6 @@
 
         </div>
 
-
-
     </form>
 
 </div>
-
-

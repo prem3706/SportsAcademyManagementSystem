@@ -56,8 +56,14 @@
          </li>
          <li class="nav-item">
              <a class="nav-link" href="{{ route('levels.index') }}">
-                 <i class="bi bi-bar-chart nav-icon"></i>
+                 <i class="bi bi-bar-chart-fill nav-icon"></i>
                  Levels
+             </a>
+         </li>
+         <li class="nav-item">
+             <a class="nav-link" href="{{ route('sport-levels.index') }}">
+                 <i class="bi bi-bar-chart-fill nav-icon"></i>
+                 Sports Levels
              </a>
          </li>
 

@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\LevelsController;
+use App\Http\Controllers\SportLevelController;
 use App\Http\Controllers\SportsController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -52,6 +53,15 @@ Route::middleware('auth')->group(function () {
         ->name('sports.bulkUpdate');
 
     Route::resource('sports', SportsController::class);
+
+    Route::delete('/levels/bulk-delete', [LevelsController::class, 'bulkDelete'])
+        ->name('levels.bulkDelete');
+
+    Route::patch('/levels/bulk-update', [LevelsController::class, 'bulkUpdate'])
+        ->name('levels.bulkUpdate');
+
     Route::resource('levels', LevelsController::class);
+
+    Route::resource('sport-levels', SportLevelController::class);
 
 });

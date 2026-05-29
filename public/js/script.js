@@ -632,4 +632,152 @@ $(document).ready(function () {
         });
     });
 
+    // Add Sports Form Submit
+    $(document).on('submit', '#addLevelForm', function (e) {
+
+        e.preventDefault();
+
+
+        let formData = new FormData(this);
+
+        $.ajax({
+            url: $('#url').val(),
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+
+            success: function (response) {
+
+                toastr.success(response.message);
+
+                $('#offcanvasScrolling').offcanvas('hide');
+
+                $('#datatable').DataTable().ajax.reload();
+
+
+                $('#addLevelForm')[0].reset();
+            },
+
+            error: function (xhr) {
+
+                let errors = xhr.responseJSON.errors;
+
+                $('.text-danger').text('');
+
+                if (errors) {
+
+                    $.each(errors, function (key, value) {
+
+                        $('#' + key + 'Error').text(
+                            value[0]);
+                    });
+                }
+            }
+        });
+    });
+
+    // Delete Single Level
+    $(document).on('click', '#deleteLevelBtn', function () {
+
+        let url = $(this).data('url');
+
+        swalWithBootstrapButtons.fire({
+            title: "Are you sure?",
+            text: "This Level will be deleted permanently!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, delete!",
+            cancelButtonText: "Cancel",
+            reverseButtons: true
+        }).then((result) => {
+
+            if (result.isConfirmed) {
+
+                $.ajax({
+                    url: url,
+                    type: "DELETE",
+
+                    success: function (response) {
+
+                        toastr.success(response.message);
+
+                        $('#datatable').DataTable().ajax.reload();
+
+                    },
+
+                    error: function () {
+
+                        toastr.error(
+                            'Something went wrong.');
+                    }
+                });
+            }
+        });
+    });
+
+    // edit Level Form Open
+    $(document).on('click', '#editLevelBtn', function () {
+        let url = $(this).data('url');
+        let title = $(this).data('title');
+        // console.log(url);
+
+        $('#offcanvasScrollingLabel').text(title);
+
+        $.ajax({
+            type: 'GET',
+            url: url,
+
+            success: function (response) {
+
+                $('#offCanvasContent').html(response);
+            }
+        });
+    });
+    // Edit Level Form Submit
+    $(document).on('submit', '#editLevelForm', function (e) {
+
+        e.preventDefault();
+
+        let formData = new FormData(this);
+
+        $.ajax({
+            url: $('#url').val(),
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+
+            success: function (response) {
+
+                toastr.success(response.message);
+
+                $('#offcanvasScrolling').offcanvas('hide');
+
+                $('#datatable').DataTable().ajax.reload();
+
+            },
+
+            error: function (xhr) {
+
+                let errors = xhr.responseJSON.errors;
+
+                $('.text-danger').text('');
+
+                if (errors) {
+
+                    $.each(errors, function (key, value) {
+
+                        $('#' + key + 'Error').text(
+                            value[0]);
+                    });
+                }
+            }
+        });
+    });
+
+    Bulkdelete('levels', '.user-checkbox');
+    BulkUpdateStatus('levels', '.user-checkbox');
+
+    // addSportLevelBtn
 });

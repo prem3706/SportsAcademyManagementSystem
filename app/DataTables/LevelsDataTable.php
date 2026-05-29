@@ -20,7 +20,32 @@ class LevelsDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
-            ->addColumn('action', 'levels.action')
+            ->addColumn('select', function (Level $level) {
+                return '<input type="checkbox" class="user-checkbox" name="select[]" value="'.$level->id.'">';
+            })
+            ->addColumn('action', function (Level $level) {
+                return '<div class="btn-group align-items-center gap-2">
+                <!-- Edit Button -->
+                <button type="button"
+                    class="btn btn-link p-0 border-0 bi bi-pencil-square mx-2 "
+                    id="editLevelBtn"
+                    data-title="Edit Level"
+                    data-url="'.route('levels.edit', $level->id).'"
+                    data-bs-toggle="offcanvas"
+                    data-bs-target="#offcanvasScrolling"
+                    aria-controls="offcanvasScrolling">
+                </button>
+
+                <!-- Delete Button -->
+                <button type="button"
+                    class="btn btn-link p-0 border-0 bi bi-trash text-danger "
+                    id="deleteLevelBtn"
+                    data-id="'.$level->id.'"
+                    data-url="'.route('levels.destroy', $level->id).'">
+                </button>
+            </div>';
+            })
+            ->rawColumns(['action', 'select'])
             ->setRowId('id');
     }
 
@@ -31,7 +56,14 @@ class LevelsDataTable extends DataTable
      */
     public function query(Level $model): QueryBuilder
     {
-        return $model->newQuery();
+        $query = $model->newQuery();
+
+        if (request()->filled('status')) {
+
+            $query->where('status', request('status'));
+        }
+
+        return $query;
     }
 
     /**
@@ -40,7 +72,7 @@ class LevelsDataTable extends DataTable
     public function html(): HtmlBuilder
     {
         return $this->builder()
-            ->setTableId('levels-table')
+            ->setTableId('datatable')
             ->columns($this->getColumns())
             ->minifiedAjax()
             ->orderBy(1)
@@ -61,11 +93,22 @@ class LevelsDataTable extends DataTable
     public function getColumns(): array
     {
         return [
+            Column::make('select')
+                ->title('<input type="checkbox" id="select-all">')
+                ->titleAttr('Select All')
+                ->orderable(false)
+                ->searchable(false)
+                ->exportable(false)
+                ->printable(false),
             Column::make('id'),
             Column::make('name'),
             Column::make('slug'),
-            Column::make('created_at'),
-            Column::make('updated_at'),
+            Column::make('status'),
+            Column::make('action')
+                ->orderable(false)
+                ->searchable(false)
+                ->exportable(false)
+                ->printable(false),
         ];
     }
 
