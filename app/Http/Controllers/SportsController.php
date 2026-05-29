@@ -2,20 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\DataTables\UsersDataTable;
-use App\Http\Requests\StoreUserRequest;
-use App\Http\Requests\UpdateUserRequest;
-use App\Models\User;
+use App\DataTables\SportsDataTable;
+use App\Models\Sport;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
-class UserController extends Controller
+class SportsController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(UsersDataTable $dataTable)
+    public function index(SportsDataTable $dataTable)
     {
-        return $dataTable->render('user.index');
+        return $dataTable->render('sports.index');
     }
 
     /**
@@ -23,29 +22,39 @@ class UserController extends Controller
      */
     public function create()
     {
-        return view('user.addUserForm');
+        return view('sports.addSportForm');
+
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreUserRequest $request)
+    public function store(Request $request)
     {
-        // dd($request);
-        $validatedData = $request->validated();
+        $request->merge([
+            'slug' => Str::lower($request->input('slug')),
+        ]);
 
-        User::create($validatedData);
+        // 2. Validate the updated request data
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'slug' => 'required|string|max:255|unique:sports,slug',
+            'description' => 'nullable|string|max:1000',
+            'status' => 'required|in:active,inactive',
+        ]);
+
+        Sport::create($validatedData);
 
         return response()->json([
             'success' => true,
-            'message' => 'User created successfully.',
+            'message' => 'Sport created successfully.',
         ]);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(User $user)
+    public function show(string $id)
     {
         //
     }
@@ -53,46 +62,49 @@ class UserController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(User $user)
+    public function edit(Sport $sport)
     {
-        return view('user.editUserForm', compact('user'));
+        return view('sports.editSportForm', compact('sport'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateUserRequest $request, User $user)
+    public function update(Request $request, Sport $sport)
     {
-        $validatedData = $request->validated();
+        $validatedData = $request->validate([
 
-        if (empty($validatedData['password'])) {
-            unset($validatedData['password']);
-        }
+            'name' => 'required|string|max:255',
 
-        $user->update($validatedData);
+            'slug' => 'required|string|max:255|unique:sports,slug,'.$sport->id,
+
+            'description' => 'nullable|string|max:1000',
+
+            'status' => 'required|in:active,inactive',
+
+        ]);
+        $sport->update($validatedData);
 
         return response()->json([
             'success' => true,
-            'message' => 'User updated successfully.',
+            'message' => 'Sport updated successfully.',
         ]);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(User $user)
+    public function destroy(Sport $sport)
     {
-        $user->delete();
+
+        $sport->delete();
 
         return response()->json([
             'success' => true,
-            'message' => 'User deleted successfully.',
+            'message' => 'Sports deleted successfully.',
         ]);
     }
 
-    /**
-     * Bulk Delete Users
-     */
     public function bulkDelete(Request $request)
     {
         $ids = $request->input('select', []);
@@ -106,18 +118,13 @@ class UserController extends Controller
         // Check selected users
         if (count($ids) > 0) {
 
-            $deletedCount = User::destroy($ids);
+            $deletedCount = Sport::destroy($ids);
 
             return response()->json([
                 'success' => true,
-                'message' => $deletedCount.' users deleted successfully.',
+                'message' => $deletedCount.' Sports deleted successfully.',
             ]);
         }
-
-        return response()->json([
-            'success' => false,
-            'message' => 'No users selected.',
-        ], 400);
     }
 
     public function bulkUpdate(Request $request)
@@ -135,17 +142,17 @@ class UserController extends Controller
         }
 
         if (count($ids) > 0) {
-            $updatedCount = User::whereIn('id', $ids)->update(['status' => $status]);
+            $updatedCount = Sport::whereIn('id', $ids)->update(['status' => $status]);
 
             return response()->json([
                 'success' => true,
-                'message' => $updatedCount.' users updated successfully.',
+                'message' => $updatedCount.' Sports updated successfully.',
             ]);
         }
 
         return response()->json([
             'success' => false,
-            'message' => 'No valid users selected for update.',
+            'message' => 'No valid Sports selected for update.',
         ], 422);
     }
 }

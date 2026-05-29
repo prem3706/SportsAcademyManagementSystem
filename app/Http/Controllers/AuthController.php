@@ -22,7 +22,9 @@ class AuthController extends Controller
         ]);
 
         // Default values
-        $attributes['profile_picture'] = $request->file('profile_picture')->store('profile_pictures');
+        if ($request->hasFile('profile_picture')) {
+            $attributes['profile_picture'] = $request->file('profile_picture')->store('profile_pictures');
+        }
 
         $validatedData['role'] = 'player';
         $validatedData['status'] = 'active';

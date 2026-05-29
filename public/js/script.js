@@ -41,7 +41,7 @@ $(document).ready(function () {
 
     $(document).on('click', '#togglePassword', function () {
 
-        const passwordField = $('#password', '#password_confirmation');
+        const passwordField = $('#password');
         const icon = $('#toggleIcon');
 
         // Check current type attribute
@@ -52,23 +52,32 @@ $(document).ready(function () {
         icon.toggleClass('bi-eye-slash bi-eye');
     });
 
-    // DataTable Filters
-    $('#users-table').on('preXhr.dt', function (e, settings, data) {
+    // User DataTable Filters
+    $('#datatable').on('preXhr.dt', function (e, settings, data) {
 
         data.status = $('#statusFilter').val();
         data.role = $('#roleFilter').val();
     });
+    // // Sports DataTable Filters
+    // $('#sports-table').on('preXhr.dt', function (e, settings, data) {
+
+    //     data.status = $('#statusFilter').val();
+    // });
 
     // Status Filter
     $(document).on('change', '#statusFilter', function () {
 
-        $('#users-table').DataTable().ajax.reload();
+        $('#datatable').DataTable().ajax.reload();
+
+
     });
 
     // Role Filter
     $(document).on('change', '#roleFilter', function () {
 
-        $('#users-table').DataTable().ajax.reload();
+        $('#datatable').DataTable().ajax.reload();
+
+
     });
 
     // Refresh Button
@@ -79,7 +88,9 @@ $(document).ready(function () {
         $('#statusFilter').val('');
         $('#roleFilter').val('');
 
-        $('#users-table').DataTable().ajax.reload();
+        $('#datatable').DataTable().ajax.reload();
+
+
 
         $(this).addClass('d-none');
 
@@ -147,107 +158,123 @@ $(document).ready(function () {
     });
 
     // Bulk Delete
-    $('#bulkDeleteBtn').on('click', function () {
 
-        let ids = [];
 
-        $('.user-checkbox:checked').each(function () {
+    function Bulkdelete(name, checkboxClass = '.user-checkbox') {
+        $('#bulkDeleteBtn').off('click').on('click', function () {
 
-            ids.push($(this).val());
+            let ids = [];
+            let url = $(this).data('url');
+
+            $(`${checkboxClass}:checked`).each(function () {
+                ids.push($(this).val());
+            });
+
+            // No Selection
+            if (ids.length === 0) {
+                toastr.warning(`Please select at least one ${name}.`);
+                return;
+            }
+
+            // Confirm Delete
+            swalWithBootstrapButtons.fire({
+                title: "Are you sure?",
+                text: `Selected ${name} will be deleted permanently!`,
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Yes, delete!",
+                cancelButtonText: "Cancel",
+                reverseButtons: true
+            }).then((result) => {
+
+                if (result.isConfirmed) {
+
+                    $.ajax({
+                        url: url,
+                        type: "DELETE",
+                        data: {
+                            select: ids
+                        },
+
+                        success: function (response) {
+                            toastr.success(response.message);
+
+                            $('#datatable').DataTable().ajax.reload();
+
+
+                            $('#select-all').prop('checked', false);
+                            $('#bulkActionBar').addClass('d-none');
+                        },
+
+                        error: function (xhr) {
+                            toastr.error(xhr.responseJSON?.message || 'Something went wrong.');
+                        }
+                    });
+                }
+            });
         });
+    }
 
-        // No Selection
-        if (ids.length === 0) {
+    Bulkdelete('users', '.user-checkbox');
 
-            toastr.warning('Please select at least one user.');
 
-            return;
-        }
+    function BulkUpdateStatus(name, checkboxClass = '.user-checkbox') {
+        $('#bulkUpdateBtn').off('click').on('click', function () {
+            let ids = [];
+            let status = $('#statusUpdate').val();
+            let url = $(this).data('url');
 
-        // Confirm Delete
-        swalWithBootstrapButtons.fire({
-            title: "Are you sure?",
-            text: "Selected users will be deleted permanently!",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonText: "Yes, delete!",
-            cancelButtonText: "Cancel",
-            reverseButtons: true
-        }).then((result) => {
+            $(`${checkboxClass}:checked`).each(function () {
+                ids.push($(this).val());
+            });
 
-            if (result.isConfirmed) {
+            if (ids.length === 0) {
+                toastr.warning(`Please select at least one ${name}.`);
+                return;
+            }
 
-                $.ajax({
-                    url: "/users/bulk-delete",
-                    type: "DELETE",
-                    data: {
-                        select: ids
-                    },
+            if (status === '') {
+                toastr.warning('Please select a status.');
+                return;
+            }
 
-                    success: function (response) {
+            $.ajax({
+                url: url,
+                type: "POST",
+                data: {
+                    _method: 'PATCH',
+                    select: ids,
+                    status: status
+                },
+                success: function (response) {
+                    toastr.success(response.message);
 
-                        toastr.success(response.message);
+                    // Target table dynamically
+                    $('#datatable').DataTable().ajax.reload();
 
-                        $('#users-table').DataTable().ajax.reload();
 
-                        $('#select-all').prop('checked', false);
-
-                        $('#bulkActionBar').addClass(
-                            'd-none');
-                    },
-
-                    error: function (xhr) {
-
-                        toastr.error(xhr.responseJSON
-                            .message);
+                    $('#select-all').prop('checked', false);
+                    $(`${checkboxClass}`).prop('checked', false);
+                    $('#bulkActionBar').addClass('d-none');
+                    $('#statusUpdate').val('');
+                },
+                error: function (xhr) {
+                    if (xhr.responseJSON && xhr.responseJSON.errors) {
+                        $.each(xhr.responseJSON.errors, function (key, value) {
+                            toastr.error(value[0]);
+                        });
+                    } else {
+                        toastr.error(xhr.responseJSON?.message || 'Something went wrong.');
                     }
-                });
-            }
+                }
+            });
         });
-    });
+    }
 
-    // Bulk Status Update
-    $('#bulkUpdateBtn').on('click', function () {
-        let ids = [];
-        let status = $('#statusUpdate').val();
+    BulkUpdateStatus('users', '.user-checkbox');
 
-        $('.user-checkbox:checked').each(function () {
-            ids.push($(this).val());
-        });
 
-        if (ids.length === 0) {
-            toastr.warning('Please select at least one user.');
-            return;
-        }
 
-        if (status === '') {
-            toastr.warning('Please select status.');
-            return;
-        }
-
-        $.ajax({
-            url: "/users/bulk-update",
-            type: "POST",
-            data: {
-                _method: 'PATCH',
-                select: ids,
-                status: status
-            },
-            success: function (response) {
-                toastr.success(response.message);
-                $('#users-table').DataTable().ajax.reload();
-                $('#select-all').prop('checked', false);
-                $('.user-checkbox').prop('checked', false);
-                $('#bulkActionBar').addClass('d-none');
-            },
-            error: function (xhr) {
-                $.each(errors, function (key, value) {
-
-                    toastr.key(value[0]);
-                });
-            }
-        });
-    });
 
     // Add User Form Open
     $(document).on('click', '#addUserBtn', function () {
@@ -273,7 +300,9 @@ $(document).ready(function () {
 
         e.preventDefault();
 
+
         let formData = new FormData(this);
+        console.log(formData);
 
         $.ajax({
             url: $('#url').val(),
@@ -288,7 +317,8 @@ $(document).ready(function () {
 
                 $('#offcanvasScrolling').offcanvas('hide');
 
-                $('#users-table').DataTable().ajax.reload();
+                $('#datatable').DataTable().ajax.reload();
+
 
                 $('#addUserForm')[0].reset();
             },
@@ -312,7 +342,7 @@ $(document).ready(function () {
     });
 
     // Delete Single User
-    $(document).on('click', '.deleteUserBtn', function () {
+    $(document).on('click', '#deleteUserBtn', function () {
 
         let url = $(this).data('url');
 
@@ -336,8 +366,8 @@ $(document).ready(function () {
 
                         toastr.success(response.message);
 
-                        $('#users-table').DataTable().ajax
-                            .reload();
+                        $('#datatable').DataTable().ajax.reload();
+
                     },
 
                     error: function () {
@@ -352,9 +382,9 @@ $(document).ready(function () {
 
     // Edit User Form Open
     $(document).on('click', '#editUserBtn', function () {
-
         let url = $(this).data('url');
         let title = $(this).data('title');
+        console.log(url);
 
         $('#offcanvasScrollingLabel').text(title);
 
@@ -389,7 +419,8 @@ $(document).ready(function () {
 
                 $('#offcanvasScrolling').offcanvas('hide');
 
-                $('#users-table').DataTable().ajax.reload();
+                $('#datatable').DataTable().ajax.reload();
+
             },
 
             error: function (xhr) {
@@ -410,4 +441,343 @@ $(document).ready(function () {
         });
     });
 
+
+
+
+    // Add Sport Form Open
+    $(document).on('click', '#addSportBtn', function () {
+
+        let url = $(this).data('url');
+        let title = $(this).data('title');
+
+        $('#offcanvasScrollingLabel').text(title);
+
+        $.ajax({
+            type: 'GET',
+            url: url,
+
+            success: function (response) {
+
+                $('#offCanvasContent').html(response);
+            }
+        });
+    });
+    // edit Sport Form Open
+    $(document).on('click', '#editSportBtn', function () {
+        let url = $(this).data('url');
+        let title = $(this).data('title');
+        // console.log(url);
+
+        $('#offcanvasScrollingLabel').text(title);
+
+        $.ajax({
+            type: 'GET',
+            url: url,
+
+            success: function (response) {
+
+                $('#offCanvasContent').html(response);
+            }
+        });
+    });
+
+    // Add Sports Form Submit
+    $(document).on('submit', '#addSportForm', function (e) {
+
+        e.preventDefault();
+
+
+        let formData = new FormData(this);
+        console.log(formData);
+
+        $.ajax({
+            url: $('#url').val(),
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+
+            success: function (response) {
+
+                toastr.success(response.message);
+
+                $('#offcanvasScrolling').offcanvas('hide');
+
+                $('#datatable').DataTable().ajax.reload();
+
+
+                $('#addSportForm')[0].reset();
+            },
+
+            error: function (xhr) {
+
+                let errors = xhr.responseJSON.errors;
+
+                $('.text-danger').text('');
+
+                if (errors) {
+
+                    $.each(errors, function (key, value) {
+
+                        $('#' + key + 'Error').text(
+                            value[0]);
+                    });
+                }
+            }
+        });
+    });
+    // Edit Sport Form Submit
+    $(document).on('submit', '#editSportForm', function (e) {
+
+        e.preventDefault();
+
+        let formData = new FormData(this);
+
+        $.ajax({
+            url: $('#url').val(),
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+
+            success: function (response) {
+
+                toastr.success(response.message);
+
+                $('#offcanvasScrolling').offcanvas('hide');
+
+                $('#datatable').DataTable().ajax.reload();
+
+            },
+
+            error: function (xhr) {
+
+                let errors = xhr.responseJSON.errors;
+
+                $('.text-danger').text('');
+
+                if (errors) {
+
+                    $.each(errors, function (key, value) {
+
+                        $('#' + key + 'Error').text(
+                            value[0]);
+                    });
+                }
+            }
+        });
+    });
+
+    // Delete Single Sport
+    $(document).on('click', '#deleteSportBtn', function () {
+
+        let url = $(this).data('url');
+
+        swalWithBootstrapButtons.fire({
+            title: "Are you sure?",
+            text: "This Sport will be deleted permanently!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, delete!",
+            cancelButtonText: "Cancel",
+            reverseButtons: true
+        }).then((result) => {
+
+            if (result.isConfirmed) {
+
+                $.ajax({
+                    url: url,
+                    type: "DELETE",
+
+                    success: function (response) {
+
+                        toastr.success(response.message);
+
+                        $('#datatable').DataTable().ajax.reload();
+
+                    },
+
+                    error: function () {
+
+                        toastr.error(
+                            'Something went wrong.');
+                    }
+                });
+            }
+        });
+    });
+
+    Bulkdelete('sports', '.user-checkbox');
+    BulkUpdateStatus('sports', '.user-checkbox');
+
+
+    // Add Level Form Open
+    $(document).on('click', '#addLevelBtn', function () {
+
+        let url = $(this).data('url');
+        let title = $(this).data('title');
+        // console.log(url, title);
+
+
+        $('#offcanvasScrollingLabel').text(title);
+
+        $.ajax({
+            type: 'GET',
+            url: url,
+
+            success: function (response) {
+
+                $('#offCanvasContent').html(response);
+            }
+        });
+    });
+
+    // Add Sports Form Submit
+    $(document).on('submit', '#addLevelForm', function (e) {
+
+        e.preventDefault();
+
+
+        let formData = new FormData(this);
+
+        $.ajax({
+            url: $('#url').val(),
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+
+            success: function (response) {
+
+                toastr.success(response.message);
+
+                $('#offcanvasScrolling').offcanvas('hide');
+
+                $('#datatable').DataTable().ajax.reload();
+
+
+                $('#addLevelForm')[0].reset();
+            },
+
+            error: function (xhr) {
+
+                let errors = xhr.responseJSON.errors;
+
+                $('.text-danger').text('');
+
+                if (errors) {
+
+                    $.each(errors, function (key, value) {
+
+                        $('#' + key + 'Error').text(
+                            value[0]);
+                    });
+                }
+            }
+        });
+    });
+
+    // Delete Single Level
+    $(document).on('click', '#deleteLevelBtn', function () {
+
+        let url = $(this).data('url');
+
+        swalWithBootstrapButtons.fire({
+            title: "Are you sure?",
+            text: "This Level will be deleted permanently!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, delete!",
+            cancelButtonText: "Cancel",
+            reverseButtons: true
+        }).then((result) => {
+
+            if (result.isConfirmed) {
+
+                $.ajax({
+                    url: url,
+                    type: "DELETE",
+
+                    success: function (response) {
+
+                        toastr.success(response.message);
+
+                        $('#datatable').DataTable().ajax.reload();
+
+                    },
+
+                    error: function () {
+
+                        toastr.error(
+                            'Something went wrong.');
+                    }
+                });
+            }
+        });
+    });
+
+    // edit Level Form Open
+    $(document).on('click', '#editLevelBtn', function () {
+        let url = $(this).data('url');
+        let title = $(this).data('title');
+        // console.log(url);
+
+        $('#offcanvasScrollingLabel').text(title);
+
+        $.ajax({
+            type: 'GET',
+            url: url,
+
+            success: function (response) {
+
+                $('#offCanvasContent').html(response);
+            }
+        });
+    });
+    // Edit Level Form Submit
+    $(document).on('submit', '#editLevelForm', function (e) {
+
+        e.preventDefault();
+
+        let formData = new FormData(this);
+
+        $.ajax({
+            url: $('#url').val(),
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+
+            success: function (response) {
+
+                toastr.success(response.message);
+
+                $('#offcanvasScrolling').offcanvas('hide');
+
+                $('#datatable').DataTable().ajax.reload();
+
+            },
+
+            error: function (xhr) {
+
+                let errors = xhr.responseJSON.errors;
+
+                $('.text-danger').text('');
+
+                if (errors) {
+
+                    $.each(errors, function (key, value) {
+
+                        $('#' + key + 'Error').text(
+                            value[0]);
+                    });
+                }
+            }
+        });
+    });
+
+    Bulkdelete('levels', '.user-checkbox');
+    BulkUpdateStatus('levels', '.user-checkbox');
+
+    // addSportLevelBtn
 });
