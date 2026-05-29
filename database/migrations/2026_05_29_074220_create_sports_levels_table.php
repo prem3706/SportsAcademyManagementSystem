@@ -11,9 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('sport_level', function (Blueprint $table) {
-
-            $table->id();
+        Schema::create('sports_levels', function (Blueprint $table) {
 
             $table->foreignId('sport_id')
                 ->constrained()
@@ -25,8 +23,6 @@ return new class extends Migration
 
             $table->decimal('fees', 10, 2);
 
-            $table->timestamps();
-
         });
     }
 
@@ -35,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('sport_level');
+        Schema::dropIfExists('sports_levels');
     }
 };

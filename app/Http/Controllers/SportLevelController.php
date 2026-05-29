@@ -31,7 +31,7 @@ class SportLevelController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('sportLevel.addSportslevelsForm', compact('sports', 'levels'));
+        return view('sportLevel.addSportslevelsForm', compact('sports', 'levels'))->render();
     }
 
     /**
@@ -39,6 +39,7 @@ class SportLevelController extends Controller
      */
     public function store(Request $request)
     {
+        // dd($request);
         $request->validate([
 
             'sport_id' => 'required|exists:sports,id',
@@ -61,12 +62,14 @@ class SportLevelController extends Controller
                 'fees' => $level['fees'],
             ];
         }
+        // dd($syncData);
 
         $sport->levels()->sync($syncData);
 
-        return redirect()
-            ->back()
-            ->with('success', 'Sport Levels Added Successfully');
+        return response()->json([
+            'success' => true,
+            'message' => 'Sports Level created successfully.',
+        ]);
     }
 
     /**

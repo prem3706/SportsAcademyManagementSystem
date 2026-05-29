@@ -1,130 +1,123 @@
-<x-layout>
+<div class="container py-4">
 
-    <div class="container py-4">
 
-        <div class="card border-0 shadow rounded-4">
 
-            <div class="card-body p-4">
+    <form method="POST" id="addSportsLevelsForm">
 
-                <form action="{{ route('sport-levels.store') }}" method="POST">
+        @csrf
+        <input type="hidden" name="url" id="url" value="{{ route('sport-levels.store') }}">
 
-                    @csrf
 
-                    <!-- Sport Dropdown -->
-                    <div class="mb-3">
+        <!-- Sport Dropdown -->
+        <div class="mb-3">
 
-                        <label class="form-label fw-semibold">
-                            Select Sport
-                        </label>
+            <label class="form-label fw-semibold">
+                Select Sport
+            </label>
 
-                        <select name="sport_id" class="form-select">
+            <select name="sport_id" class="form-select">
 
-                            <option value="">
-                                Choose Sport
-                            </option>
+                <option value="">
+                    Choose Sport
+                </option>
 
-                            @foreach ($sports as $sport)
-                                <option value="{{ $sport->id }}">
-                                    {{ $sport->name }}
-                                </option>
-                            @endforeach
+                @foreach ($sports as $sport)
+                    <option value="{{ $sport->id }}">
+                        {{ $sport->name }}
+                    </option>
+                @endforeach
 
-                        </select>
+            </select>
 
-                    </div>
+        </div>
 
-                    <!-- Level Dropdown -->
-                    <div class="row g-2 align-items-end">
+        <!-- Level Dropdown -->
+        <div class="row g-2 align-items-end">
 
-                        <div class="col-md-5">
+            <div class="col-md-5">
 
-                            <label class="form-label fw-semibold">
-                                Select Level
-                            </label>
+                <label class="form-label fw-semibold">
+                    Select Level
+                </label>
 
-                            <select id="levelDropdown" class="form-select">
+                <select id="levelDropdown" class="form-select">
 
-                                <option value="">
-                                    Choose Level
-                                </option>
+                    <option value="">
+                        Choose Level
+                    </option>
 
-                                @foreach ($levels as $level)
-                                    <option value="{{ $level->id }}">
-                                        {{ $level->name }}
-                                    </option>
-                                @endforeach
+                    @foreach ($levels as $level)
+                        <option value="{{ $level->id }}">
+                            {{ $level->name }}
+                        </option>
+                    @endforeach
 
-                            </select>
+                </select>
 
-                        </div>
+            </div>
 
-                        <div class="col-md-5">
+            <div class="col-md-5">
 
-                            <label class="form-label fw-semibold">
-                                Fees
-                            </label>
+                <label class="form-label fw-semibold">
+                    Fees
+                </label>
 
-                            <input type="number" id="levelFees" class="form-control" placeholder="Enter fees">
+                <input type="number" id="levelFees" class="form-control" placeholder="Enter fees">
 
-                        </div>
+            </div>
 
-                        <div class="col-md-2">
+            <div class="col-md-2">
 
-                            <button type="button" class="btn btn-dark w-100" id="addLevelBtn">
+                <button type="button" class="btn btn-dark w-100" id="addNewLevelBtn">
 
-                                Add
+                    Add
 
-                            </button>
-
-                        </div>
-
-                    </div>
-
-                    <!-- Added Levels -->
-                    <div class="mt-4">
-
-                        <table class="table table-bordered align-middle">
-
-                            <thead>
-
-                                <tr>
-
-                                    <th>
-                                        Level
-                                    </th>
-
-                                    <th>
-                                        Fees
-                                    </th>
-
-                                    <th width="80">
-                                        Action
-                                    </th>
-
-                                </tr>
-
-                            </thead>
-
-                            <tbody id="levelTableBody">
-
-                            </tbody>
-
-                        </table>
-
-                    </div>
-
-                    <button type="submit" class="btn btn-success">
-
-                        Save Sport Levels
-
-                    </button>
-
-                </form>
+                </button>
 
             </div>
 
         </div>
 
-    </div>
+        <!-- Added Levels -->
+        <div class="mt-4">
 
-</x-layout>
+            <table class="table table-bordered align-middle">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Level
+                        </th>
+
+                        <th>
+                            Fees
+                        </th>
+
+                        <th width="80">
+                            Action
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="levelTableBody">
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        <button type="submit" class="btn btn-success">
+
+            Save Sport Levels
+
+        </button>
+
+    </form>
+
+
+</div>
