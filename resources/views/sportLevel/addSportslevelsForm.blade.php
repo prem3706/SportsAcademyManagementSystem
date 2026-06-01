@@ -1,12 +1,10 @@
 <div class="container py-4">
 
-
-
     <form method="POST" id="addSportsLevelsForm">
 
         @csrf
-        <input type="hidden" name="url" id="url" value="{{ route('sport-levels.store') }}">
 
+        <input type="hidden" name="url" id="url" value="{{ route('sport-levels.store') }}">
 
         <!-- Sport Dropdown -->
         <div class="mb-3">
@@ -28,6 +26,9 @@
                 @endforeach
 
             </select>
+
+            <!-- Error -->
+            <span class="text-danger small" id="sport_idError"></span>
 
         </div>
 
@@ -54,6 +55,9 @@
 
                 </select>
 
+                <!-- Error -->
+                <span class="text-danger small" id="levelDropdownError"></span>
+
             </div>
 
             <div class="col-md-5">
@@ -63,6 +67,9 @@
                 </label>
 
                 <input type="number" id="levelFees" class="form-control" placeholder="Enter fees">
+
+                <!-- Error -->
+                <span class="text-danger small" id="levelFeesError"></span>
 
             </div>
 
@@ -109,6 +116,9 @@
 
             </table>
 
+            <!-- Levels Array Error -->
+            <span class="text-danger small" id="levelsError"></span>
+
         </div>
 
         <button type="submit" class="btn btn-success">
@@ -118,6 +128,5 @@
         </button>
 
     </form>
-
 
 </div>

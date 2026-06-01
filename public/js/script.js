@@ -802,10 +802,11 @@ $(document).ready(function () {
     });
 
 
-    let index = 0;
+    let index = $('#levelTableBody tr').length;
 
     // Add Level
     $(document).on('click', '#addNewLevelBtn', function (e) {
+
         e.preventDefault();
 
         let levelId = $('#levelDropdown').val();
@@ -819,14 +820,12 @@ $(document).ready(function () {
 
             toastr.error('Please select level');
 
-
             return;
         }
 
         if (fees == '') {
 
             toastr.error('Please enter fees');
-
 
             return;
         }
@@ -847,52 +846,57 @@ $(document).ready(function () {
 
             toastr.error('This level already added');
 
-
-
             return;
         }
 
         // Append Row
         let row = `
 
-            <tr id="row_${index}">
+        <tr id="row_${index}">
 
-                <td>
+            <!-- Level -->
+            <td>
+
+                <div class="fw-semibold text-dark">
 
                     ${levelName}
 
-                    <input type="hidden"
-                        class="level-id-input"
-                        name="levels[${index}][level_id]"
-                        value="${levelId}">
+                </div>
 
-                </td>
+                <input type="hidden"
+                       class="level-id-input"
+                       name="levels[${index}][level_id]"
+                       value="${levelId}">
 
-                <td>
+            </td>
 
-                    <input type="number"
-                        name="levels[${index}][fees]"
-                        class="form-control"
-                        value="${fees}"
-                        placeholder="Enter fees">
+            <!-- Fees -->
+            <td>
 
-                </td>
+                <input type="number"
+                       name="levels[${index}][fees]"
+                       class="form-control"
+                       value="${fees}"
+                       placeholder="Enter fees">
 
-                <td class="text-center">
+            </td>
 
-                    <button type="button"
+            <!-- Action -->
+            <td class="text-center">
+
+                <button type="button"
                         class="btn btn-danger btn-sm removeLevelBtn"
                         data-row="${index}">
 
-                        <i class="bi bi-trash"></i>
+                    <i class="bi bi-trash"></i>
 
-                    </button>
+                </button>
 
-                </td>
+            </td>
 
-            </tr>
+        </tr>
 
-        `;
+    `;
 
         $('#levelTableBody').append(row);
 
@@ -942,11 +946,16 @@ $(document).ready(function () {
                 $('#addLevelForm')[0].reset();
             },
 
-            error: function (xhr) {
+            error: function (xhr, message) {
 
                 let errors = xhr.responseJSON.errors;
 
                 $('.text-danger').text('');
+                if (xhr.responseJSON.message) {
+
+                    toastr.error(xhr.responseJSON.message);
+
+                }
 
                 if (errors) {
 
@@ -960,6 +969,73 @@ $(document).ready(function () {
         });
     });
 
+    $(document).on('click', '#editSportsLevelsBtn', function () {
+        let url = $(this).data('url');
+        let title = $(this).data('title');
+        // console.log(url);
+
+        $('#offcanvasScrollingLabel').text(title);
+
+        $.ajax({
+            type: 'GET',
+            url: url,
+
+            success: function (response) {
+
+                $('#offCanvasContent').html(response);
+            }
+        });
+    });
+
+    $(document).on('submit', '#editSportsLevelsForm', function (e) {
+
+        e.preventDefault();
+
+
+        let formData = new FormData(this);
+        console.log(formData);
+
+        $.ajax({
+            url: $('#url').val(),
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+
+            success: function (response) {
+
+                toastr.success(response.message);
+
+                $('#offcanvasScrolling').offcanvas('hide');
+
+                $('#datatable').DataTable().ajax.reload();
+
+
+                $('#editSportsLevelsForm')[0].reset();
+            },
+
+            error: function (xhr, message) {
+
+                let errors = xhr.responseJSON.errors;
+
+                $('.text-danger').text('');
+                if (xhr.responseJSON.message) {
+
+                    toastr.error(xhr.responseJSON.message);
+
+                }
+
+                if (errors) {
+
+                    $.each(errors, function (key, value) {
+
+                        $('#' + key + 'Error').text(
+                            value[0]);
+                    });
+                }
+            }
+        });
+    });
 
 
 
