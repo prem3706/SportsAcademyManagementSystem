@@ -16,6 +16,52 @@ $(document).ready(function () {
         positionClass: "toast-top-right",
         timeOut: 3000
     };
+    function initTimePicker() {
+
+        flatpickr("#startTime", {
+
+            enableTime: true,
+            noCalendar: true,
+            dateFormat: "h:i K",
+            time_24hr: false
+
+        });
+
+        flatpickr("#endTime", {
+
+            enableTime: true,
+            noCalendar: true,
+            dateFormat: "h:i K",
+            time_24hr: false
+
+        });
+
+    }
+
+    // In your Javascript (external .js resource or <script> tag)
+
+    // // Initialize Select2
+    // Initialize Select2
+    function initSelect2() {
+
+        $('.select2').each(function () {
+
+            if (!$(this).hasClass('select2-hidden-accessible')) {
+
+                $(this).select2({
+
+                    width: '100%',
+
+                    dropdownParent: $('#offcanvasScrolling')
+
+                });
+
+            }
+
+        });
+
+    }
+
 
     // CSRF TOKEN
     $.ajaxSetup({
@@ -1037,6 +1083,120 @@ $(document).ready(function () {
         });
     });
 
+
+
+
+    // ------Batches JS------
+
+    $(document).on('change', '#sportDropdown', function () {
+
+        let sportId = $(this).val();
+
+        // Reset Levels
+        $('#levelDropdown').html(
+            '<option value="">Choose Level</option>'
+        );
+
+        // Check Sport Selected
+        if (sportId != '') {
+
+            $.ajax({
+
+                url: '/get-sport-levels/' + sportId,
+
+                method: 'GET',
+
+                success: function (response) {
+
+                    $.each(response, function (key, level) {
+
+                        $('#levelDropdown').append(
+
+                            `<option value="${level.id}">
+                                ${level.name}
+                            </option>`
+
+                        );
+
+                    });
+
+                }
+
+            });
+
+        }
+
+    });
+
+    // Add Level Form Open
+    $(document).on('click', '#addBatchBtn', function () {
+
+        let url = $(this).data('url');
+        let title = $(this).data('title');
+        // console.log(url, title);
+
+
+        $('#offcanvasScrollingLabel').text(title);
+
+        $.ajax({
+            type: 'GET',
+            url: url,
+
+            success: function (response) {
+
+                $('#offCanvasContent').html(response);
+                initSelect2();
+                initTimePicker();
+            }
+        });
+    });
+
+
+
+    // Add Sports Form Submit
+    // $(document).on('submit', '#addLevelForm', function (e) {
+
+    //     e.preventDefault();
+
+
+    //     let formData = new FormData(this);
+
+    //     $.ajax({
+    //         url: $('#url').val(),
+    //         method: 'POST',
+    //         data: formData,
+    //         processData: false,
+    //         contentType: false,
+
+    //         success: function (response) {
+
+    //             toastr.success(response.message);
+
+    //             $('#offcanvasScrolling').offcanvas('hide');
+
+    //             $('#datatable').DataTable().ajax.reload();
+
+
+    //             $('#addLevelForm')[0].reset();
+    //         },
+
+    //         error: function (xhr) {
+
+    //             let errors = xhr.responseJSON.errors;
+
+    //             $('.text-danger').text('');
+
+    //             if (errors) {
+
+    //                 $.each(errors, function (key, value) {
+
+    //                     $('#' + key + 'Error').text(
+    //                         value[0]);
+    //                 });
+    //             }
+    //         }
+    //     });
+    // });
 
 
 

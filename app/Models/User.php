@@ -35,4 +35,24 @@ class User extends Authenticatable
     {
         $this->attributes['password'] = bcrypt($password);
     }
+
+    public function coachBatches()
+    {
+        return $this->belongsToMany(
+            Batch::class,
+            'batch_coach',
+            'coach_id',
+            'batch_id'
+        );
+    }
+
+    public function playerBatches()
+    {
+        return $this->belongsToMany(
+            Batch::class,
+            'batch_player',
+            'player_id',
+            'batch_id'
+        );
+    }
 }

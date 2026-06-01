@@ -66,6 +66,12 @@
                  Sports Levels
              </a>
          </li>
+         <li class="nav-item">
+             <a class="nav-link" href="{{ route('batches.index') }}">
+                 <i class="bi bi-calendar-event-fill nav-icon"></i>
+                 Batches
+             </a>
+         </li>
 
      </ul>
      <div class="sidebar-footer border-top d-none d-md-flex">

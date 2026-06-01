@@ -1,0 +1,92 @@
+/* Main Select2 Box */
+.select2-container--default .select2-selection--multiple {
+
+    min-height: 44px !important;
+    border: 1px solid #d0d7de !important;
+    border-radius: 12px !important;
+    padding: 4px 6px !important;
+    background: #fff !important;
+    display: flex !important;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+
+}
+
+/* Focus Effect */
+.select2-container--default.select2-container--focus .select2-selection--multiple {
+
+    border-color: #000000 !important;
+    box-shadow: 0 0 0 0.2rem rgba(105, 108, 255, 0.15);
+
+}
+
+/* Selected Tag */
+.select2-container--default .select2-selection--multiple .select2-selection__choice {
+
+    background: #212529 !important;
+    color: #fff !important;
+    border: none !important;
+    border-radius: 30px !important;
+
+    display: flex !important;
+    align-items: center !important;
+
+    padding: 6px 12px !important;
+    margin: 2px !important;
+
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1;
+
+}
+
+/* Remove Button */
+.select2-container--default .select2-selection__choice__remove {
+
+    position: relative !important;
+    color: #fff !important;
+    margin-right: 6px !important;
+    border-right: none !important;
+
+    font-size: 16px !important;
+    font-weight: 400 !important;
+
+    display: flex !important;
+    align-items: center !important;
+
+}
+
+/* Remove Hover */
+.select2-container--default .select2-selection__choice__remove:hover {
+
+    background: transparent !important;
+    color: #dfe3ff !important;
+
+}
+
+/* Search Input */
+.select2-search--inline .select2-search__field {
+
+    margin-top: 0 !important;
+    height: 30px;
+
+}
+
+/* Dropdown */
+.select2-dropdown {
+
+    border-radius: 12px !important;
+    border: 1px solid #d0d7de !important;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+
+}
+
+/* Dropdown Option Hover */
+.select2-results__option--highlighted {
+
+    background: #ffffff !important;
+    color: #000000 !important;
+
+}
