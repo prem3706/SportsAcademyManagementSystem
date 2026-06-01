@@ -779,5 +779,265 @@ $(document).ready(function () {
     Bulkdelete('levels', '.user-checkbox');
     BulkUpdateStatus('levels', '.user-checkbox');
 
-    // addSportLevelBtn
+
+    // Add Level Form Open
+    $(document).on('click', '#addSportLevelBtn', function () {
+
+        let url = $(this).data('url');
+        let title = $(this).data('title');
+        // console.log(url, title);
+
+
+        $('#offcanvasScrollingLabel').text(title);
+
+        $.ajax({
+            type: 'GET',
+            url: url,
+
+            success: function (response) {
+
+                $('#offCanvasContent').html(response);
+            }
+        });
+    });
+
+
+    let index = $('#levelTableBody tr').length;
+
+    // Add Level
+    $(document).on('click', '#addNewLevelBtn', function (e) {
+
+        e.preventDefault();
+
+        let levelId = $('#levelDropdown').val();
+
+        let levelName = $('#levelDropdown option:selected').text();
+
+        let fees = $('#levelFees').val();
+
+        // Validation
+        if (levelId == '') {
+
+            toastr.error('Please select level');
+
+            return;
+        }
+
+        if (fees == '') {
+
+            toastr.error('Please enter fees');
+
+            return;
+        }
+
+        // Prevent duplicate levels
+        let exists = false;
+
+        $('.level-id-input').each(function () {
+
+            if ($(this).val() == levelId) {
+
+                exists = true;
+            }
+
+        });
+
+        if (exists) {
+
+            toastr.error('This level already added');
+
+            return;
+        }
+
+        // Append Row
+        let row = `
+
+        <tr id="row_${index}">
+
+            <!-- Level -->
+            <td>
+
+                <div class="fw-semibold text-dark">
+
+                    ${levelName}
+
+                </div>
+
+                <input type="hidden"
+                       class="level-id-input"
+                       name="levels[${index}][level_id]"
+                       value="${levelId}">
+
+            </td>
+
+            <!-- Fees -->
+            <td>
+
+                <input type="number"
+                       name="levels[${index}][fees]"
+                       class="form-control"
+                       value="${fees}"
+                       placeholder="Enter fees">
+
+            </td>
+
+            <!-- Action -->
+            <td class="text-center">
+
+                <button type="button"
+                        class="btn btn-danger btn-sm removeLevelBtn"
+                        data-row="${index}">
+
+                    <i class="bi bi-trash"></i>
+
+                </button>
+
+            </td>
+
+        </tr>
+
+    `;
+
+        $('#levelTableBody').append(row);
+
+        index++;
+
+        // Reset Fields
+        $('#levelDropdown').val('');
+
+        $('#levelFees').val('');
+
+    });
+
+    // Remove Level
+    $(document).on('click', '.removeLevelBtn', function () {
+
+        let rowId = $(this).data('row');
+
+        $('#row_' + rowId).remove();
+
+    });
+
+    // Add Sports Form Submit
+    $(document).on('submit', '#addSportsLevelsForm', function (e) {
+
+        e.preventDefault();
+
+
+        let formData = new FormData(this);
+        console.log(formData);
+
+        $.ajax({
+            url: $('#url').val(),
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+
+            success: function (response) {
+
+                toastr.success(response.message);
+
+                $('#offcanvasScrolling').offcanvas('hide');
+
+                $('#datatable').DataTable().ajax.reload();
+
+
+                $('#addLevelForm')[0].reset();
+            },
+
+            error: function (xhr, message) {
+
+                let errors = xhr.responseJSON.errors;
+
+                $('.text-danger').text('');
+                if (xhr.responseJSON.message) {
+
+                    toastr.error(xhr.responseJSON.message);
+
+                }
+
+                if (errors) {
+
+                    $.each(errors, function (key, value) {
+
+                        $('#' + key + 'Error').text(
+                            value[0]);
+                    });
+                }
+            }
+        });
+    });
+
+    $(document).on('click', '#editSportsLevelsBtn', function () {
+        let url = $(this).data('url');
+        let title = $(this).data('title');
+        // console.log(url);
+
+        $('#offcanvasScrollingLabel').text(title);
+
+        $.ajax({
+            type: 'GET',
+            url: url,
+
+            success: function (response) {
+
+                $('#offCanvasContent').html(response);
+            }
+        });
+    });
+
+    $(document).on('submit', '#editSportsLevelsForm', function (e) {
+
+        e.preventDefault();
+
+
+        let formData = new FormData(this);
+        console.log(formData);
+
+        $.ajax({
+            url: $('#url').val(),
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+
+            success: function (response) {
+
+                toastr.success(response.message);
+
+                $('#offcanvasScrolling').offcanvas('hide');
+
+                $('#datatable').DataTable().ajax.reload();
+
+
+                $('#editSportsLevelsForm')[0].reset();
+            },
+
+            error: function (xhr, message) {
+
+                let errors = xhr.responseJSON.errors;
+
+                $('.text-danger').text('');
+                if (xhr.responseJSON.message) {
+
+                    toastr.error(xhr.responseJSON.message);
+
+                }
+
+                if (errors) {
+
+                    $.each(errors, function (key, value) {
+
+                        $('#' + key + 'Error').text(
+                            value[0]);
+                    });
+                }
+            }
+        });
+    });
+
+
+
+
 });

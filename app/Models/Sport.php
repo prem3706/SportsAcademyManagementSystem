@@ -10,8 +10,7 @@ class Sport extends Model
 
     public function levels()
     {
-        return $this->belongsToMany(Level::class)
-            ->withPivot('fees')
-            ->withTimestamps();
+        return $this->belongsToMany(Level::class, 'sports_levels')
+            ->withPivot('fees');
     }
 }

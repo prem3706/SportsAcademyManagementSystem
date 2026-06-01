@@ -1,130 +1,132 @@
-<x-layout>
+<div class="container py-4">
 
-    <div class="container py-4">
+    <form method="POST" id="addSportsLevelsForm">
 
-        <div class="card border-0 shadow rounded-4">
+        @csrf
 
-            <div class="card-body p-4">
+        <input type="hidden" name="url" id="url" value="{{ route('sport-levels.store') }}">
 
-                <form action="{{ route('sport-levels.store') }}" method="POST">
+        <!-- Sport Dropdown -->
+        <div class="mb-3">
 
-                    @csrf
+            <label class="form-label fw-semibold">
+                Select Sport
+            </label>
 
-                    <!-- Sport Dropdown -->
-                    <div class="mb-3">
+            <select name="sport_id" class="form-select">
 
-                        <label class="form-label fw-semibold">
-                            Select Sport
-                        </label>
+                <option value="">
+                    Choose Sport
+                </option>
 
-                        <select name="sport_id" class="form-select">
+                @foreach ($sports as $sport)
+                    <option value="{{ $sport->id }}">
+                        {{ $sport->name }}
+                    </option>
+                @endforeach
 
-                            <option value="">
-                                Choose Sport
-                            </option>
+            </select>
 
-                            @foreach ($sports as $sport)
-                                <option value="{{ $sport->id }}">
-                                    {{ $sport->name }}
-                                </option>
-                            @endforeach
+            <!-- Error -->
+            <span class="text-danger small" id="sport_idError"></span>
 
-                        </select>
+        </div>
 
-                    </div>
+        <!-- Level Dropdown -->
+        <div class="row g-2 align-items-end">
 
-                    <!-- Level Dropdown -->
-                    <div class="row g-2 align-items-end">
+            <div class="col-md-5">
 
-                        <div class="col-md-5">
+                <label class="form-label fw-semibold">
+                    Select Level
+                </label>
 
-                            <label class="form-label fw-semibold">
-                                Select Level
-                            </label>
+                <select id="levelDropdown" class="form-select">
 
-                            <select id="levelDropdown" class="form-select">
+                    <option value="">
+                        Choose Level
+                    </option>
 
-                                <option value="">
-                                    Choose Level
-                                </option>
+                    @foreach ($levels as $level)
+                        <option value="{{ $level->id }}">
+                            {{ $level->name }}
+                        </option>
+                    @endforeach
 
-                                @foreach ($levels as $level)
-                                    <option value="{{ $level->id }}">
-                                        {{ $level->name }}
-                                    </option>
-                                @endforeach
+                </select>
 
-                            </select>
+                <!-- Error -->
+                <span class="text-danger small" id="levelDropdownError"></span>
 
-                        </div>
+            </div>
 
-                        <div class="col-md-5">
+            <div class="col-md-5">
 
-                            <label class="form-label fw-semibold">
-                                Fees
-                            </label>
+                <label class="form-label fw-semibold">
+                    Fees
+                </label>
 
-                            <input type="number" id="levelFees" class="form-control" placeholder="Enter fees">
+                <input type="number" id="levelFees" class="form-control" placeholder="Enter fees">
 
-                        </div>
+                <!-- Error -->
+                <span class="text-danger small" id="levelFeesError"></span>
 
-                        <div class="col-md-2">
+            </div>
 
-                            <button type="button" class="btn btn-dark w-100" id="addLevelBtn">
+            <div class="col-md-2">
 
-                                Add
+                <button type="button" class="btn btn-dark w-100" id="addNewLevelBtn">
 
-                            </button>
+                    Add
 
-                        </div>
-
-                    </div>
-
-                    <!-- Added Levels -->
-                    <div class="mt-4">
-
-                        <table class="table table-bordered align-middle">
-
-                            <thead>
-
-                                <tr>
-
-                                    <th>
-                                        Level
-                                    </th>
-
-                                    <th>
-                                        Fees
-                                    </th>
-
-                                    <th width="80">
-                                        Action
-                                    </th>
-
-                                </tr>
-
-                            </thead>
-
-                            <tbody id="levelTableBody">
-
-                            </tbody>
-
-                        </table>
-
-                    </div>
-
-                    <button type="submit" class="btn btn-success">
-
-                        Save Sport Levels
-
-                    </button>
-
-                </form>
+                </button>
 
             </div>
 
         </div>
 
-    </div>
+        <!-- Added Levels -->
+        <div class="mt-4">
 
-</x-layout>
+            <table class="table table-bordered align-middle">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Level
+                        </th>
+
+                        <th>
+                            Fees
+                        </th>
+
+                        <th width="80">
+                            Action
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="levelTableBody">
+
+                </tbody>
+
+            </table>
+
+            <!-- Levels Array Error -->
+            <span class="text-danger small" id="levelsError"></span>
+
+        </div>
+
+        <button type="submit" class="btn btn-success">
+
+            Save Sport Levels
+
+        </button>
+
+    </form>
+
+</div>
