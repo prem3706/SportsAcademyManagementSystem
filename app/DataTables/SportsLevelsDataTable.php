@@ -15,22 +15,22 @@ class SportsLevelsDataTable extends DataTable
         datatables()->eloquent($query)
             ->addColumn('levels_fees', function ($sport) {
 
-                $html = '<div class="d-flex flex-column gap-2">';
+                $html = '<div class="d-flex flex-wrap gap-2">';
 
                 foreach ($sport->levels as $level) {
 
                     $html .= '
 
-            <div class="d-inline-flex align-items-center">
+        <span class="badge bg-white text-dark border px-3 py-2 fw-normal">
 
-                <!-- Level Badge -->
-                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill fw-semibold">
+            '.$level->name.'  -
+            <span class="text-primary fw-bold ms-1">
 
-                    '.$level->name.' - ₹ '.number_format($level->pivot->fees, 2).'
+                ₹ '.number_format($level->pivot->fees, 2).'
 
-                </span>
+            </span>
 
-            </div>
+        </span>
 
         ';
                 }
@@ -40,26 +40,34 @@ class SportsLevelsDataTable extends DataTable
                 return $html;
             })
             ->addColumn('action', function ($sport) {
-                return '<div class="btn-group align-items-center gap-2">
-                <!-- Edit Button -->
-                <button type="button"
-                    class="btn btn-link p-0 border-0 bi bi-pencil-square mx-2 "
-                    id="editSportsLevelsBtn"
-                    data-title="Edit Sports Levels"
-                    data-url="'.route('sport-levels.edit', $sport->id).'"
-                    data-bs-toggle="offcanvas"
-                    data-bs-target="#offcanvasScrolling"
-                    aria-controls="offcanvasScrolling">
-                </button>
+                return '
+<div class="d-flex justify-content-center gap-2">
 
-                <!-- Delete Button -->
-                <button type="button"
-                    class="btn btn-link p-0 border-0 bi bi-trash text-danger "
-                    id="deleteSportBtn"
-                    data-id="'.$sport->id.'"
-                    data-url="'.route('sports.destroy', $sport->id).'">
-                </button>
-            </div>';
+    <!-- Edit Button -->
+    <button type="button"
+        class="btn btn-light btn-action text-primary shadow-sm "
+        id="editSportsLevelsBtn"
+        data-title="Edit Sports Levels"
+        data-url="'.route('sport-levels.edit', $sport->id).'"
+        data-bs-toggle="offcanvas"
+        data-bs-target="#offcanvasScrolling">
+
+        <i class="bi bi-pencil-square"></i>
+
+    </button>
+
+    <!-- Delete Button -->
+    <button type="button"
+        class="btn btn-light btn-action text-danger shadow-sm"
+        id="deleteSportBtn"
+        data-id="'.$sport->id.'"
+        data-url="'.route('sports.destroy', $sport->id).'">
+
+        <i class="bi bi-trash"></i>
+
+    </button>
+
+</div>';
             })->rawColumns(['levels_fees', 'action']);
     }
 

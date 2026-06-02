@@ -28,29 +28,45 @@ class SportsDataTable extends DataTable
             ->editColumn('description', function (Sport $sport) {
                 return Str::limit($sport->description, 15);
             })
-            ->addColumn('action', function (Sport $Sport) {
-                return '<div class="btn-group align-items-center gap-2">
-                <!-- Edit Button -->
-                <button type="button"
-                    class="btn btn-link p-0 border-0 bi bi-pencil-square mx-2 "
-                    id="editSportBtn"
-                    data-title="Edit User"
-                    data-url="'.route('sports.edit', $Sport->id).'"
-                    data-bs-toggle="offcanvas"
-                    data-bs-target="#offcanvasScrolling"
-                    aria-controls="offcanvasScrolling">
-                </button>
+            ->editColumn('status', function (Sport $sport) {
+                if ($sport->status == 'active') {
+                    return '<span class="badge bg-success">Active</span>';
+                }
 
-                <!-- Delete Button -->
-                <button type="button"
-                    class="btn btn-link p-0 border-0 bi bi-trash text-danger "
-                    id="deleteSportBtn"
-                    data-id="'.$Sport->id.'"
-                    data-url="'.route('sports.destroy', $Sport->id).'">
-                </button>
-            </div>';
+                return '<span class="badge bg-danger">Inactive</span>';
             })
-            ->rawColumns(['action', 'select']) // Required to render HTML
+            ->addColumn('action', function (Sport $Sport) {
+                return '
+<div class="d-flex justify-content-center gap-2">
+
+    <!-- Edit Button -->
+    <button type="button"
+        class="btn btn-light btn-action text-primary shadow-sm "
+        id="editSportBtn"
+        data-title="Edit Sport"
+        data-url="'.route('sports.edit', $Sport->id).'"
+        data-bs-toggle="offcanvas"
+        data-bs-target="#offcanvasScrolling">
+
+        <i class="bi bi-pencil-square"></i>
+
+    </button>
+
+    <!-- Delete Button -->
+    <button type="button"
+        class="btn btn-light btn-action text-danger shadow-sm"
+        id="deleteSportBtn"
+        data-id="'.$Sport->id.'"
+        data-url="'.route('sports.destroy', $Sport->id).'">
+
+        <i class="bi bi-trash"></i>
+
+    </button>
+
+</div>';
+
+            })
+            ->rawColumns(['action', 'select', 'status']) // Required to render HTML
             ->setRowId('id');
     }
 
@@ -109,7 +125,7 @@ class SportsDataTable extends DataTable
             Column::make('name'),
             Column::make('slug'),
             Column::make('description'),
-            Column::make('status'),
+            Column::make('status')->title('Status'),
             Column::make('action')
                 ->orderable(false)
                 ->searchable(false)

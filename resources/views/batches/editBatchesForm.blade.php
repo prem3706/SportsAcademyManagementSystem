@@ -1,10 +1,11 @@
 <div class="container py-4">
 
-    <form id="addBatchForm">
+    <form id="editBatchForm">
 
         @csrf
+        @method('PUT')
 
-        <input type="hidden" id="url" value="{{ route('batches.store') }}">
+        <input type="hidden" id="url" value="{{ route('batches.update', $batch->id) }}">
 
         <div class="row g-3">
 
@@ -15,7 +16,8 @@
                     Batch Name
                 </label>
 
-                <input type="text" name="name" class="form-control" placeholder="Enter batch name">
+                <input type="text" name="name" class="form-control" value="{{ $batch->name }}"
+                    placeholder="Enter batch name">
 
                 <span class="text-danger small" id="nameError"></span>
 
@@ -28,7 +30,8 @@
                     Capacity
                 </label>
 
-                <input type="number" name="capacity" class="form-control" placeholder="Enter capacity">
+                <input type="number" name="capacity" class="form-control" value="{{ $batch->capacity }}"
+                    placeholder="Enter capacity">
 
                 <span class="text-danger small" id="capacityError"></span>
 
@@ -41,7 +44,8 @@
                     Start Time
                 </label>
 
-                <input type="text" name="start_time" id="startTime" class="form-control"
+                <input type="text" name="start_time" id="editStartTime" class="form-control"
+                    value="{{ \Carbon\Carbon::parse($batch->start_time)->format('h:i A') }}"
                     placeholder="Select start time">
 
                 <span class="text-danger small" id="start_timeError"></span>
@@ -55,7 +59,9 @@
                     End Time
                 </label>
 
-                <input type="text" name="end_time" id="endTime" class="form-control" placeholder="Select end time">
+                <input type="text" name="end_time" id="editEndTime" class="form-control"
+                    value="{{ \Carbon\Carbon::parse($batch->end_time)->format('h:i A') }}"
+                    placeholder="Select end time">
 
                 <span class="text-danger small" id="end_timeError"></span>
 
@@ -68,14 +74,14 @@
                     Select Sport
                 </label>
 
-                <select name="sport_id" id="sportDropdown" class="form-select ">
+                <select name="sport_id" id="editSportDropdown" class="form-select">
 
                     <option value="">
                         Choose Sport
                     </option>
 
                     @foreach ($sports as $sport)
-                        <option value="{{ $sport->id }}">
+                        <option value="{{ $sport->id }}" {{ $batch->sport_id == $sport->id ? 'selected' : '' }}>
 
                             {{ $sport->name }}
 
@@ -95,11 +101,19 @@
                     Select Level
                 </label>
 
-                <select name="level_id" id="levelDropdown" class="form-select">
+                <select name="level_id" id="editLevelDropdown" class="form-select">
 
                     <option value="">
                         Choose Level
                     </option>
+
+                    @foreach ($levels as $level)
+                        <option value="{{ $level->id }}" {{ $batch->level_id == $level->id ? 'selected' : '' }}>
+
+                            {{ $level->name }}
+
+                        </option>
+                    @endforeach
 
                 </select>
 
@@ -117,7 +131,8 @@
                 <select name="coaches[]" class="form-select select2" multiple>
 
                     @foreach ($coaches as $coach)
-                        <option value="{{ $coach->id }}">
+                        <option value="{{ $coach->id }}"
+                            {{ $batch->coaches->contains($coach->id) ? 'selected' : '' }}>
 
                             {{ $coach->firstname }} {{ $coach->lastname }}
 
@@ -137,10 +152,11 @@
                     Select Players
                 </label>
 
-                <select name="players[]" class="form-select  select2" multiple>
+                <select name="players[]" class="form-select select2" multiple>
 
                     @foreach ($players as $player)
-                        <option value="{{ $player->id }}">
+                        <option value="{{ $player->id }}"
+                            {{ $batch->players->contains($player->id) ? 'selected' : '' }}>
 
                             {{ $player->firstname }} {{ $player->lastname }}
 
@@ -162,13 +178,13 @@
 
                 <select name="status" class="form-select">
 
-                    <option value="active">
+                    <option value="active" {{ $batch->status == 'active' ? 'selected' : '' }}>
 
                         Active
 
                     </option>
 
-                    <option value="inactive">
+                    <option value="inactive" {{ $batch->status == 'inactive' ? 'selected' : '' }}>
 
                         Inactive
 
@@ -185,9 +201,9 @@
         <!-- Submit -->
         <div class="mt-4">
 
-            <button type="button" id="saveBatchBtn" class="btn btn-dark px-4">
+            <button type="button" id="updateBatchBtn" class="btn btn-dark px-4">
 
-                Save Batch
+                Update Batch
 
             </button>
 

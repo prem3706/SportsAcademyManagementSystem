@@ -25,20 +25,50 @@ class UsersDataTable extends DataTable
                 return '<input type="checkbox" class="user-checkbox" name="select[]" value="'.$user->id.'">';
             })
             ->addColumn('action', function (User $user) {
-                $actions = '<div class="btn-group align-items-center gap-2">
-                <!-- Edit Button -->
-                <button type="button" class="btn btn-link p-0 border-0 bi bi-pencil-square mx-2" id="editUserBtn" data-title="Edit User" data-url="'.route('users.edit', $user->id).'" data-bs-toggle="offcanvas" data-bs-target="#offcanvasScrolling" aria-controls="offcanvasScrolling">
-                </button>';
+                $actions = '
+<div class="d-flex justify-content-center gap-2">
 
-                // Hides delete button for the currently logged-in user
+    <!-- Edit Button -->
+    <button type="button"
+        class="btn btn-light btn-action text-primary shadow-sm"
+        id="editUserBtn"
+        data-title="Edit User"
+        data-url="'.route('users.edit', $user->id).'"
+        data-bs-toggle="offcanvas"
+        data-bs-target="#offcanvasScrolling">
+
+        <i class="bi bi-pencil-square"></i>
+
+    </button>';
+
+                // Hide delete button for logged-in user
                 if (Auth::id() !== $user->id) {
-                    $actions .= '<button type="button" class="btn btn-link p-0 border-0 bi bi-trash text-danger" id="deleteUserBtn" data-id="'.$user->id.'" data-url="'.route('users.destroy', $user->id).'">
-                </button>';
+
+                    $actions .= '
+
+    <!-- Delete Button -->
+    <button type="button"
+        class="btn btn-light btn-action text-danger shadow-sm"
+        id="deleteUserBtn"
+        data-id="'.$user->id.'"
+        data-url="'.route('users.destroy', $user->id).'">
+
+        <i class="bi bi-trash"></i>
+
+    </button>';
                 }
 
-                $actions .= '</div>';
+                $actions .= '
+</div>';
 
                 return $actions;
+            })
+            ->editColumn('status', function (User $user) {
+                if ($user->status == 'active') {
+                    return '<span class="badge bg-success">Active</span>';
+                }
+
+                return '<span class="badge bg-danger">Inactive</span>';
             })
             ->editColumn('created_at', function (User $user) {
                 return $user->created_at->format('Y-m-d');
@@ -56,7 +86,7 @@ class UsersDataTable extends DataTable
                 return $fullName;
             })
             ->setRowId('id')
-            ->rawColumns(['select', 'action', 'Name']);
+            ->rawColumns(['select', 'action', 'Name', 'status']);
     }
 
     /**
@@ -119,7 +149,7 @@ class UsersDataTable extends DataTable
             Column::make('Name')->data('Name')->name('firstname'),
             Column::make('phone'),
             Column::make('gender'),
-            Column::make('status'),
+            Column::make('status')->title('Status'),
             Column::make('role'),
             Column::make('action')
                 ->orderable(false)

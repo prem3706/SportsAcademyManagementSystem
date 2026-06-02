@@ -70,6 +70,12 @@ Route::middleware('auth')->group(function () {
         [BatchController::class, 'getSportLevels']
     );
 
+    Route::delete('/batches/bulk-delete', [BatchController::class, 'bulkDelete'])
+        ->name('batches.bulkDelete');
+
+    Route::patch('/batches/bulk-update', [BatchController::class, 'bulkUpdate'])
+        ->name('batches.bulkUpdate');
+
     Route::resource('batches', BatchController::class);
 
 });

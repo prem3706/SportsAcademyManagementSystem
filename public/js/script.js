@@ -16,6 +16,8 @@ $(document).ready(function () {
         positionClass: "toast-top-right",
         timeOut: 3000
     };
+
+    //Time Picker Initialization
     function initTimePicker() {
 
         flatpickr("#startTime", {
@@ -38,9 +40,6 @@ $(document).ready(function () {
 
     }
 
-    // In your Javascript (external .js resource or <script> tag)
-
-    // // Initialize Select2
     // Initialize Select2
     function initSelect2() {
 
@@ -848,9 +847,8 @@ $(document).ready(function () {
     });
 
 
-    let index = $('#levelTableBody tr').length;
+    // ADD LEVEL
 
-    // Add Level
     $(document).on('click', '#addNewLevelBtn', function (e) {
 
         e.preventDefault();
@@ -860,6 +858,9 @@ $(document).ready(function () {
         let levelName = $('#levelDropdown option:selected').text();
 
         let fees = $('#levelFees').val();
+
+        // Dynamic Index
+        let index = $('#levelTableBody tr').length;
 
         // Validation
         if (levelId == '') {
@@ -876,7 +877,7 @@ $(document).ready(function () {
             return;
         }
 
-        // Prevent duplicate levels
+        // Prevent Duplicate Levels
         let exists = false;
 
         $('.level-id-input').each(function () {
@@ -885,7 +886,6 @@ $(document).ready(function () {
 
                 exists = true;
             }
-
         });
 
         if (exists) {
@@ -898,7 +898,7 @@ $(document).ready(function () {
         // Append Row
         let row = `
 
-        <tr id="row_${index}">
+        <tr>
 
             <!-- Level -->
             <td>
@@ -931,8 +931,7 @@ $(document).ready(function () {
             <td class="text-center">
 
                 <button type="button"
-                        class="btn btn-danger btn-sm removeLevelBtn"
-                        data-row="${index}">
+                        class="btn btn-danger btn-sm removeLevelBtn">
 
                     <i class="bi bi-trash"></i>
 
@@ -946,8 +945,6 @@ $(document).ready(function () {
 
         $('#levelTableBody').append(row);
 
-        index++;
-
         // Reset Fields
         $('#levelDropdown').val('');
 
@@ -955,29 +952,34 @@ $(document).ready(function () {
 
     });
 
-    // Remove Level
+
+    // REMOVE LEVEL
+
     $(document).on('click', '.removeLevelBtn', function () {
 
-        let rowId = $(this).data('row');
-
-        $('#row_' + rowId).remove();
+        $(this).closest('tr').remove();
 
     });
 
-    // Add Sports Form Submit
+
+    // ADD SPORTS LEVEL FORM SUBMIT
+
     $(document).on('submit', '#addSportsLevelsForm', function (e) {
 
         e.preventDefault();
 
-
         let formData = new FormData(this);
-        console.log(formData);
 
         $.ajax({
+
             url: $('#url').val(),
+
             method: 'POST',
+
             data: formData,
+
             processData: false,
+
             contentType: false,
 
             success: function (response) {
@@ -988,64 +990,80 @@ $(document).ready(function () {
 
                 $('#datatable').DataTable().ajax.reload();
 
+                $('#addSportsLevelsForm')[0].reset();
 
-                $('#addLevelForm')[0].reset();
+                $('#levelTableBody').html('');
             },
 
-            error: function (xhr, message) {
-
-                let errors = xhr.responseJSON.errors;
+            error: function (xhr) {
 
                 $('.text-danger').text('');
+
                 if (xhr.responseJSON.message) {
 
                     toastr.error(xhr.responseJSON.message);
-
                 }
+
+                let errors = xhr.responseJSON.errors;
 
                 if (errors) {
 
                     $.each(errors, function (key, value) {
 
-                        $('#' + key + 'Error').text(
-                            value[0]);
+                        $('#' + key + 'Error').text(value[0]);
+
                     });
                 }
             }
         });
+
     });
 
+
+    // LOAD EDIT FORM
+
     $(document).on('click', '#editSportsLevelsBtn', function () {
+
         let url = $(this).data('url');
+
         let title = $(this).data('title');
-        // console.log(url);
 
         $('#offcanvasScrollingLabel').text(title);
 
         $.ajax({
+
             type: 'GET',
+
             url: url,
 
             success: function (response) {
 
                 $('#offCanvasContent').html(response);
+
             }
         });
+
     });
+
+
+    // EDIT SPORTS LEVEL FORM SUBMIT
 
     $(document).on('submit', '#editSportsLevelsForm', function (e) {
 
         e.preventDefault();
 
-
         let formData = new FormData(this);
-        console.log(formData);
 
         $.ajax({
+
             url: $('#url').val(),
+
             method: 'POST',
+
             data: formData,
+
             processData: false,
+
             contentType: false,
 
             success: function (response) {
@@ -1056,34 +1074,31 @@ $(document).ready(function () {
 
                 $('#datatable').DataTable().ajax.reload();
 
-
-                $('#editSportsLevelsForm')[0].reset();
             },
 
-            error: function (xhr, message) {
-
-                let errors = xhr.responseJSON.errors;
+            error: function (xhr) {
 
                 $('.text-danger').text('');
+
                 if (xhr.responseJSON.message) {
 
                     toastr.error(xhr.responseJSON.message);
-
                 }
+
+                let errors = xhr.responseJSON.errors;
 
                 if (errors) {
 
                     $.each(errors, function (key, value) {
 
-                        $('#' + key + 'Error').text(
-                            value[0]);
+                        $('#' + key + 'Error').text(value[0]);
+
                     });
                 }
             }
         });
+
     });
-
-
 
 
     // ------Batches JS------
@@ -1153,51 +1168,221 @@ $(document).ready(function () {
 
 
 
-    // Add Sports Form Submit
-    // $(document).on('submit', '#addLevelForm', function (e) {
+    // Add Batches Form Submit
 
-    //     e.preventDefault();
+    // Submit form using button click
+    $(document).on('click', '#saveBatchBtn', function (e) {
+
+        e.preventDefault();
+
+        $('#addBatchForm').trigger('submit');
+
+    });
+
+    $(document).on('submit', '#addBatchForm', function (e) {
+
+        e.preventDefault();
+
+        // Capacity Validation
+        let capacity = parseInt($('input[name="capacity"]').val());
+
+        let selectedPlayers = $('select[name="players[]"]').val();
+
+        selectedPlayers = selectedPlayers ? selectedPlayers.length : 0;
+
+        if (selectedPlayers > capacity) {
+
+            toastr.error(`You can select maximum ${capacity} players only.`);
+
+            return;
+        }
+
+        let formData = new FormData(this);
+
+        $.ajax({
+
+            url: $('#url').val(),
+
+            type: 'POST',
+
+            data: formData,
+
+            processData: false,
+
+            contentType: false,
+
+            success: function (response) {
+
+                toastr.success(response.message);
+
+                $('#offcanvasScrolling').offcanvas('hide');
+
+                $('#datatable').DataTable().ajax.reload();
+
+                $('#addBatchForm')[0].reset();
+
+                $('.select2').val(null).trigger('change');
+
+            },
+
+            error: function (xhr) {
+
+                $('.text-danger').text('');
+
+                let errors = xhr.responseJSON.errors;
+
+                if (errors) {
+
+                    $.each(errors, function (key, value) {
+
+                        $('#' + key + 'Error').text(value[0]);
+
+                    });
+
+                }
+
+            }
+
+        });
+
+    });
+    // edit Batch Form Open
+    $(document).on('click', '#editBatchBtn', function () {
+        let url = $(this).data('url');
+        let title = $(this).data('title');
+        // console.log(url);
+
+        $('#offcanvasScrollingLabel').text(title);
+
+        $.ajax({
+            type: 'GET',
+            url: url,
+
+            success: function (response) {
+
+                $('#offCanvasContent').html(response);
+                initSelect2();
+                initTimePicker();
+            }
+        });
+    });
+
+    // Update Batch Button
+    $(document).on('click', '#updateBatchBtn', function (e) {
+
+        e.preventDefault();
+
+        $('#editBatchForm').trigger('submit');
+
+    });
+
+    // Edit Batch Form Submit
+    $(document).on('submit', '#editBatchForm', function (e) {
+
+        e.preventDefault();
+
+        let capacity = parseInt($('input[name="capacity"]').val());
+
+        let selectedPlayers = $('select[name="players[]"]').val();
+
+        selectedPlayers = selectedPlayers ? selectedPlayers.length : 0;
+
+        if (selectedPlayers > capacity) {
+
+            toastr.error(`You can select maximum ${capacity} players only.`);
+
+            return;
+        }
+
+        let formData = new FormData(this);
+
+        $.ajax({
+
+            url: $('#url').val(),
+
+            type: 'POST',
+
+            data: formData,
+
+            processData: false,
+
+            contentType: false,
+
+            success: function (response) {
+
+                toastr.success(response.message);
+
+                $('#offcanvasScrolling').offcanvas('hide');
+
+                $('#datatable').DataTable().ajax.reload();
+
+            },
+
+            error: function (xhr) {
+
+                $('.text-danger').text('');
+
+                let errors = xhr.responseJSON.errors;
+
+                if (errors) {
+
+                    $.each(errors, function (key, value) {
+
+                        $('#' + key + 'Error').text(value[0]);
+
+                    });
+
+                }
+
+            }
+
+        });
+
+    });
 
 
-    //     let formData = new FormData(this);
+    // Delete Single Batch
+    $(document).on('click', '#deleteBatchBtn', function () {
 
-    //     $.ajax({
-    //         url: $('#url').val(),
-    //         method: 'POST',
-    //         data: formData,
-    //         processData: false,
-    //         contentType: false,
+        let url = $(this).data('url');
 
-    //         success: function (response) {
+        swalWithBootstrapButtons.fire({
+            title: "Are you sure?",
+            text: "This Batch will be deleted permanently!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, delete!",
+            cancelButtonText: "Cancel",
+            reverseButtons: true
+        }).then((result) => {
 
-    //             toastr.success(response.message);
+            if (result.isConfirmed) {
 
-    //             $('#offcanvasScrolling').offcanvas('hide');
+                $.ajax({
+                    url: url,
+                    type: "DELETE",
 
-    //             $('#datatable').DataTable().ajax.reload();
+                    success: function (response) {
+
+                        toastr.success(response.message);
+
+                        $('#datatable').DataTable().ajax.reload();
+
+                    },
+
+                    error: function () {
+
+                        toastr.error(
+                            'Something went wrong.');
+                    }
+                });
+            }
+        });
+    });
 
 
-    //             $('#addLevelForm')[0].reset();
-    //         },
-
-    //         error: function (xhr) {
-
-    //             let errors = xhr.responseJSON.errors;
-
-    //             $('.text-danger').text('');
-
-    //             if (errors) {
-
-    //                 $.each(errors, function (key, value) {
-
-    //                     $('#' + key + 'Error').text(
-    //                         value[0]);
-    //                 });
-    //             }
-    //         }
-    //     });
-    // });
-
+    Bulkdelete('batches', '.user-checkbox');
+    BulkUpdateStatus('batches', '.user-checkbox');
 
 
 });
