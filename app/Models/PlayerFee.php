@@ -16,6 +16,10 @@ class PlayerFee extends Model
 
         'level_id',
 
+        'month',
+
+        'year',
+
         'amount',
 
         'status',
@@ -26,14 +30,23 @@ class PlayerFee extends Model
 
     ];
 
-    public function feesGenerate()
-    {
-        return $this->belongsTo(FeesGenerate::class);
-    }
+    protected $casts = [
 
-    public function player()
+        'generated_at' => 'datetime',
+
+        'paid_at' => 'datetime',
+
+    ];
+
+    /*
+    |--------------------------------------------------------------------------
+    | Relationships
+    |--------------------------------------------------------------------------
+    */
+
+    public function user()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class);
     }
 
     public function sport()
@@ -44,5 +57,10 @@ class PlayerFee extends Model
     public function level()
     {
         return $this->belongsTo(Level::class);
+    }
+
+    public function feesGenerate()
+    {
+        return $this->belongsTo(FeesGenerate::class);
     }
 }

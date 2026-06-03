@@ -2,8 +2,10 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BatchController;
+use App\Http\Controllers\FeesGenerateController;
 use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\LevelsController;
+use App\Http\Controllers\PlayerFeesController;
 use App\Http\Controllers\SportLevelController;
 use App\Http\Controllers\SportsController;
 use App\Http\Controllers\UserController;
@@ -77,5 +79,8 @@ Route::middleware('auth')->group(function () {
         ->name('batches.bulkUpdate');
 
     Route::resource('batches', BatchController::class);
+
+    Route::resource('fees-generates', FeesGenerateController::class);
+    Route::resource('player-fees', PlayerFeesController::class);
 
 });
