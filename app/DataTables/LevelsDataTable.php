@@ -24,28 +24,51 @@ class LevelsDataTable extends DataTable
                 return '<input type="checkbox" class="user-checkbox" name="select[]" value="'.$level->id.'">';
             })
             ->addColumn('action', function (Level $level) {
-                return '<div class="btn-group align-items-center gap-2">
-                <!-- Edit Button -->
-                <button type="button"
-                    class="btn btn-link p-0 border-0 bi bi-pencil-square mx-2 "
-                    id="editLevelBtn"
-                    data-title="Edit Level"
-                    data-url="'.route('levels.edit', $level->id).'"
-                    data-bs-toggle="offcanvas"
-                    data-bs-target="#offcanvasScrolling"
-                    aria-controls="offcanvasScrolling">
-                </button>
 
-                <!-- Delete Button -->
-                <button type="button"
-                    class="btn btn-link p-0 border-0 bi bi-trash text-danger "
-                    id="deleteLevelBtn"
-                    data-id="'.$level->id.'"
-                    data-url="'.route('levels.destroy', $level->id).'">
-                </button>
-            </div>';
+                return '
+<div class="d-flex justify-content-center gap-2">
+
+    <!-- Edit Button -->
+    <button type="button"
+        class="btn btn-light btn-action text-primary shadow-sm "
+        id="editLevelBtn"
+        data-title="Edit Level"
+        data-url="'.route('levels.edit', $level->id).'"
+        data-bs-toggle="offcanvas"
+        data-bs-target="#offcanvasScrolling">
+
+        <i class="bi bi-pencil-square"></i>
+
+    </button>
+
+    <!-- Delete Button -->
+    <button type="button"
+        class="btn btn-light btn-action text-danger shadow-sm"
+        id="deleteLevelBtn"
+        data-id="'.$level->id.'"
+        data-url="'.route('levels.destroy', $level->id).'">
+
+        <i class="bi bi-trash"></i>
+
+    </button>
+
+</div>';
             })
-            ->rawColumns(['action', 'select'])
+            // Status Badge
+            ->editColumn('status', function ($level) {
+
+                if ($level->status == 'active') {
+
+                    return '<span class="badge bg-success">
+                                Active
+                            </span>';
+                }
+
+                return '<span class="badge bg-danger">
+                            Inactive
+                        </span>';
+            })
+            ->rawColumns(['action', 'select', 'status'])
             ->setRowId('id');
     }
 
@@ -103,7 +126,7 @@ class LevelsDataTable extends DataTable
             Column::make('id'),
             Column::make('name'),
             Column::make('slug'),
-            Column::make('status'),
+            Column::make('status')->title('Status'),
             Column::make('action')
                 ->orderable(false)
                 ->searchable(false)

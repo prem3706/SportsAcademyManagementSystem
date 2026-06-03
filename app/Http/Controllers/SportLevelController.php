@@ -137,8 +137,9 @@ class SportLevelController extends Controller
 
         // Prepare Sync Data
         $syncData = [];
+        $levels = array_values($request->levels);
 
-        foreach ($request->levels as $level) {
+        foreach ($levels as $level) {
 
             $syncData[$level['level_id']] = [
 

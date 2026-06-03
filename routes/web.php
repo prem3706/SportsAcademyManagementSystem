@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BatchController;
 use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\LevelsController;
 use App\Http\Controllers\SportLevelController;
@@ -63,5 +64,18 @@ Route::middleware('auth')->group(function () {
     Route::resource('levels', LevelsController::class);
 
     Route::resource('sport-levels', SportLevelController::class);
+
+    Route::get(
+        'get-sport-levels/{id}',
+        [BatchController::class, 'getSportLevels']
+    );
+
+    Route::delete('/batches/bulk-delete', [BatchController::class, 'bulkDelete'])
+        ->name('batches.bulkDelete');
+
+    Route::patch('/batches/bulk-update', [BatchController::class, 'bulkUpdate'])
+        ->name('batches.bulkUpdate');
+
+    Route::resource('batches', BatchController::class);
 
 });
