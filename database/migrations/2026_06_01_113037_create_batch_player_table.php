@@ -18,10 +18,14 @@ return new class extends Migration
                 ->constrained()
                 ->onDelete('cascade');
 
-            // Player From Users Table
+            // Player Relation
             $table->foreignId('player_id')
                 ->constrained('users')
                 ->onDelete('cascade');
+
+            // Joined Date
+            $table->date('joined_at')
+                ->nullable();
 
         });
     }

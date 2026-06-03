@@ -13,4 +13,9 @@ class Level extends Model
         return $this->belongsToMany(Sport::class, 'sports_levels')
             ->withPivot('fees');
     }
+
+    public function playerFees()
+    {
+        return $this->hasMany(PlayerFee::class);
+    }
 }

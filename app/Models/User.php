@@ -53,6 +53,11 @@ class User extends Authenticatable
             'batch_player',
             'player_id',
             'batch_id'
-        );
+        )->withPivot('joined_at');
+    }
+
+    public function playerFees()
+    {
+        return $this->hasMany(PlayerFee::class);
     }
 }

@@ -109,9 +109,17 @@ class BatchController extends Controller
         }
 
         // Attach Players
+        // Attach Players
         if ($request->has('players')) {
 
-            $batch->players()->attach($request->players);
+            foreach ($request->players as $playerId) {
+
+                $batch->players()->attach($playerId, [
+
+                    'joined_at' => now(),
+
+                ]);
+            }
         }
 
         return response()->json([
@@ -216,7 +224,40 @@ class BatchController extends Controller
         $batch->coaches()->sync($request->coaches ?? []);
 
         // Sync Players
-        $batch->players()->sync($request->players ?? []);
+        // Sync Players With joined_at
+        $syncPlayers = [];
+
+        if ($request->has('players')) {
+
+            foreach ($request->players as $playerId) {
+
+                // Check if player already exists in this batch
+                $existingPlayer = $batch->players()
+                    ->where('player_id', $playerId)
+                    ->first();
+
+                // Old player → keep old joined_at
+                if ($existingPlayer) {
+
+                    $syncPlayers[$playerId] = [
+
+                        'joined_at' => $existingPlayer->pivot->joined_at,
+
+                    ];
+
+                } else {
+
+                    // New player → add current datetime
+                    $syncPlayers[$playerId] = [
+
+                        'joined_at' => now(),
+
+                    ];
+                }
+            }
+        }
+
+        $batch->players()->sync($syncPlayers);
 
         return response()->json([
 

@@ -51,6 +51,6 @@ class Batch extends Model
             'batch_player',
             'batch_id',
             'player_id'
-        );
+        )->withPivot('joined_at');
     }
 }

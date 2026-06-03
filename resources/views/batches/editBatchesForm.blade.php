@@ -204,7 +204,6 @@
             <button type="button" id="updateBatchBtn" class="btn btn-dark px-4">
 
                 Update Batch
-
             </button>
 
         </div>
