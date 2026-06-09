@@ -1,33 +1,45 @@
 @props([
     'heading',
     'subheading',
-    'id',
-    'title',
-    'url',
-    'bulkDeleteUrl',
-    'bulkUpdateUrl',
+
+    // Add Button
+    'id' => '',
+    'title' => '',
+    'url' => '',
+
+    // Bulk Actions
+    'bulkDeleteUrl' => '',
+    'bulkUpdateUrl' => '',
+
+    // Filters
     'statusFilter' => 'False',
     'roleFilter' => 'False',
+
+    'filters' => [],
 ])
 
 <div class="card border-0 shadow-sm rounded-4">
 
     <!-- Header -->
-    <div class="card-header  border-0 pt-4 pb-3 px-4">
+    <div class="card-header border-0 pt-4 pb-3 px-4">
 
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
 
             <!-- Title -->
             <div>
+
                 <h5 class="fw-bold mb-1">
-                    {{-- Users Management --}}
+
                     {{ $heading }}
+
                 </h5>
 
                 <p class="text-secondary small mb-0">
-                    {{-- Manage all registered users --}}
+
                     {{ $subheading }}
+
                 </p>
+
             </div>
 
             <!-- Actions -->
@@ -36,29 +48,74 @@
                 <!-- Status Filter -->
                 @if ($statusFilter === 'True')
                     <div style="min-width: 150px;">
+
                         <select id="statusFilter" class="form-select rounded-3 shadow-sm border-0">
 
-                            <option value="">All Status</option>
-                            <option value="active">Active</option>
-                            <option value="inactive">Inactive</option>
+                            <option value="">
+                                All Status
+                            </option>
+
+                            <option value="active">
+                                Active
+                            </option>
+
+                            <option value="inactive">
+                                Inactive
+                            </option>
 
                         </select>
+
                     </div>
                 @endif
 
+                <!-- Role Filter -->
                 @if ($roleFilter === 'True')
-                    <!-- Role Filter -->
                     <div style="min-width: 150px;">
+
                         <select id="roleFilter" class="form-select rounded-3 shadow-sm border-0">
 
-                            <option value="">All Roles</option>
-                            <option value="admin">Admin</option>
-                            <option value="player">Player</option>
-                            <option value="coach">Coach</option>
+                            <option value="">
+                                All Roles
+                            </option>
+
+                            <option value="admin">
+                                Admin
+                            </option>
+
+                            <option value="player">
+                                Player
+                            </option>
+
+                            <option value="coach">
+                                Coach
+                            </option>
 
                         </select>
+
                     </div>
                 @endif
+                @foreach ($filters as $filter)
+                    <div style="min-width: 150px;">
+
+                        <select id="{{ $filter['id'] }}" class="form-select rounded-3 shadow-sm border-0">
+
+                            <option value="">
+                                {{ $filter['placeholder'] }}
+                            </option>
+
+                            @foreach ($filter['options'] as $key => $value)
+                                <option value="{{ $key }}"
+                                    {{ ($filter['default'] ?? '') == $key ? 'selected' : '' }}>
+
+                                    {{ $value }}
+
+                                </option>
+                            @endforeach
+
+                        </select>
+
+                    </div>
+                @endforeach
 
                 <!-- Refresh -->
                 <button type="button"
@@ -69,16 +126,18 @@
 
                 </button>
 
-                <!-- Add User -->
-                <button class="btn btn-dark rounded-3 shadow-sm px-4 fw-semibold text-nowrap"
-                    data-title="{{ $title }}" data-url="{{ $url }}" id="{{ $id }}"
-                    type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasScrolling">
+                <!-- Add Button -->
+                @if ($url)
+                    <button class="btn btn-dark rounded-3 shadow-sm px-4 fw-semibold text-nowrap"
+                        data-title="{{ $title }}" data-url="{{ $url }}" id="{{ $id }}"
+                        type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasScrolling">
 
-                    <i class="bi bi-plus-circle me-1"></i>
+                        <i class="bi bi-plus-circle me-1"></i>
 
-                    {{ $title }}
+                        {{ $title }}
 
-                </button>
+                    </button>
+                @endif
 
             </div>
 
@@ -87,7 +146,7 @@
     </div>
 
     <!-- Table -->
-    <div class="card-body  p-3">
+    <div class="card-body p-3">
 
         <form id="bulkDeleteForm">
 
@@ -96,6 +155,7 @@
             <div class="table-responsive">
 
                 {{ $slot }}
+
             </div>
 
         </form>
@@ -105,73 +165,86 @@
 </div>
 
 <!-- Bulk Action Bar -->
-<div id="bulkActionBar"
-    class="position-fixed bottom-0 start-50 translate-middle-x mb-4 bg-white border-0 shadow-lg rounded-4 px-4 py-3 d-none">
+@if ($bulkDeleteUrl || $bulkUpdateUrl)
 
-    <div class="d-flex align-items-center justify-content-between gap-4 flex-wrap">
+    <div id="bulkActionBar"
+        class="position-fixed bottom-0 start-50 translate-middle-x mb-4 bg-white border-0 shadow-lg rounded-4 px-4 py-3 d-none">
 
-        <!-- Left Side -->
-        <div class="d-flex align-items-center gap-3 flex-wrap">
+        <div class="d-flex align-items-center justify-content-between gap-4 flex-wrap">
 
-            <!-- Selected Count -->
-            <div class="bg-dark text-white rounded-pill px-3 py-2 small fw-semibold d-flex align-items-center gap-2">
+            <!-- Left -->
+            <div class="d-flex align-items-center gap-3 flex-wrap">
 
-                <i class="bi bi-check2-square"></i>
+                <!-- Selected Count -->
+                <div
+                    class="bg-dark text-white rounded-pill px-3 py-2 small fw-semibold d-flex align-items-center gap-2">
 
-                <span id="selectedCount">
-                    0 Selected
-                </span>
+                    <i class="bi bi-check2-square"></i>
+
+                    <span id="selectedCount">
+
+                        0 Selected
+
+                    </span>
+
+                </div>
+
+                <!-- Status Update -->
+                @if ($bulkUpdateUrl)
+                    <div style="min-width: 180px;">
+
+                        <select id="statusUpdate" class="form-select rounded-3 border-0 shadow-sm">
+
+                            <option value="">
+                                Update Status
+                            </option>
+
+                            <option value="active">
+                                Active
+                            </option>
+
+                            <option value="inactive">
+                                Inactive
+                            </option>
+
+                        </select>
+
+                    </div>
+                @endif
 
             </div>
 
-            <!-- Status Dropdown -->
-            <div style="min-width: 180px;">
+            <!-- Right -->
+            <div class="d-flex align-items-center gap-2">
 
-                <select id="statusUpdate" class="form-select rounded-3 border-0 shadow-sm">
+                <!-- Update Button -->
+                @if ($bulkUpdateUrl)
+                    <button type="button" id="bulkUpdateBtn" data-url="{{ $bulkUpdateUrl }}"
+                        class="btn btn-success rounded-3 px-4 fw-semibold d-flex align-items-center gap-2">
 
-                    <option value="">
-                        Update Status
-                    </option>
+                        <i class="bi bi-check-circle"></i>
 
-                    <option value="active">
-                        Active
-                    </option>
+                        Update
 
-                    <option value="inactive">
-                        Inactive
-                    </option>
+                    </button>
+                @endif
 
-                </select>
+                <!-- Delete Button -->
+                @if ($bulkDeleteUrl)
+                    <button type="button" id="bulkDeleteBtn" data-url="{{ $bulkDeleteUrl }}"
+                        class="btn btn-danger rounded-3 px-4 fw-semibold d-flex align-items-center gap-2">
+
+                        <i class="bi bi-trash"></i>
+
+                        Delete
+
+                    </button>
+                @endif
 
             </div>
-
-        </div>
-
-        <!-- Right Side -->
-        <div class="d-flex align-items-center gap-2">
-
-            <!-- Update Button -->
-            <button type="button" id="bulkUpdateBtn" data-url="{{ $bulkUpdateUrl }}"
-                class="btn btn-success rounded-3 px-4 fw-semibold d-flex align-items-center gap-2">
-
-                <i class="bi bi-check-circle"></i>
-
-                Update
-
-            </button>
-
-            <!-- Delete Button -->
-            <button type="button" id="bulkDeleteBtn" data-url="{{ $bulkDeleteUrl }}"
-                class="btn btn-danger rounded-3 px-4 fw-semibold d-flex align-items-center gap-2">
-
-                <i class="bi bi-trash"></i>
-
-                Delete
-
-            </button>
 
         </div>
 
     </div>
 
-</div>
+@endif

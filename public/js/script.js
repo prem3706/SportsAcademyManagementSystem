@@ -100,8 +100,14 @@ $(document).ready(function () {
     // User DataTable Filters
     $('#datatable').on('preXhr.dt', function (e, settings, data) {
 
+        // User Filters
         data.status = $('#statusFilter').val();
         data.role = $('#roleFilter').val();
+
+        // Player Fees Filters
+        data.sport = $('#sportFilter').val();
+        data.month = $('#monthFilter').val();
+        data.year = $('#yearFilter').val();
     });
     // // Sports DataTable Filters
     // $('#sports-table').on('preXhr.dt', function (e, settings, data) {
@@ -109,44 +115,52 @@ $(document).ready(function () {
     //     data.status = $('#statusFilter').val();
     // });
 
-    // Status Filter
-    $(document).on('change', '#statusFilter', function () {
+    $(document).on('change',
+        '#statusFilter, #roleFilter, #sportFilter, #monthFilter, #yearFilter',
+        function () {
 
-        $('#datatable').DataTable().ajax.reload();
+            $('#datatable').DataTable().ajax.reload();
 
-
-    });
-
-    // Role Filter
-    $(document).on('change', '#roleFilter', function () {
-
-        $('#datatable').DataTable().ajax.reload();
-
-
-    });
+            checkRefreshButton();
+        }
+    );
 
     // Refresh Button
 
 
     $(document).on('click', '#refreshTableBtn', function () {
 
+        // Reset All Filters
         $('#statusFilter').val('');
         $('#roleFilter').val('');
 
+        $('#sportFilter').val('');
+        $('#monthFilter').val('');
+        $('#yearFilter').val('');
+
+        // Reload Table
         $('#datatable').DataTable().ajax.reload();
 
-
-
+        // Hide Refresh Button
         $(this).addClass('d-none');
-
     });
 
-    $(document).on('change', '#statusFilter, #roleFilter', function () {
+    function checkRefreshButton() {
 
         let status = $('#statusFilter').val();
         let role = $('#roleFilter').val();
 
-        if (status !== '' || role !== '') {
+        let sport = $('#sportFilter').val();
+        let month = $('#monthFilter').val();
+        let year = $('#yearFilter').val();
+
+        if (
+            status !== '' ||
+            role !== '' ||
+            sport !== '' ||
+            month !== '' ||
+            year !== ''
+        ) {
 
             $('#refreshTableBtn').removeClass('d-none');
 
@@ -154,7 +168,7 @@ $(document).ready(function () {
 
             $('#refreshTableBtn').addClass('d-none');
         }
-    });
+    }
 
     // Toggle Sticky Bulk Action Bar
     function toggleBulkButton() {
@@ -1383,6 +1397,147 @@ $(document).ready(function () {
 
     Bulkdelete('batches', '.user-checkbox');
     BulkUpdateStatus('batches', '.user-checkbox');
+
+    // Add fees Form Open
+    $(document).on('click', '#addFeesGenerateBtn', function () {
+
+        let url = $(this).data('url');
+        let title = $(this).data('title');
+
+        $('#offcanvasScrollingLabel').text(title);
+
+        $.ajax({
+            type: 'GET',
+            url: url,
+
+            success: function (response) {
+
+                $('#offCanvasContent').html(response);
+            }
+        });
+    });
+
+    // Add fees Form Submit
+    $(document).on('submit', '#addFeesGenerateForm', function (e) {
+
+        e.preventDefault();
+
+
+        let formData = new FormData(this);
+
+        $.ajax({
+            url: $('#url').val(),
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+
+            success: function (response) {
+
+                toastr.success(response.message);
+
+                $('#offcanvasScrolling').offcanvas('hide');
+
+                $('#datatable').DataTable().ajax.reload();
+
+
+                $('#addFeesGenerateForm')[0].reset();
+            },
+
+            error: function (xhr) {
+
+                let errors = xhr.responseJSON.errors;
+
+                $('.text-danger').text('');
+
+                if (errors) {
+
+                    $.each(errors, function (key, value) {
+
+                        $('#' + key + 'Error').text(
+                            value[0]);
+                    });
+                }
+            }
+        });
+    });
+
+
+    // edit Player Fee Form Open
+    $(document).on('click', '#editPlayerFeeBtn', function () {
+        let url = $(this).data('url');
+        let title = $(this).data('title');
+        console.log(title);
+
+        $('#offcanvasScrollingLabel').text(title);
+
+        $.ajax({
+            type: 'GET',
+            url: url,
+
+            success: function (response) {
+
+                $('#offCanvasContent').html(response);
+            }
+        });
+    });
+    // Edit Player Fee Form Submit
+
+    $(document).on('submit', '#editPlayerFeeForm', function (e) {
+
+        e.preventDefault();
+
+        let formData = new FormData(this);
+
+        $.ajax({
+
+            url: $('#url').val(),
+
+            method: 'POST',
+
+            data: formData,
+
+            processData: false,
+
+            contentType: false,
+
+            success: function (response) {
+
+                toastr.success(response.message);
+
+                $('#offcanvasScrolling').offcanvas('hide');
+
+                $('#datatable').DataTable().ajax.reload();
+
+            },
+
+            error: function (xhr) {
+
+                $('.text-danger').text('');
+
+                if (xhr.responseJSON.message) {
+
+                    toastr.error(xhr.responseJSON.message);
+                }
+
+                let errors = xhr.responseJSON.errors;
+
+                if (errors) {
+
+                    $.each(errors, function (key, value) {
+
+                        $('#' + key + 'Error').text(value[0]);
+
+                    });
+                }
+            }
+        });
+
+    });
+
+
+
+
 
 
 });

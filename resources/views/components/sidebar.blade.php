@@ -46,6 +46,12 @@
                  User
              </a>
          </li>
+         <li class="nav-item">
+             <a class="nav-link" href="{{ route('players.index') }}">
+                 <i class="bi bi-person-fill nav-icon"></i>
+                 Players
+             </a>
+         </li>
 
          <!-- Sports Management -->
          <li class="nav-item">
@@ -72,6 +78,30 @@
                  Batches
              </a>
          </li>
+         <li class="nav-group">
+             <a class="nav-link nav-group-toggle" href="#">
+                 <i class="bi bi-currency-rupee nav-icon"></i>
+                 Fees
+             </a>
+             <ul class="nav-group-items compact">
+                 <li class="nav-item">
+                     <a class="nav-link" href="{{ route('player-fees.index') }}">
+                         <span class="nav-icon"><span class="bi bi-currency-dollar"></span></span>
+                         Players Fees
+                     </a>
+                 </li>
+                 <li class="nav-item">
+                     <a class="nav-link" href="{{ route('fees-generates.index') }}">
+                         <span class="nav-icon"><span class="bi bi-patch-plus"></span></span>
+                         Fees Generation
+                     </a>
+                 </li>
+
+
+             </ul>
+         </li>
+
+
 
      </ul>
      <div class="sidebar-footer border-top d-none d-md-flex">
