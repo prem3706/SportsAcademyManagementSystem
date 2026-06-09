@@ -1,4 +1,4 @@
-<div class="container py-4">
+<div class="container py-4 h-auto">
 
     <form id="editBatchForm">
 

@@ -46,6 +46,12 @@
                  User
              </a>
          </li>
+         <li class="nav-item">
+             <a class="nav-link" href="{{ route('players.index') }}">
+                 <i class="bi bi-person-fill nav-icon"></i>
+                 Players
+             </a>
+         </li>
 
          <!-- Sports Management -->
          <li class="nav-item">

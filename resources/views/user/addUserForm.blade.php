@@ -174,7 +174,8 @@
                     Joining Date
                 </label>
 
-                <input type="date" class="form-control py-2" id="joined_at" name="joined_at">
+                <input type="date" class="form-control py-2" id="joined_at" name="joined_at"
+                    value="{{ now()->toDateString() }}">
 
                 <div style="height:10px;">
                     <p class="text-danger small mb-0" id="joiningDateError"></p>
@@ -219,4 +220,3 @@
 
     </form>
 </div>
-

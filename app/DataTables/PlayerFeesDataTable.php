@@ -2,6 +2,7 @@
 
 namespace App\DataTables;
 
+use App\Models\FeesGenerate;
 use App\Models\PlayerFee;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 use Yajra\DataTables\EloquentDataTable;
@@ -132,16 +133,30 @@ class PlayerFeesDataTable extends DataTable
             $query->where('sport_id', request('sport'));
         }
 
-        // Month Filter
-        if (request()->filled('month')) {
+        // Default year and month values
+        // $latestFee = FeesGenerate::orderBy('year', 'desc')
+        //     ->orderBy('month', 'desc')
+        //     ->first();
 
-            $query->where('month', request('month'));
+        $defaultMonth = now()->month;
+        $defaultYear = now()->year;
+
+        // Month Filter
+        if (request()->has('month')) {
+            if (request()->filled('month')) {
+                $query->where('month', request('month'));
+            }
+        } else {
+            $query->where('month', $defaultMonth);
         }
 
         // Year Filter
-        if (request()->filled('year')) {
-
-            $query->where('year', request('year'));
+        if (request()->has('year')) {
+            if (request()->filled('year')) {
+                $query->where('year', request('year'));
+            }
+        } else {
+            $query->where('year', $defaultYear);
         }
 
         return $query;

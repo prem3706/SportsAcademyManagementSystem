@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\DataTables\PlayerFeesDataTable;
+use App\Models\FeesGenerate;
 use App\Models\PlayerFee;
 use App\Models\Sport;
 use Illuminate\Http\Request;
@@ -16,9 +17,16 @@ class PlayerFeesController extends Controller
     {
         $sports = Sport::pluck('name', 'id');
 
+        // $latestFee = FeesGenerate::orderBy('year', 'desc')
+        //     ->orderBy('month', 'desc')
+        //     ->first();
+
+        $defaultMonth = request('month', now()->month);
+        $defaultYear = request('year', now()->year);
+
         return $dataTable->render(
             'playerFees.index',
-            compact('sports')
+            compact('sports', 'defaultMonth', 'defaultYear')
         );
     }
 

@@ -15,7 +15,7 @@
                         'placeholder' => 'All Sports',
                         'options' => $sports,
                     ],
-                
+
                     [
                         'id' => 'monthFilter',
                         'placeholder' => 'All Months',
@@ -33,8 +33,9 @@
                             11 => 'November',
                             12 => 'December',
                         ],
+                        'default' => $defaultMonth,
                     ],
-                
+
                     [
                         'id' => 'yearFilter',
                         'placeholder' => 'All Years',
@@ -43,7 +44,9 @@
                             2026 => '2026',
                             2027 => '2027',
                         ],
+                        'default' => $defaultYear,
                     ],
+
                 ]">
 
                 {{ $dataTable->table(['class' => 'table table-hover align-middle mb-0']) }}

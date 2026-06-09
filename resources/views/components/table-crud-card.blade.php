@@ -94,7 +94,6 @@
 
                     </div>
                 @endif
-                <!-- Dynamic Filters -->
                 @foreach ($filters as $filter)
                     <div style="min-width: 150px;">
 
@@ -105,8 +104,11 @@
                             </option>
 
                             @foreach ($filter['options'] as $key => $value)
-                                <option value="{{ $key }}">
+                                <option value="{{ $key }}"
+                                    {{ ($filter['default'] ?? '') == $key ? 'selected' : '' }}>
+
                                     {{ $value }}
+
                                 </option>
                             @endforeach
 

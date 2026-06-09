@@ -51,7 +51,7 @@ class FeesGenerateDataTable extends DataTable
 
                 <div class="d-flex justify-content-center gap-2">
 
-                    <a href="'.route('fees-generates.index', [
+                    <a href="'.route('player-fees.index', [
                     'month' => $row->month,
                     'year' => $row->year,
                 ]).'"
