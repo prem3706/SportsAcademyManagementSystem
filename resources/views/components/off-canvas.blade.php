@@ -19,9 +19,7 @@
     <div class="offcanvas-body bg-light-subtle p-4">
 
         <!-- Content Card -->
-        <div class="align-items-center d-flex justify-content-center h-100" id="offCanvasContent">
-
-
+        <div id="offCanvasContent">
 
         </div>
 

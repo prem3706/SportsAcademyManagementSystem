@@ -101,8 +101,13 @@
              </ul>
          </li>
 
-
-
+         <!-- Settings -->
+         <li class="nav-item">
+             <a class="nav-link {{ request()->routeIs('settings.index') ? 'active' : '' }}" href="{{ route('settings.index') }}">
+                 <i class="bi bi-gear-fill nav-icon"></i>
+                 Settings
+             </a>
+         </li>
      </ul>
      <div class="sidebar-footer border-top d-none d-md-flex">
          <button class="sidebar-toggler" type="button" data-coreui-toggle="unfoldable"></button>

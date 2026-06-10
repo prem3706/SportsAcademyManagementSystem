@@ -7,19 +7,42 @@
 
         <div class="container-lg py-3">
 
-            <x-table-crud-card heading="Players Management" subheading="Manage all Players" title="Add Player"
-                :url="route('players.create')" id="addPlayerBtn" statusFilter="True">
-                {{-- {{ $dataTable->table(['class' => 'table table-hover align-middle mb-0']) }} --}}
+            @php
+                $playerFilters = [
+                    [
+                        'id' => 'sportFilter',
+                        'placeholder' => 'All Sports',
+                        'options' => $sports->pluck('name', 'id')->toArray(),
+                    ],
+                    [
+                        'id' => 'levelFilter',
+                        'placeholder' => 'All Levels',
+                        'options' => $levels->pluck('name', 'id')->toArray(),
+                    ],
+                    [
+                        'id' => 'batchFilter',
+                        'placeholder' => 'All Batches',
+                        'options' => $batches->pluck('name', 'id')->toArray(),
+                    ],
+                ];
+            @endphp
 
+            <x-table-crud-card heading="Players Management" subheading="Manage all Players" title="Add Player"
+                :url="route('players.create')" id="addPlayerBtn" statusFilter="True"
+                :filters="$playerFilters"
+                :bulkDeleteUrl="route('players.bulkDelete')" :bulkUpdateUrl="route('players.bulkUpdate')">
+                {{ $dataTable->table(['class' => 'table table-hover align-middle mb-0']) }}
+
+                
             </x-table-crud-card>
 
 
         </div>
 
     </div>
-    {{--
+
     @push('scripts')
         {{ $dataTable->scripts() }}
-    @endpush --}}
+    @endpush
 
 </x-layout>
