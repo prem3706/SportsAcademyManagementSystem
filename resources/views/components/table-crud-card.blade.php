@@ -23,7 +23,8 @@
     <!-- Header -->
     <div class="card-header border-0 pt-4 pb-3 px-4">
 
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <!-- Row 1: Title and Add Button -->
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 {{ ($statusFilter === 'True' || $roleFilter === 'True' || count($filters) > 0) ? 'mb-3' : '' }}">
 
             <!-- Title -->
             <div>
@@ -42,80 +43,103 @@
 
             </div>
 
-            <!-- Actions -->
-            <div class="d-flex align-items-center flex-wrap gap-2">
+            <!-- Add Button -->
+            @if ($url)
+                <button class="btn btn-dark rounded-3 shadow-sm px-4 fw-semibold text-nowrap"
+                    data-title="{{ $title }}" data-url="{{ $url }}" id="{{ $id }}"
+                    type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasScrolling">
 
-                <!-- Status Filter -->
-                @if ($statusFilter === 'True')
-                    <div style="min-width: 150px;">
+                    <i class="bi bi-plus-circle me-1"></i>
 
-                        <select id="statusFilter" class="form-select rounded-3 shadow-sm border-0">
+                    {{ $title }}
 
-                            <option value="">
-                                All Status
-                            </option>
+                </button>
+            @endif
 
-                            <option value="active">
-                                Active
-                            </option>
+        </div>
 
-                            <option value="inactive">
-                                Inactive
-                            </option>
+        <!-- Row 2: Filters and Refresh Button -->
+        @if ($statusFilter === 'True' || $roleFilter === 'True' || count($filters) > 0)
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 border-top pt-3">
 
-                        </select>
+                <!-- Filters -->
+                <div class="d-flex align-items-center flex-wrap gap-2">
 
-                    </div>
-                @endif
+                    <!-- Status Filter -->
+                    @if ($statusFilter === 'True')
+                        <div style="min-width: 150px;">
 
-                <!-- Role Filter -->
-                @if ($roleFilter === 'True')
-                    <div style="min-width: 150px;">
+                            <select id="statusFilter" class="form-select rounded-3 shadow-sm border-0">
 
-                        <select id="roleFilter" class="form-select rounded-3 shadow-sm border-0">
-
-                            <option value="">
-                                All Roles
-                            </option>
-
-                            <option value="admin">
-                                Admin
-                            </option>
-
-                            <option value="player">
-                                Player
-                            </option>
-
-                            <option value="coach">
-                                Coach
-                            </option>
-
-                        </select>
-
-                    </div>
-                @endif
-                @foreach ($filters as $filter)
-                    <div style="min-width: 150px;">
-
-                        <select id="{{ $filter['id'] }}" class="form-select rounded-3 shadow-sm border-0">
-
-                            <option value="">
-                                {{ $filter['placeholder'] }}
-                            </option>
-
-                            @foreach ($filter['options'] as $key => $value)
-                                <option value="{{ $key }}"
-                                    {{ ($filter['default'] ?? '') == $key ? 'selected' : '' }}>
-
-                                    {{ $value }}
-
+                                <option value="">
+                                    All Status
                                 </option>
-                            @endforeach
 
-                        </select>
+                                <option value="active">
+                                    Active
+                                </option>
 
-                    </div>
-                @endforeach
+                                <option value="inactive">
+                                    Inactive
+                                </option>
+
+                            </select>
+
+                        </div>
+                    @endif
+
+                    <!-- Role Filter -->
+                    @if ($roleFilter === 'True')
+                        <div style="min-width: 150px;">
+
+                            <select id="roleFilter" class="form-select rounded-3 shadow-sm border-0">
+
+                                <option value="">
+                                    All Roles
+                                </option>
+
+                                <option value="admin">
+                                    Admin
+                                </option>
+
+                                <option value="player">
+                                    Player
+                                </option>
+
+                                <option value="coach">
+                                    Coach
+                                </option>
+
+                            </select>
+
+                        </div>
+                    @endif
+
+                    <!-- Dynamic Filters -->
+                    @foreach ($filters as $filter)
+                        <div style="min-width: 150px;">
+
+                            <select id="{{ $filter['id'] }}" class="form-select rounded-3 shadow-sm border-0">
+
+                                <option value="">
+                                    {{ $filter['placeholder'] }}
+                                </option>
+
+                                @foreach ($filter['options'] as $key => $value)
+                                    <option value="{{ $key }}"
+                                        {{ ($filter['default'] ?? '') == $key ? 'selected' : '' }}>
+
+                                        {{ $value }}
+
+                                    </option>
+                                @endforeach
+
+                            </select>
+
+                        </div>
+                    @endforeach
+
+                </div>
 
                 <!-- Refresh -->
                 <button type="button"
@@ -126,22 +150,8 @@
 
                 </button>
 
-                <!-- Add Button -->
-                @if ($url)
-                    <button class="btn btn-dark rounded-3 shadow-sm px-4 fw-semibold text-nowrap"
-                        data-title="{{ $title }}" data-url="{{ $url }}" id="{{ $id }}"
-                        type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasScrolling">
-
-                        <i class="bi bi-plus-circle me-1"></i>
-
-                        {{ $title }}
-
-                    </button>
-                @endif
-
             </div>
-
-        </div>
+        @endif
 
     </div>
 

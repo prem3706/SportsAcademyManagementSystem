@@ -10,6 +10,7 @@ use App\Http\Controllers\PlayerFeesController;
 use App\Http\Controllers\SportLevelController;
 use App\Http\Controllers\SportsController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\SettingController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -83,6 +84,14 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('fees-generates', FeesGenerateController::class);
     Route::resource('player-fees', PlayerFeesController::class);
+
+    Route::get('settings', [SettingController::class, 'index'])->name('settings.index');
+    Route::post('settings/penalty', [SettingController::class, 'updatePenalty'])->name('settings.updatePenalty');
+    Route::post('settings/discount', [SettingController::class, 'updateDiscount'])->name('settings.updateDiscount');
+
+    Route::get('get-batches/{sport_id}/{level_id}', [PlayerController::class, 'getBatches'])->name('players.getBatches');
+    Route::delete('/players/bulk-delete', [PlayerController::class, 'bulkDelete'])->name('players.bulkDelete');
+    Route::patch('/players/bulk-update', [PlayerController::class, 'bulkUpdate'])->name('players.bulkUpdate');
     Route::resource('players', PlayerController::class);
 
 });

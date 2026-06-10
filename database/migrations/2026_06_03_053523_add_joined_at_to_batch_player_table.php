@@ -11,13 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('batch_player', function (Blueprint $table) {
-
-            $table->timestamp('joined_at')
-                ->nullable()
-                ->after('player_id');
-
-        });
+        if (!Schema::hasColumn('batch_player', 'joined_at')) {
+            Schema::table('batch_player', function (Blueprint $table) {
+                $table->timestamp('joined_at')
+                    ->nullable()
+                    ->after('player_id');
+            });
+        }
     }
 
     /**
@@ -25,10 +25,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('batch_player', function (Blueprint $table) {
-
-            $table->dropColumn('joined_at');
-
-        });
+        if (Schema::hasColumn('batch_player', 'joined_at')) {
+            Schema::table('batch_player', function (Blueprint $table) {
+                $table->dropColumn('joined_at');
+            });
+        }
     }
 };
