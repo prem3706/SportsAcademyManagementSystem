@@ -110,11 +110,12 @@ $(document).ready(function () {
         data.batch = $('#batchFilter').val();
         data.month = $('#monthFilter').val();
         data.year = $('#yearFilter').val();
+        data.payment_type = $('#paymentTypeFilter').val();
     });
 
 
     $(document).on('change',
-        '#statusFilter, #roleFilter, #sportFilter, #levelFilter, #batchFilter, #monthFilter, #yearFilter',
+        '#statusFilter, #roleFilter, #sportFilter, #levelFilter, #batchFilter, #monthFilter, #yearFilter, #paymentTypeFilter',
         function () {
 
             $('#datatable').DataTable().ajax.reload();
@@ -137,6 +138,7 @@ $(document).ready(function () {
         $('#batchFilter').val('');
         $('#monthFilter').val('');
         $('#yearFilter').val('');
+        $('#paymentTypeFilter').val('');
 
         // Reload Table
         $('#datatable').DataTable().ajax.reload();
@@ -155,6 +157,7 @@ $(document).ready(function () {
         let batch = $('#batchFilter').val();
         let month = $('#monthFilter').val();
         let year = $('#yearFilter').val();
+        let payment_type = $('#paymentTypeFilter').val();
 
         if (
             status !== '' ||
@@ -163,7 +166,8 @@ $(document).ready(function () {
             level !== '' ||
             batch !== '' ||
             month !== '' ||
-            year !== ''
+            year !== '' ||
+            payment_type !== ''
         ) {
 
             $('#refreshTableBtn').removeClass('d-none');
@@ -1462,6 +1466,24 @@ $(document).ready(function () {
                             value[0]);
                     });
                 }
+            }
+        });
+    });
+
+
+    // Add Player Fee Form Open
+    $(document).on('click', '#addPlayerFeeBtn', function () {
+        let url = $(this).data('url');
+        let title = $(this).data('title');
+
+        $('#offcanvasScrollingLabel').text(title);
+
+        $.ajax({
+            type: 'GET',
+            url: url,
+
+            success: function (response) {
+                $('#offCanvasContent').html(response);
             }
         });
     });

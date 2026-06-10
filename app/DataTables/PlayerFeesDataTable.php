@@ -2,7 +2,6 @@
 
 namespace App\DataTables;
 
-use App\Models\FeesGenerate;
 use App\Models\PlayerFee;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 use Yajra\DataTables\EloquentDataTable;
@@ -19,99 +18,74 @@ class PlayerFeesDataTable extends DataTable
     public function dataTable(QueryBuilder $query): EloquentDataTable
     {
         return (new EloquentDataTable($query))
-
             ->addColumn('player', function ($fee) {
-
-                return $fee->user?->firstname.' '.$fee->user?->lastname;
+                return $fee->player 
+                    ? ($fee->player->firstname . ' ' . $fee->player->lastname)
+                    : 'Unknown Player';
             })
-
-            ->addColumn('sport', function ($fee) {
-
-                return $fee->sport?->name ?? '-';
+            ->addColumn('duration', function ($fee) {
+                if ($fee->start_date && $fee->end_date) {
+                    return $fee->start_date->format('d M Y') . ' to ' . $fee->end_date->format('d M Y');
+                }
+                return '-';
             })
-
-            ->addColumn('level', function ($fee) {
-
-                return $fee->level?->name ?? '-';
+            ->editColumn('sub_totalamount', function ($fee) {
+                return '₹ ' . number_format($fee->sub_totalamount, 2);
             })
-
-            ->editColumn('amount', function ($fee) {
-
-                return '₹ '.number_format($fee->amount, 2);
+            ->editColumn('discount_amount', function ($fee) {
+                return '₹ ' . number_format($fee->discount_amount, 2);
             })
-
+            ->editColumn('total_amt', function ($fee) {
+                return '₹ ' . number_format($fee->total_amt, 2);
+            })
+            ->editColumn('payment_type', function ($fee) {
+                $type = strtoupper($fee->payment_type);
+                if ($fee->payment_type === 'upi' && $fee->upi_id) {
+                    return $type . ' (' . $fee->upi_id . ')';
+                }
+                return $type;
+            })
+            ->editColumn('img_upi', function ($fee) {
+                if ($fee->payment_type === 'upi' && $fee->img_upi) {
+                    return '<a href="' . asset($fee->img_upi) . '" target="_blank" class="btn btn-sm btn-outline-dark py-1 px-2 fw-semibold align-items-center gap-1" style="border-radius:8px;">
+                                <i class="bi bi-file-earmark-image"></i> View Slip
+                            </a>';
+                }
+                return '-';
+            })
             ->editColumn('status', function ($fee) {
-
-                if ($fee->status == 'paid') {
-
-                    return '<span class="badge bg-success">
-                                Paid
-                            </span>';
+                if ($fee->status === 'paid') {
+                    return '<span class="badge bg-success px-2 py-1" style="border-radius:12px;">Paid</span>';
                 }
-
-                if ($fee->status == 'partial') {
-
-                    return '<span class="badge bg-warning">
-                                Partial
-                            </span>';
-                }
-
-                return '<span class="badge bg-danger">
-                            Unpaid
-                        </span>';
+                return '<span class="badge bg-warning text-dark px-2 py-1" style="border-radius:12px;">Pending</span>';
             })
-
-            ->editColumn('generated_at', function ($fee) {
-
-                return $fee->generated_at
-                    ? $fee->generated_at->format('d M Y')
-                    : '-';
-            })
-
-            ->editColumn('paid_at', function ($fee) {
-
-                return $fee->paid_at
-                    ? $fee->paid_at->format('d M Y')
-                    : '-';
-            })
-
             ->addColumn('action', function ($fee) {
-
                 return '
-
                 <div class="d-flex justify-content-center gap-2">
-
                     <button type="button"
-                        class="btn btn-light btn-action text-primary shadow-sm "
+                        class="btn btn-light btn-action text-primary shadow-sm"
                         id="editPlayerFeeBtn"
                         data-title="Edit Player Fee"
-                        data-url="'.route('player-fees.edit', $fee->id).'"
+                        data-url="' . route('player-fees.edit', $fee->id) . '"
                         data-bs-toggle="offcanvas"
                         data-bs-target="#offcanvasScrolling">
-
                         <i class="bi bi-pencil-square"></i>
-
                     </button>
-
                     <button type="button"
                         class="btn btn-light btn-action text-danger shadow-sm"
                         id="deletePlayerFeeBtn"
-                        data-id="'.$fee->id.'"
-                        data-url="'.route('player-fees.destroy', $fee->id).'">
-
+                        data-id="' . $fee->id . '"
+                        data-url="' . route('player-fees.destroy', $fee->id) . '">
                         <i class="bi bi-trash"></i>
-
                     </button>
-
                 </div>
                 ';
             })
-
             ->rawColumns([
+                'img_upi',
                 'status',
                 'action',
             ])
-
             ->setRowId('id');
     }
 
@@ -120,43 +94,16 @@ class PlayerFeesDataTable extends DataTable
      */
     public function query(PlayerFee $model)
     {
-        $query = $model->newQuery()
-            ->with([
-                'user',
-                'sport',
-                'level',
-            ]);
+        $query = $model->newQuery()->with(['player']);
 
-        // Sport Filter
-        if (request()->filled('sport')) {
-
-            $query->where('sport_id', request('sport'));
+        // Status Filter
+        if (request()->filled('status')) {
+            $query->where('status', request('status'));
         }
 
-        // Default year and month values
-        // $latestFee = FeesGenerate::orderBy('year', 'desc')
-        //     ->orderBy('month', 'desc')
-        //     ->first();
-
-        $defaultMonth = now()->month;
-        $defaultYear = now()->year;
-
-        // Month Filter
-        if (request()->has('month')) {
-            if (request()->filled('month')) {
-                $query->where('month', request('month'));
-            }
-        } else {
-            $query->where('month', $defaultMonth);
-        }
-
-        // Year Filter
-        if (request()->has('year')) {
-            if (request()->filled('year')) {
-                $query->where('year', request('year'));
-            }
-        } else {
-            $query->where('year', $defaultYear);
+        // Payment Type Filter
+        if (request()->filled('payment_type')) {
+            $query->where('payment_type', request('payment_type'));
         }
 
         return $query;
@@ -168,29 +115,17 @@ class PlayerFeesDataTable extends DataTable
     public function html(): HtmlBuilder
     {
         return $this->builder()
-
             ->setTableId('datatable')
-
             ->columns($this->getColumns())
-
             ->minifiedAjax()
-
             ->orderBy(1)
-
             ->buttons([
-
                 Button::make('excel'),
-
                 Button::make('csv'),
-
                 Button::make('pdf'),
-
                 Button::make('print'),
-
                 Button::make('reset'),
-
                 Button::make('reload'),
-
             ]);
     }
 
@@ -200,44 +135,30 @@ class PlayerFeesDataTable extends DataTable
     public function getColumns(): array
     {
         return [
-
             Column::make('id')
                 ->title('ID'),
-
             Column::make('player')
                 ->title('Player'),
-
-            Column::make('sport')
-                ->title('Sport'),
-
-            Column::make('level')
-                ->title('Level'),
-
-            Column::make('month')
-                ->title('Month'),
-
-            Column::make('year')
-                ->title('Year'),
-
-            Column::make('amount')
-                ->title('Amount'),
-
+            Column::make('duration')
+                ->title('Coverage Period'),
+            Column::make('sub_totalamount')
+                ->title('Subtotal'),
+            Column::make('discount_amount')
+                ->title('Discount'),
+            Column::make('total_amt')
+                ->title('Total Paid'),
+            Column::make('payment_type')
+                ->title('Payment Method'),
+            Column::make('img_upi')
+                ->title('Receipt Slip'),
             Column::make('status')
                 ->title('Status'),
-
-            Column::make('generated_at')
-                ->title('Generated'),
-
-            Column::make('paid_at')
-                ->title('Paid Date'),
-
             Column::computed('action')
                 ->exportable(false)
                 ->printable(false)
                 ->width(100)
                 ->addClass('text-center')
                 ->title('Action'),
-
         ];
     }
 
@@ -246,6 +167,6 @@ class PlayerFeesDataTable extends DataTable
      */
     protected function filename(): string
     {
-        return 'PlayerFees_'.date('YmdHis');
+        return 'PlayerFees_' . date('YmdHis');
     }
 }

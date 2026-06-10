@@ -8,45 +8,28 @@
 
         <div class="container-lg py-3">
 
-            <x-table-crud-card heading="Player Fees Management" subheading="Manage Player Fees" title="Player Fees"
+            <x-table-crud-card heading="Player Fees Management" subheading="Manage Player Fees" title="Record Player Fee"
+                url="{{ route('player-fees.create') }}"
+                id="addPlayerFeeBtn"
                 :filters="[
                     [
-                        'id' => 'sportFilter',
-                        'placeholder' => 'All Sports',
-                        'options' => $sports,
+                        'id' => 'statusFilter',
+                        'placeholder' => 'All Statuses',
+                        'options' => [
+                            'paid' => 'Paid',
+                            'pending' => 'Pending',
+                        ],
                     ],
 
                     [
-                        'id' => 'monthFilter',
-                        'placeholder' => 'All Months',
+                        'id' => 'paymentTypeFilter',
+                        'placeholder' => 'All Payments',
                         'options' => [
-                            1 => 'January',
-                            2 => 'February',
-                            3 => 'March',
-                            4 => 'April',
-                            5 => 'May',
-                            6 => 'June',
-                            7 => 'July',
-                            8 => 'August',
-                            9 => 'September',
-                            10 => 'October',
-                            11 => 'November',
-                            12 => 'December',
+                            'upi' => 'UPI',
+                            'cash' => 'Cash',
+                            'card' => 'Card',
                         ],
-                        'default' => $defaultMonth,
                     ],
-
-                    [
-                        'id' => 'yearFilter',
-                        'placeholder' => 'All Years',
-                        'options' => [
-                            2025 => '2025',
-                            2026 => '2026',
-                            2027 => '2027',
-                        ],
-                        'default' => $defaultYear,
-                    ],
-
                 ]">
 
                 {{ $dataTable->table(['class' => 'table table-hover align-middle mb-0']) }}

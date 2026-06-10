@@ -90,12 +90,6 @@
                          Players Fees
                      </a>
                  </li>
-                 <li class="nav-item">
-                     <a class="nav-link" href="{{ route('fees-generates.index') }}">
-                         <span class="nav-icon"><span class="bi bi-patch-plus"></span></span>
-                         Fees Generation
-                     </a>
-                 </li>
 
 
              </ul>
@@ -103,7 +97,8 @@
 
          <!-- Settings -->
          <li class="nav-item">
-             <a class="nav-link {{ request()->routeIs('settings.index') ? 'active' : '' }}" href="{{ route('settings.index') }}">
+             <a class="nav-link {{ request()->routeIs('settings.index') ? 'active' : '' }}"
+                 href="{{ route('settings.index') }}">
                  <i class="bi bi-gear-fill nav-icon"></i>
                  Settings
              </a>

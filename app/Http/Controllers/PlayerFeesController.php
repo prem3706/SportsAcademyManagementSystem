@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\DataTables\PlayerFeesDataTable;
-use App\Models\FeesGenerate;
 use App\Models\PlayerFee;
-use App\Models\Sport;
+use App\Models\Setting;
+use App\Models\SportsLevel;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class PlayerFeesController extends Controller
 {
@@ -15,19 +18,7 @@ class PlayerFeesController extends Controller
      */
     public function index(PlayerFeesDataTable $dataTable)
     {
-        $sports = Sport::pluck('name', 'id');
-
-        // $latestFee = FeesGenerate::orderBy('year', 'desc')
-        //     ->orderBy('month', 'desc')
-        //     ->first();
-
-        $defaultMonth = request('month', now()->month);
-        $defaultYear = request('year', now()->year);
-
-        return $dataTable->render(
-            'playerFees.index',
-            compact('sports', 'defaultMonth', 'defaultYear')
-        );
+        return $dataTable->render('playerFees.index');
     }
 
     /**
@@ -35,7 +26,53 @@ class PlayerFeesController extends Controller
      */
     public function create()
     {
-        //
+        $players = User::where('role', 'player')
+            ->where('status', 'active')
+            ->orderBy('firstname')
+            ->orderBy('lastname')
+            ->get();
+
+        return view('playerFees.createPlayerFeeForm', compact('players'));
+    }
+
+    /**
+     * Get player enrolled batches with fee structure and discount settings.
+     */
+    public function getPlayerDetails($id)
+    {
+        $player = User::findOrFail($id);
+
+        $batches = $player->playerBatches()->with(['sport', 'level'])->get();
+        $batchesWithFees = $batches->map(function ($batch) {
+            // Log::info($batch);
+
+            $sportsLevel = SportsLevel::where('sport_id', $batch->sport_id)
+                ->where('level_id', $batch->level_id)
+                ->first();
+            // Log::info($sportsLevel);
+
+            $feeAmount = $sportsLevel ? floatval($sportsLevel->fees) : 0.00;
+            // Log::info($feeAmount);
+
+            return [
+                'id' => $batch->id,
+                'name' => $batch->name,
+                'sport' => $batch->sport?->name ?? 'Unknown',
+                'level' => $batch->level?->name ?? 'Unknown',
+                'fees' => $feeAmount,
+            ];
+        });
+
+        $settings = Setting::firstOrCreate(['id' => 1]);
+
+        return response()->json([
+            'batches' => $batchesWithFees,
+            'discount_type' => $settings->discount_type,
+            'discount_monthly' => floatval($settings->discount_monthly),
+            'discount_quarterly' => floatval($settings->discount_quarterly),
+            'discount_half_yearly' => floatval($settings->discount_half_yearly),
+            'discount_yearly' => floatval($settings->discount_yearly),
+        ]);
     }
 
     /**
@@ -43,7 +80,52 @@ class PlayerFeesController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $rules = [
+            'player_id' => 'required|exists:users,id',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'sub_totalamount' => 'required|numeric|min:0',
+            'discount_amount' => 'required|numeric|min:0',
+            'total_amt' => 'required|numeric|min:0',
+            'payment_type' => 'required|in:upi,cash,card',
+            'status' => 'required|in:paid,pending',
+        ];
+
+        if ($request->payment_type === 'upi') {
+            $rules['upi_id'] = 'required|string|max:255';
+            $rules['img_upi'] = 'required|image|mimes:jpg,jpeg,png|max:2048';
+        }
+
+        $request->validate($rules);
+
+        $data = $request->only([
+            'player_id',
+            'start_date',
+            'end_date',
+            'sub_totalamount',
+            'discount_amount',
+            'total_amt',
+            'payment_type',
+            'status',
+        ]);
+
+        if ($request->payment_type === 'upi') {
+            $data['upi_id'] = $request->upi_id;
+            if ($request->hasFile('img_upi')) {
+                $path = $request->file('img_upi')->store('receipts', 'public');
+                $data['img_upi'] = 'storage/'.$path;
+            }
+        } else {
+            $data['upi_id'] = null;
+            $data['img_upi'] = null;
+        }
+
+        PlayerFee::create($data);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Player fee recorded successfully.',
+        ]);
     }
 
     /**
@@ -59,8 +141,13 @@ class PlayerFeesController extends Controller
      */
     public function edit(PlayerFee $playerFee)
     {
+        $players = User::where('role', 'player')
+            ->where('status', 'active')
+            ->orderBy('firstname')
+            ->orderBy('lastname')
+            ->get();
 
-        return view('playerFees.editPlayerFeeForm', compact('playerFee'));
+        return view('playerFees.editPlayerFeeForm', compact('playerFee', 'players'));
     }
 
     /**
@@ -68,81 +155,79 @@ class PlayerFeesController extends Controller
      */
     public function update(Request $request, PlayerFee $playerFee)
     {
-        $request->validate([
+        $rules = [
+            'player_id' => 'required|exists:users,id',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'sub_totalamount' => 'required|numeric|min:0',
+            'discount_amount' => 'required|numeric|min:0',
+            'total_amt' => 'required|numeric|min:0',
+            'payment_type' => 'required|in:upi,cash,card',
+            'status' => 'required|in:paid,pending',
+        ];
 
-            'status' => 'required|in:paid,unpaid',
+        if ($request->payment_type === 'upi') {
+            $rules['upi_id'] = 'required|string|max:255';
+            $rules['img_upi'] = 'nullable|image|mimes:jpg,jpeg,png|max:2048';
+        }
 
+        $request->validate($rules);
+
+        $data = $request->only([
+            'player_id',
+            'start_date',
+            'end_date',
+            'sub_totalamount',
+            'discount_amount',
+            'total_amt',
+            'payment_type',
+            'status',
         ]);
 
-        // Update Player Fee
-        $playerFee->update([
-
-            'status' => $request->status,
-
-            'paid_at' => $request->status == 'paid'
-                ? now()
-                : null,
-
-        ]);
-
-        /*
-        |--------------------------------------------------------------------------
-        | Update Fees Generate Status
-        |--------------------------------------------------------------------------
-        */
-
-        $feesGenerate = $playerFee->feesGenerate;
-
-        $totalFees = $feesGenerate->playerFees()->count();
-
-        $paidFees = $feesGenerate->playerFees()
-            ->where('status', 'paid')
-            ->count();
-
-        // All Paid
-        if ($paidFees == $totalFees) {
-
-            $feesGenerate->update([
-
-                'status' => 'paid',
-
-            ]);
+        if ($request->payment_type === 'upi') {
+            $data['upi_id'] = $request->upi_id;
+            if ($request->hasFile('img_upi')) {
+                if ($playerFee->img_upi) {
+                    $oldPath = str_replace('storage/', '', $playerFee->img_upi);
+                    Storage::disk('public')->delete($oldPath);
+                }
+                $path = $request->file('img_upi')->store('receipts', 'public');
+                $data['img_upi'] = 'storage/'.$path;
+            } else {
+                $data['img_upi'] = $playerFee->img_upi;
+            }
+        } else {
+            if ($playerFee->img_upi) {
+                $oldPath = str_replace('storage/', '', $playerFee->img_upi);
+                Storage::disk('public')->delete($oldPath);
+            }
+            $data['upi_id'] = null;
+            $data['img_upi'] = null;
         }
 
-        // Partial Paid
-        elseif ($paidFees > 0) {
-
-            $feesGenerate->update([
-
-                'status' => 'partial',
-
-            ]);
-        }
-
-        // All Unpaid
-        else {
-
-            $feesGenerate->update([
-
-                'status' => 'unpaid',
-
-            ]);
-        }
+        $playerFee->update($data);
 
         return response()->json([
-
             'success' => true,
-
             'message' => 'Player fee updated successfully.',
-
         ]);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(PlayerFee $playerFee)
     {
-        //
+        if ($playerFee->img_upi) {
+            $oldPath = str_replace('storage/', '', $playerFee->img_upi);
+            Storage::disk('public')->delete($oldPath);
+        }
+
+        $playerFee->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Player fee deleted successfully.',
+        ]);
     }
 }

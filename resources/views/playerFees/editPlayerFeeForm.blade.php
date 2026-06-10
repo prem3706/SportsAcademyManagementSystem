@@ -1,74 +1,301 @@
 <div class="container py-3">
-
-    <form id="editPlayerFeeForm" method="POST">
-
+    <form id="editPlayerFeeForm" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
-
         <input type="hidden" id="url" value="{{ route('player-fees.update', $playerFee->id) }}">
+        <input type="hidden" id="selected_player_id" value="{{ $playerFee->player_id }}">
 
-        <!-- Player -->
+        <!-- Player (Read Only) -->
         <div class="mb-3">
-
-            <label class="form-label fw-semibold">
-                Player
-            </label>
-
-            <input type="text" class="form-control"
-                value="{{ $playerFee->user->firstname }} {{ $playerFee->user->lastname }}" readonly>
-
+            <label class="form-label fw-semibold text-secondary small">Player</label>
+            <input type="text" class="form-control bg-light" value="{{ $playerFee->player->firstname }} {{ $playerFee->player->lastname }} ({{ $playerFee->player->email }})" readonly>
+            <input type="hidden" name="player_id" value="{{ $playerFee->player_id }}">
         </div>
 
-        <!-- Sport -->
-        <div class="mb-3">
+        <!-- Enrolled Batches Section (Dynamic) -->
+        <div id="playerBatchesSectionEdit" class="mb-3"></div>
 
-            <label class="form-label fw-semibold">
-                Sport
-            </label>
-
-            <input type="text" class="form-control" value="{{ $playerFee->sport->name }}" readonly>
-
+        <!-- Start & End Date -->
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                <label for="startDateEdit" class="form-label fw-semibold text-dark small">Start Date</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white text-secondary border-end-0">
+                        <i class="bi bi-calendar-date"></i>
+                    </span>
+                    <input type="date" name="start_date" id="startDateEdit" class="form-control border-start-0 ps-1" 
+                           value="{{ $playerFee->start_date ? $playerFee->start_date->format('Y-m-d') : '' }}" required>
+                </div>
+                <p class="text-danger small mb-0" id="start_dateError"></p>
+            </div>
+            <div class="col-md-6">
+                <label for="endDateEdit" class="form-label fw-semibold text-dark small">End Date</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white text-secondary border-end-0">
+                        <i class="bi bi-calendar-date"></i>
+                    </span>
+                    <input type="date" name="end_date" id="endDateEdit" class="form-control border-start-0 ps-1" 
+                           value="{{ $playerFee->end_date ? $playerFee->end_date->format('Y-m-d') : '' }}" required>
+                </div>
+                <p class="text-danger small mb-0" id="end_dateError"></p>
+            </div>
         </div>
 
-        <!-- Amount -->
+        <!-- Calculated Duration Info -->
         <div class="mb-3">
+            <div class="bg-light-subtle border border-secondary-subtle rounded-3 p-2 d-flex justify-content-between align-items-center">
+                <span class="text-secondary small fw-semibold text-uppercase">Calculated Duration</span>
+                <span class="fw-bold text-dark small" id="calculatedDurationEdit">0 Month(s)</span>
+            </div>
+        </div>
 
-            <label class="form-label fw-semibold">
-                Amount
-            </label>
+        <!-- Calculations Fields -->
+        <div class="row g-3 mb-3">
+            <div class="col-md-4">
+                <label class="form-label fw-semibold text-secondary small">Subtotal</label>
+                <input type="text" id="sub_totalamount_display_edit" class="form-control bg-light fw-semibold text-dark" readonly value="₹ {{ number_format($playerFee->sub_totalamount, 2) }}">
+                <input type="hidden" name="sub_totalamount" id="sub_totalamount_val_edit" value="{{ $playerFee->sub_totalamount }}">
+                <p class="text-danger small mb-0" id="sub_totalamountError"></p>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-semibold text-secondary small">Discount Applied</label>
+                <input type="text" id="discount_amount_display_edit" class="form-control bg-light fw-semibold text-success" readonly value="₹ {{ number_format($playerFee->discount_amount, 2) }}">
+                <input type="hidden" name="discount_amount" id="discount_amount_val_edit" value="{{ $playerFee->discount_amount }}">
+                <p class="text-danger small mb-0" id="discount_amountError"></p>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-semibold text-secondary small">Total Amount</label>
+                <input type="text" id="total_amt_display_edit" class="form-control bg-light fw-bold text-primary" readonly value="₹ {{ number_format($playerFee->total_amt, 2) }}">
+                <input type="hidden" name="total_amt" id="total_amt_val_edit" value="{{ $playerFee->total_amt }}">
+                <p class="text-danger small mb-0" id="total_amtError"></p>
+            </div>
+        </div>
 
-            <input type="text" class="form-control" value="₹ {{ $playerFee->amount }}" readonly>
+        <!-- Payment Type -->
+        <div class="mb-3">
+            <label for="payment_type_edit" class="form-label fw-semibold text-dark small">Payment Method</label>
+            <select name="payment_type" id="payment_type_edit" class="form-select" required>
+                <option value="cash" {{ $playerFee->payment_type === 'cash' ? 'selected' : '' }}>Cash</option>
+                <option value="card" {{ $playerFee->payment_type === 'card' ? 'selected' : '' }}>Card</option>
+                <option value="upi" {{ $playerFee->payment_type === 'upi' ? 'selected' : '' }}>UPI</option>
+            </select>
+            <p class="text-danger small mb-0" id="payment_typeError"></p>
+        </div>
 
+        <!-- UPI Details -->
+        <div id="upiFieldsEdit" class="{{ $playerFee->payment_type === 'upi' ? '' : 'd-none' }} bg-light p-3 rounded-3 border mb-3">
+            <div class="mb-3">
+                <label for="upi_id_edit" class="form-label fw-semibold text-dark small">UPI ID / Reference Number</label>
+                <input type="text" name="upi_id" id="upi_id_edit" class="form-control" placeholder="e.g. name@upi or txn_12345" value="{{ $playerFee->upi_id }}">
+                <p class="text-danger small mb-0" id="upi_idError"></p>
+            </div>
+            <div class="mb-3">
+                <label for="img_upi_edit" class="form-label fw-semibold text-dark small">Upload New Transaction Slip / Screenshot</label>
+                <input type="file" name="img_upi" id="img_upi_edit" class="form-control" accept="image/*">
+                <p class="text-danger small mb-0" id="img_upiError"></p>
+            </div>
+            @if ($playerFee->img_upi)
+                <div class="mt-2">
+                    <span class="small text-secondary d-block mb-1">Current Receipt Slip:</span>
+                    <a href="{{ asset($playerFee->img_upi) }}" target="_blank" class="d-inline-block">
+                        <img src="{{ asset($playerFee->img_upi) }}" class="img-thumbnail rounded-3" style="max-height: 120px;">
+                    </a>
+                </div>
+            @endif
         </div>
 
         <!-- Status -->
-        <div class="mb-3">
-
-            <label class="form-label fw-semibold">
-                Status
-            </label>
-
-            <select name="status" class="form-select">
-
-                <option value="unpaid" {{ $playerFee->status == 'unpaid' ? 'selected' : '' }}>
-                    Unpaid
-                </option>
-
-                <option value="paid" {{ $playerFee->status == 'paid' ? 'selected' : '' }}>
-                    Paid
-                </option>
-
+        <div class="mb-4">
+            <label for="status_edit" class="form-label fw-semibold text-dark small">Status</label>
+            <select name="status" id="status_edit" class="form-select" required>
+                <option value="pending" {{ $playerFee->status === 'pending' ? 'selected' : '' }}>Pending</option>
+                <option value="paid" {{ $playerFee->status === 'paid' ? 'selected' : '' }}>Paid</option>
             </select>
-
+            <p class="text-danger small mb-0" id="statusError"></p>
         </div>
 
-        <!-- Submit -->
-        <button type="submit" class="btn btn-dark w-100">
-
-            Update Fees
-
+        <!-- Submit Button -->
+        <button type="submit" class="btn btn-dark w-100 py-2 fw-semibold rounded-3">
+            <i class="bi bi-check-circle me-1"></i> Update Fee Payment
         </button>
-
     </form>
-
 </div>
+
+<script>
+    $(document).ready(function () {
+        // Initialize Flatpickr if available
+        if (typeof flatpickr !== 'undefined') {
+            flatpickr('#startDateEdit, #endDateEdit', {
+                dateFormat: 'Y-m-d',
+                allowInput: true
+            });
+        }
+
+        // State variables
+        let monthlyFeeSum = 0;
+        let discountSettings = null;
+        let playerId = $('#selected_player_id').val();
+
+        // Load details initially
+        if (playerId) {
+            $.ajax({
+                url: '{{ url("player-fees/player-details") }}/' + playerId,
+                method: 'GET',
+                success: function (response) {
+                    discountSettings = response;
+                    monthlyFeeSum = 0;
+
+                    let html = '<div class="card border border-light-subtle rounded-3 p-3 bg-light mb-3">';
+                    html += '<h6 class="fw-bold mb-2 text-dark small text-uppercase" style="letter-spacing: 0.5px;">Enrolled Batches</h6>';
+
+                    if (response.batches.length === 0) {
+                        html += '<p class="text-warning small mb-0"><i class="bi bi-exclamation-triangle me-1"></i> Player has no active batch assignments.</p>';
+                    } else {
+                        response.batches.forEach(function (batch) {
+                            html += '<div class="d-flex justify-content-between align-items-center mb-1">';
+                            html += '  <span class="small text-secondary">' + batch.name + ' (' + batch.sport + ' - ' + batch.level + ')</span>';
+                            html += '  <span class="fw-bold small text-dark">₹ ' + batch.fees.toFixed(2) + '</span>';
+                            html += '</div>';
+                            monthlyFeeSum += batch.fees;
+                        });
+                        html += '<hr class="my-2">';
+                        html += '<div class="d-flex justify-content-between align-items-center">';
+                        html += '  <span class="fw-bold text-dark small">Monthly Total</span>';
+                        html += '  <span class="fw-bold text-primary">₹ ' + monthlyFeeSum.toFixed(2) + '</span>';
+                        html += '</div>';
+                    }
+                    html += '</div>';
+
+                    $('#playerBatchesSectionEdit').html(html);
+                    calculateFeesEdit();
+                },
+                error: function () {
+                    toastr.error('Failed to retrieve player batch details.');
+                }
+            });
+        }
+
+        // Date changes handler
+        $('#startDateEdit, #endDateEdit').on('change', function () {
+            calculateFeesEdit();
+        });
+
+        // Calculate Fees
+        function calculateFeesEdit() {
+            let startVal = $('#startDateEdit').val();
+            let endVal = $('#endDateEdit').val();
+
+            if (!startVal || !endVal || monthlyFeeSum === 0) {
+                return; // Keep initial database values if something is missing
+            }
+
+            let start = new Date(startVal);
+            let end = new Date(endVal);
+
+            if (end < start) {
+                $('#end_dateError').text('End date cannot be earlier than start date.');
+                return;
+            } else {
+                $('#end_dateError').text('');
+            }
+
+            // Calculate duration in days
+            let timeDiff = end.getTime() - start.getTime();
+            let diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1;
+
+            // Convert to months
+            let durationMonths = Math.round(diffDays / 30.44);
+            if (durationMonths < 1) durationMonths = 1;
+
+            $('#calculatedDurationEdit').text(durationMonths + ' Month(s) (' + diffDays + ' Days)');
+
+            let subtotal = monthlyFeeSum * durationMonths;
+            let discountValue = 0;
+
+            if (discountSettings) {
+                let settings = discountSettings;
+                if (durationMonths >= 12) {
+                    discountValue = settings.discount_yearly;
+                } else if (durationMonths >= 6) {
+                    discountValue = settings.discount_half_yearly;
+                } else if (durationMonths >= 3) {
+                    discountValue = settings.discount_quarterly;
+                } else if (durationMonths >= 1) {
+                    discountValue = settings.discount_monthly;
+                }
+
+                var discountAmt = 0;
+                if (settings.discount_type === 'percentage') {
+                    discountAmt = subtotal * (discountValue / 100);
+                } else {
+                    discountAmt = discountValue;
+                }
+
+                if (discountAmt > subtotal) {
+                    discountAmt = subtotal;
+                }
+            } else {
+                var discountAmt = parseFloat($('#discount_amount_val_edit').val()) || 0;
+            }
+
+            let totalAmt = subtotal - discountAmt;
+
+            // Render
+            $('#sub_totalamount_display_edit').val('₹ ' + subtotal.toFixed(2));
+            $('#discount_amount_display_edit').val('₹ ' + discountAmt.toFixed(2));
+            $('#total_amt_display_edit').val('₹ ' + totalAmt.toFixed(2));
+
+            // Hidden values
+            $('#sub_totalamount_val_edit').val(subtotal.toFixed(2));
+            $('#discount_amount_val_edit').val(discountAmt.toFixed(2));
+            $('#total_amt_val_edit').val(totalAmt.toFixed(2));
+        }
+
+        // Payment Type changed
+        $('#payment_type_edit').on('change', function () {
+            let val = $(this).val();
+            if (val === 'upi') {
+                $('#upiFieldsEdit').removeClass('d-none');
+                $('#upi_id_edit').prop('required', true);
+            } else {
+                $('#upiFieldsEdit').addClass('d-none');
+                $('#upi_id_edit').prop('required', false);
+            }
+        });
+
+        // Form Submit
+        $('#editPlayerFeeForm').on('submit', function (e) {
+            e.preventDefault();
+
+            let formData = new FormData(this);
+            let submitBtn = $(this).find('button[type="submit"]');
+            submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Updating...');
+
+            $.ajax({
+                url: $('#url').val(),
+                method: 'POST', // Sent as POST with _method = PUT in the form
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    toastr.success(response.message);
+                    $('#offcanvasScrolling').offcanvas('hide');
+                    $('#datatable').DataTable().ajax.reload();
+                },
+                error: function (xhr) {
+                    submitBtn.prop('disabled', false).html('<i class="bi bi-check-circle me-1"></i> Update Fee Payment');
+                    $('.text-danger').text('');
+                    
+                    if (xhr.status === 422) {
+                        let errors = xhr.responseJSON.errors;
+                        $.each(errors, function (key, value) {
+                            $('#' + key + 'Error').text(value[0]);
+                        });
+                    } else {
+                        toastr.error(xhr.responseJSON?.message || 'Something went wrong.');
+                    }
+                }
+            });
+        });
+    });
+</script>
