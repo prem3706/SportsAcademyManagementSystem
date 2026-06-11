@@ -34,7 +34,7 @@
          <!-- Dashboard -->
          <li class="nav-item">
              <a class="nav-link" href="/">
-                 <i class="bi bi-speedometer2 nav-icon"></i>
+                 <i class="bi bi-grid nav-icon"></i>
                  Dashboard
              </a>
          </li>
@@ -42,13 +42,13 @@
          <!-- User Management -->
          <li class="nav-item">
              <a class="nav-link" href="{{ route('users.index') }}">
-                 <i class="bi bi-people-fill nav-icon"></i>
+                 <i class="bi bi-people nav-icon"></i>
                  User
              </a>
          </li>
          <li class="nav-item">
              <a class="nav-link" href="{{ route('players.index') }}">
-                 <i class="bi bi-person-fill nav-icon"></i>
+                 <i class="bi bi-person nav-icon"></i>
                  Players
              </a>
          </li>
@@ -56,50 +56,40 @@
          <!-- Sports Management -->
          <li class="nav-item">
              <a class="nav-link" href="{{ route('sports.index') }}">
-                 <i class="bi bi-trophy-fill nav-icon"></i>
+                 <i class="bi bi-trophy nav-icon"></i>
                  Sports
              </a>
          </li>
          <li class="nav-item">
              <a class="nav-link" href="{{ route('levels.index') }}">
-                 <i class="bi bi-bar-chart-fill nav-icon"></i>
+                 <i class="bi bi-layers nav-icon"></i>
                  Levels
              </a>
          </li>
          <li class="nav-item">
              <a class="nav-link" href="{{ route('sport-levels.index') }}">
-                 <i class="bi bi-bar-chart-fill nav-icon"></i>
+                 <i class="bi bi-grid-3x3-gap nav-icon"></i>
                  Sports Levels
              </a>
          </li>
          <li class="nav-item">
              <a class="nav-link" href="{{ route('batches.index') }}">
-                 <i class="bi bi-calendar-event-fill nav-icon"></i>
+                 <i class="bi bi-calendar-event nav-icon"></i>
                  Batches
              </a>
          </li>
-         <li class="nav-group">
-             <a class="nav-link nav-group-toggle" href="#">
-                 <i class="bi bi-currency-rupee nav-icon"></i>
-                 Fees
-             </a>
-             <ul class="nav-group-items compact">
-                 <li class="nav-item">
-                     <a class="nav-link" href="{{ route('player-fees.index') }}">
-                         <span class="nav-icon"><span class="bi bi-currency-dollar"></span></span>
-                         Players Fees
-                     </a>
-                 </li>
-
-
-             </ul>
-         </li>
+          <li class="nav-item">
+              <a class="nav-link" href="{{ route('player-fees.index') }}">
+                  <i class="bi bi-wallet2 nav-icon"></i>
+                  Fees
+              </a>
+          </li>
 
          <!-- Settings -->
          <li class="nav-item">
              <a class="nav-link {{ request()->routeIs('settings.index') ? 'active' : '' }}"
                  href="{{ route('settings.index') }}">
-                 <i class="bi bi-gear-fill nav-icon"></i>
+                 <i class="bi bi-gear nav-icon"></i>
                  Settings
              </a>
          </li>

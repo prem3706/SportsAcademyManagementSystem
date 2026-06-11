@@ -40,6 +40,16 @@ $(document).ready(function () {
 
     }
 
+    // Date Picker Initialization
+    function initDatePicker() {
+        if (typeof flatpickr !== 'undefined') {
+            flatpickr('#startDate, #endDate', {
+                dateFormat: 'Y-m-d',
+                allowInput: true
+            });
+        }
+    }
+
     // Initialize Select2
     function initSelect2() {
 
@@ -369,7 +379,7 @@ $(document).ready(function () {
 
 
         let formData = new FormData(this);
-        console.log(formData);
+        // console.log(formData);
 
         $.ajax({
             url: $('#url').val(),
@@ -1484,6 +1494,8 @@ $(document).ready(function () {
 
             success: function (response) {
                 $('#offCanvasContent').html(response);
+                initSelect2();
+                initDatePicker();
             }
         });
     });
@@ -1560,12 +1572,6 @@ $(document).ready(function () {
         });
 
     });
-
-    /*
-    |--------------------------------------------------------------------------
-    | Players Management Form Handlers
-    |--------------------------------------------------------------------------
-    */
 
     /*
     |--------------------------------------------------------------------------
@@ -1855,12 +1861,12 @@ $(document).ready(function () {
     }
 
     // Bind change event to Allow Penalty Switch
-    $('#allow_penalty').on('change', function () {
+    $(document).on('change', '#allow_penalty', function () {
         togglePenaltyInputs();
     });
 
     // Update Input group icon based on Penalty type selection
-    $('#penalty_type').on('change', function () {
+    $(document).on('change', '#penalty_type', function () {
         const val = $(this).val();
         const $icon = $('#penaltyAmountIcon');
         if (val === 'percentage') {
@@ -1871,7 +1877,7 @@ $(document).ready(function () {
     });
 
     // Penalty Settings Form Submission
-    $('#penaltySettingsForm').on('submit', function (e) {
+    $(document).on('submit', '#penaltySettingsForm', function (e) {
         e.preventDefault();
 
         const $form = $(this);
@@ -1910,7 +1916,7 @@ $(document).ready(function () {
     });
 
     // Discount Settings Form Submission
-    $('#discountSettingsForm').on('submit', function (e) {
+    $(document).on('submit', '#discountSettingsForm', function (e) {
         e.preventDefault();
 
         const $form = $(this);
@@ -1967,12 +1973,235 @@ $(document).ready(function () {
         }
     }
 
-    $('#discount_type').on('change', function () {
+    $(document).on('change', '#discount_type', function () {
         updateDiscountTypeUI();
     });
 
     if ($('#discount_type').length > 0) {
         updateDiscountTypeUI();
     }
+
+
+
+    // State variables
+    let monthlyFeeSum = 0;
+    let discountSettings = null;
+
+    // Player Select Handler
+    $(document).on('change', '#player_id', function () {
+        let playerId = $(this).val();
+        if (!playerId) {
+            $('#playerBatchesSection').addClass('d-none').html('');
+            monthlyFeeSum = 0;
+            discountSettings = null;
+            calculateFees();
+            return;
+        }
+
+        $.ajax({
+            url: 'player-fees/player-details/' + playerId,
+            method: 'GET',
+            success: function (response) {
+                discountSettings = response;
+                monthlyFeeSum = 0;
+
+                let html =
+                    '<div class="card border border-light-subtle rounded-3 p-3 bg-light mb-3">';
+                html +=
+                    '<h6 class="fw-bold mb-2 text-dark small text-uppercase" style="letter-spacing: 0.5px;">Enrolled Batches</h6>';
+
+                if (response.batches.length === 0) {
+                    html +=
+                        '<p class="text-warning small mb-0"><i class="bi bi-exclamation-triangle me-1"></i> Player has no active batch assignments.</p>';
+                } else {
+                    response.batches.forEach(function (batch) {
+                        html +=
+                            '<div class="d-flex justify-content-between align-items-center mb-1">';
+                        html += '  <div class="form-check mb-0 d-flex align-items-center">';
+                        html += '    <input class="form-check-input batch-fee-checkbox me-2" type="checkbox" value="' + batch.fees + '" checked id="batch_chk_' + batch.id + '">';
+                        html += '    <label class="form-check-label small text-secondary" for="batch_chk_' + batch.id + '">';
+                        html += batch.name + ' (' + batch.sport + ' - ' + batch.level + ')';
+                        html += '    </label>';
+                        html += '  </div>';
+                        html += '  <span class="fw-bold small text-dark">₹ ' + batch.fees.toFixed(2) + '</span>';
+                        html += '</div>';
+                        monthlyFeeSum += batch.fees;
+                    });
+                    html += '<hr class="my-2">';
+                    html +=
+                        '<div class="d-flex justify-content-between align-items-center">';
+                    html +=
+                        '  <span class="fw-bold text-dark small">Monthly Total</span>';
+                    html += '  <span class="fw-bold text-primary" id="monthlyTotalDisplay">₹ ' + monthlyFeeSum
+                        .toFixed(2) + '</span>';
+                    html += '</div>';
+                }
+                html += '</div>';
+
+                $('#playerBatchesSection').html(html).removeClass('d-none');
+                calculateFees();
+            },
+            error: function () {
+                toastr.error('Failed to retrieve player batch details.');
+            }
+        });
+    });
+
+    // Batch Checkboxes changes handler
+    $(document).on('change', '.batch-fee-checkbox', function () {
+        let sum = 0;
+        $('.batch-fee-checkbox:checked').each(function () {
+            sum += parseFloat($(this).val()) || 0;
+        });
+        monthlyFeeSum = sum;
+        $('#monthlyTotalDisplay').text('₹ ' + monthlyFeeSum.toFixed(2));
+        calculateFees();
+    });
+
+    // Date changes handler
+    $(document).on('change', '#startDate, #endDate', function () {
+        calculateFees();
+    });
+
+    // Calculate Fees
+    function calculateFees() {
+        let startVal = $('#startDate').val();
+        let endVal = $('#endDate').val();
+
+        if (!startVal || !endVal || monthlyFeeSum === 0) {
+            resetCalculation();
+            return;
+        }
+
+        let start = new Date(startVal);
+        let end = new Date(endVal);
+
+        if (end < start) {
+            $('#end_dateError').text('End date cannot be earlier than start date.');
+            resetCalculation();
+            return;
+        } else {
+            $('#end_dateError').text('');
+        }
+
+        // Calculate duration in days
+        let timeDiff = end.getTime() - start.getTime();
+        let diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1;
+
+        // Convert to months
+        let durationMonths = Math.round(diffDays / 30.44);
+        if (durationMonths < 1) durationMonths = 1;
+
+        $('#calculatedDuration').text(durationMonths + ' Month(s) (' + diffDays + ' Days)');
+
+
+        let subtotal = monthlyFeeSum * durationMonths;
+        let discountValue = 0;
+
+        if (discountSettings) {
+            let settings = discountSettings;
+            if (durationMonths >= 12) {
+                discountValue = settings.discount_yearly;
+            } else if (durationMonths >= 6) {
+                discountValue = settings.discount_half_yearly;
+            } else if (durationMonths >= 3) {
+                discountValue = settings.discount_quarterly;
+            } else if (durationMonths >= 1) {
+                discountValue = settings.discount_monthly;
+            }
+
+            var discountAmt = 0;
+            if (settings.discount_type === 'percentage') {
+                discountAmt = subtotal * (discountValue / 100);
+            } else {
+                discountAmt = discountValue;
+            }
+
+            if (discountAmt > subtotal) {
+                discountAmt = subtotal;
+            }
+        } else {
+            var discountAmt = 0;
+        }
+
+        let totalAmt = subtotal - discountAmt;
+
+        // Render
+        $('#sub_totalamount').val(subtotal.toFixed(2));
+        $('#discount_amount').val(discountAmt.toFixed(2));
+        $('#total_amt').val(totalAmt.toFixed(2));
+    }
+
+    function resetCalculation() {
+        $('#calculatedDuration').text('0 Month(s)');
+        $('#sub_totalamount').val('0.00');
+        $('#discount_amount').val('0.00');
+        $('#total_amt').val('0.00');
+    }
+
+    // Manual amount editing recalculation
+    $(document).on('input', '#sub_totalamount, #discount_amount', function () {
+        let subtotal = parseFloat($('#sub_totalamount').val()) || 0;
+        let discountAmt = parseFloat($('#discount_amount').val()) || 0;
+        let totalAmt = subtotal - discountAmt;
+        if (totalAmt < 0) totalAmt = 0;
+        $('#total_amt').val(totalAmt.toFixed(2));
+    });
+
+    // Payment Type changed
+    $(document).on('change', '#payment_type', function () {
+        let val = $(this).val();
+        if (val === 'upi') {
+            $('#upiFields').removeClass('d-none');
+            $('#upi_id').prop('required', true);
+            $('#img_upi').prop('required', true);
+        } else {
+            $('#upiFields').addClass('d-none');
+            $('#upi_id').prop('required', false).val('');
+            $('#img_upi').prop('required', false).val('');
+        }
+    });
+
+    // Form Submit
+    $(document).on('submit', '#addPlayerFeeForm', function (e) {
+        e.preventDefault();
+
+        let formData = new FormData(this);
+        // Disable submit button to prevent double click
+        let submitBtn = $(this).find('button[type="submit"]');
+        submitBtn.prop('disabled', true).html(
+            '<span class="spinner-border spinner-border-sm me-2"></span>Recording...');
+
+        $.ajax({
+            url: $('#url').val(),
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                toastr.success(response.message);
+                $('#offcanvasScrolling').offcanvas('hide');
+                $('#datatable').DataTable().ajax.reload();
+            },
+            error: function (xhr) {
+                submitBtn.prop('disabled', false).html(
+                    '<i class="bi bi-check-circle me-1"></i> Record Fee Payment');
+                $('.text-danger').text('');
+
+                if (xhr.status === 422) {
+                    let errors = xhr.responseJSON.errors;
+                    $.each(errors, function (key, value) {
+                        $('#' + key + 'Error').text(value[0]);
+                    });
+                } else {
+                    toastr.error(xhr.responseJSON?.message || 'Something went wrong.');
+                }
+            }
+        });
+    });
+
+
+
+
 
 });

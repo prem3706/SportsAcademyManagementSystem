@@ -37,7 +37,18 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware('auth')->group(function () {
     Route::get('/', function () {
-        return view('dashboard');
+        $stats = [
+            'total_players' => \App\Models\User::where('role', 'player')->count(),
+            'total_coaches' => \App\Models\User::where('role', 'coach')->count(),
+            'total_sports' => \App\Models\Sport::count(),
+            'total_batches' => \App\Models\Batch::count(),
+            'total_fees_paid' => \App\Models\PlayerFee::where('status', 'paid')->sum('total_amt'),
+            'total_fees_pending' => \App\Models\PlayerFee::where('status', 'pending')->sum('total_amt'),
+            'recent_fees' => \App\Models\PlayerFee::with('player')->latest()->take(5)->get(),
+            'recent_players' => \App\Models\User::where('role', 'player')->latest()->take(5)->get(),
+            'recent_batches' => \App\Models\Batch::with(['sport', 'level', 'coaches'])->latest()->take(5)->get(),
+        ];
+        return view('dashboard', $stats);
     });
 
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout');

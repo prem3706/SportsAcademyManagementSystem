@@ -5,7 +5,7 @@
 
         <x-navbar />
 
-        <div class="container-lg py-3">
+        <div class="container-fluid px-4 py-3">
 
             @php
                 $playerFilters = [
@@ -31,7 +31,7 @@
                 :url="route('players.create')" id="addPlayerBtn" statusFilter="True"
                 :filters="$playerFilters"
                 :bulkDeleteUrl="route('players.bulkDelete')" :bulkUpdateUrl="route('players.bulkUpdate')">
-                {{ $dataTable->table(['class' => 'table table-hover align-middle mb-0']) }}
+                {{ $dataTable->table(['class' => 'table table-sm table-hover align-middle mb-0']) }}
 
                 
             </x-table-crud-card>

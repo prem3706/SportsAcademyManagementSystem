@@ -53,20 +53,26 @@
         <div class="row g-3 mb-3">
             <div class="col-md-4">
                 <label class="form-label fw-semibold text-secondary small">Subtotal</label>
-                <input type="text" id="sub_totalamount_display_edit" class="form-control bg-light fw-semibold text-dark" readonly value="₹ {{ number_format($playerFee->sub_totalamount, 2) }}">
-                <input type="hidden" name="sub_totalamount" id="sub_totalamount_val_edit" value="{{ $playerFee->sub_totalamount }}">
+                <div class="input-group">
+                    <span class="input-group-text bg-white text-secondary border-end-0">₹</span>
+                    <input type="number" step="0.01" name="sub_totalamount" id="sub_totalamount_edit" class="form-control border-start-0 ps-1 fw-semibold text-dark" value="{{ $playerFee->sub_totalamount }}">
+                </div>
                 <p class="text-danger small mb-0" id="sub_totalamountError"></p>
             </div>
             <div class="col-md-4">
                 <label class="form-label fw-semibold text-secondary small">Discount Applied</label>
-                <input type="text" id="discount_amount_display_edit" class="form-control bg-light fw-semibold text-success" readonly value="₹ {{ number_format($playerFee->discount_amount, 2) }}">
-                <input type="hidden" name="discount_amount" id="discount_amount_val_edit" value="{{ $playerFee->discount_amount }}">
+                <div class="input-group">
+                    <span class="input-group-text bg-white text-secondary border-end-0">₹</span>
+                    <input type="number" step="0.01" name="discount_amount" id="discount_amount_edit" class="form-control border-start-0 ps-1 fw-semibold text-success" value="{{ $playerFee->discount_amount }}">
+                </div>
                 <p class="text-danger small mb-0" id="discount_amountError"></p>
             </div>
             <div class="col-md-4">
                 <label class="form-label fw-semibold text-secondary small">Total Amount</label>
-                <input type="text" id="total_amt_display_edit" class="form-control bg-light fw-bold text-primary" readonly value="₹ {{ number_format($playerFee->total_amt, 2) }}">
-                <input type="hidden" name="total_amt" id="total_amt_val_edit" value="{{ $playerFee->total_amt }}">
+                <div class="input-group">
+                    <span class="input-group-text bg-white text-secondary border-end-0">₹</span>
+                    <input type="number" step="0.01" name="total_amt" id="total_amt_edit" class="form-control border-start-0 ps-1 fw-bold text-primary" value="{{ $playerFee->total_amt }}">
+                </div>
                 <p class="text-danger small mb-0" id="total_amtError"></p>
             </div>
         </div>
@@ -153,7 +159,12 @@
                     } else {
                         response.batches.forEach(function (batch) {
                             html += '<div class="d-flex justify-content-between align-items-center mb-1">';
-                            html += '  <span class="small text-secondary">' + batch.name + ' (' + batch.sport + ' - ' + batch.level + ')</span>';
+                            html += '  <div class="form-check mb-0 d-flex align-items-center">';
+                            html += '    <input class="form-check-input batch-fee-checkbox-edit me-2" type="checkbox" value="' + batch.fees + '" checked id="batch_chk_edit_' + batch.id + '">';
+                            html += '    <label class="form-check-label small text-secondary" for="batch_chk_edit_' + batch.id + '">';
+                            html +=        batch.name + ' (' + batch.sport + ' - ' + batch.level + ')';
+                            html += '    </label>';
+                            html += '  </div>';
                             html += '  <span class="fw-bold small text-dark">₹ ' + batch.fees.toFixed(2) + '</span>';
                             html += '</div>';
                             monthlyFeeSum += batch.fees;
@@ -161,7 +172,7 @@
                         html += '<hr class="my-2">';
                         html += '<div class="d-flex justify-content-between align-items-center">';
                         html += '  <span class="fw-bold text-dark small">Monthly Total</span>';
-                        html += '  <span class="fw-bold text-primary">₹ ' + monthlyFeeSum.toFixed(2) + '</span>';
+                        html += '  <span class="fw-bold text-primary" id="monthlyTotalDisplayEdit">₹ ' + monthlyFeeSum.toFixed(2) + '</span>';
                         html += '</div>';
                     }
                     html += '</div>';
@@ -175,9 +186,29 @@
             });
         }
 
+        // Batch Checkboxes changes handler
+        $('#playerBatchesSectionEdit').on('change', '.batch-fee-checkbox-edit', function () {
+            let sum = 0;
+            $('.batch-fee-checkbox-edit:checked').each(function () {
+                sum += parseFloat($(this).val()) || 0;
+            });
+            monthlyFeeSum = sum;
+            $('#monthlyTotalDisplayEdit').text('₹ ' + monthlyFeeSum.toFixed(2));
+            calculateFeesEdit();
+        });
+
         // Date changes handler
         $('#startDateEdit, #endDateEdit').on('change', function () {
             calculateFeesEdit();
+        });
+
+        // Manual amount editing recalculation
+        $(document).on('input', '#sub_totalamount_edit, #discount_amount_edit', function () {
+            let subtotal = parseFloat($('#sub_totalamount_edit').val()) || 0;
+            let discountAmt = parseFloat($('#discount_amount_edit').val()) || 0;
+            let totalAmt = subtotal - discountAmt;
+            if (totalAmt < 0) totalAmt = 0;
+            $('#total_amt_edit').val(totalAmt.toFixed(2));
         });
 
         // Calculate Fees
@@ -235,20 +266,15 @@
                     discountAmt = subtotal;
                 }
             } else {
-                var discountAmt = parseFloat($('#discount_amount_val_edit').val()) || 0;
+                var discountAmt = parseFloat($('#discount_amount_edit').val()) || 0;
             }
 
             let totalAmt = subtotal - discountAmt;
 
             // Render
-            $('#sub_totalamount_display_edit').val('₹ ' + subtotal.toFixed(2));
-            $('#discount_amount_display_edit').val('₹ ' + discountAmt.toFixed(2));
-            $('#total_amt_display_edit').val('₹ ' + totalAmt.toFixed(2));
-
-            // Hidden values
-            $('#sub_totalamount_val_edit').val(subtotal.toFixed(2));
-            $('#discount_amount_val_edit').val(discountAmt.toFixed(2));
-            $('#total_amt_val_edit').val(totalAmt.toFixed(2));
+            $('#sub_totalamount_edit').val(subtotal.toFixed(2));
+            $('#discount_amount_edit').val(discountAmt.toFixed(2));
+            $('#total_amt_edit').val(totalAmt.toFixed(2));
         }
 
         // Payment Type changed

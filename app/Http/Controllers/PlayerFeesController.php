@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 
 class PlayerFeesController extends Controller
 {
@@ -98,6 +99,18 @@ class PlayerFeesController extends Controller
 
         $request->validate($rules);
 
+        // Check for overlapping fee payments for this player
+        $overlapping = PlayerFee::where('player_id', $request->player_id)
+            ->where('start_date', '<=', $request->end_date)
+            ->where('end_date', '>=', $request->start_date)
+            ->exists();
+
+        if ($overlapping) {
+            throw ValidationException::withMessages([
+                'start_date' => ['The player has already paid fees for the selected date range.'],
+            ]);
+        }
+
         $data = $request->only([
             'player_id',
             'start_date',
@@ -172,6 +185,19 @@ class PlayerFeesController extends Controller
         }
 
         $request->validate($rules);
+
+        // Check for overlapping fee payments for this player, excluding the current record
+        $overlapping = PlayerFee::where('player_id', $request->player_id)
+            ->where('id', '!=', $playerFee->id)
+            ->where('start_date', '<=', $request->end_date)
+            ->where('end_date', '>=', $request->start_date)
+            ->exists();
+
+        if ($overlapping) {
+            throw ValidationException::withMessages([
+                'start_date' => ['The player has already paid fees for the selected date range.'],
+            ]);
+        }
 
         $data = $request->only([
             'player_id',

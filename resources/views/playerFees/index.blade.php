@@ -6,7 +6,7 @@
 
         <x-navbar />
 
-        <div class="container-lg py-3">
+        <div class="container-fluid px-4 py-3">
 
             <x-table-crud-card heading="Player Fees Management" subheading="Manage Player Fees" title="Record Player Fee"
                 url="{{ route('player-fees.create') }}"
@@ -32,7 +32,7 @@
                     ],
                 ]">
 
-                {{ $dataTable->table(['class' => 'table table-hover align-middle mb-0']) }}
+                {{ $dataTable->table(['class' => 'table table-sm table-hover align-middle mb-0']) }}
 
             </x-table-crud-card>
 
