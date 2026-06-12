@@ -11,12 +11,12 @@
             <!-- Title Header -->
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <div>
-                    <h4 class="fw-bold mb-1" style="color: #0f172a; font-family: 'Inter', sans-serif; letter-spacing: -0.5px;">Academy Dashboard</h4>
+                    <h4 class="fw-bold mb-1 text-dark" style="letter-spacing: -0.5px;">Academy Dashboard</h4>
                     <p class="text-secondary small mb-0">Overview and real-time statistics of Sports Academy Management System</p>
                 </div>
                 <div class="text-secondary small fw-semibold bg-white px-3 py-1.5 rounded-3 shadow-sm border border-light d-flex align-items-center gap-1.5">
                     <span class="d-inline-block rounded-circle bg-success" style="width: 8px; height: 8px;"></span>
-                    <span style="color: #475569;">Live Updates</span>
+                    <span class="text-secondary">Live Updates</span>
                 </div>
             </div>
 
@@ -25,11 +25,11 @@
                 
                 <!-- Card 1: Players (Indigo Accent) -->
                 <div class="col-sm-6 col-xl-3">
-                    <div class="card bg-white border border-light rounded-3 shadow-sm h-100 position-relative overflow-hidden" style="border-left: 4px solid #4f46e5 !important;">
+                    <div class="card card-accent-indigo bg-white border border-light rounded-3 shadow-sm h-100 position-relative overflow-hidden">
                         <div class="card-body p-3 d-flex justify-content-between align-items-center">
                             <div>
-                                <div class="small fw-semibold text-secondary text-uppercase mb-1" style="font-size: 10.5px; letter-spacing: 0.5px; color: #64748b;">Active Players</div>
-                                <div class="fs-3 fw-bold mb-0" style="color: #0f172a; font-family: 'Inter', sans-serif;">{{ $total_players }}</div>
+                                <div class="small fw-semibold text-secondary text-uppercase mb-1" style="font-size: 10.5px; letter-spacing: 0.5px;">Active Players</div>
+                                <div class="fs-3 fw-bold mb-0 text-dark">{{ $total_players }}</div>
                             </div>
                             <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; background-color: #e0e7ff; color: #4f46e5;">
                                 <i class="bi bi-people-fill fs-5"></i>
@@ -40,11 +40,11 @@
 
                 <!-- Card 2: Income (Emerald Accent) -->
                 <div class="col-sm-6 col-xl-3">
-                    <div class="card bg-white border border-light rounded-3 shadow-sm h-100 position-relative overflow-hidden" style="border-left: 4px solid #10b981 !important;">
+                    <div class="card card-accent-success bg-white border border-light rounded-3 shadow-sm h-100 position-relative overflow-hidden">
                         <div class="card-body p-3 d-flex justify-content-between align-items-center">
                             <div>
-                                <div class="small fw-semibold text-secondary text-uppercase mb-1" style="font-size: 10.5px; letter-spacing: 0.5px; color: #64748b;">Fees Collected</div>
-                                <div class="fs-3 fw-bold mb-0" style="color: #0f172a; font-family: 'Inter', sans-serif;">₹{{ number_format($total_fees_paid, 0) }}</div>
+                                <div class="small fw-semibold text-secondary text-uppercase mb-1" style="font-size: 10.5px; letter-spacing: 0.5px;">Fees Collected</div>
+                                <div class="fs-3 fw-bold mb-0 text-dark">₹{{ number_format($total_fees_paid, 0) }}</div>
                             </div>
                             <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; background-color: #d1fae5; color: #10b981;">
                                 <i class="bi bi-currency-rupee fs-5"></i>
@@ -55,11 +55,11 @@
 
                 <!-- Card 3: Batches (Amber Accent) -->
                 <div class="col-sm-6 col-xl-3">
-                    <div class="card bg-white border border-light rounded-3 shadow-sm h-100 position-relative overflow-hidden" style="border-left: 4px solid #f59e0b !important;">
+                    <div class="card card-accent-warning bg-white border border-light rounded-3 shadow-sm h-100 position-relative overflow-hidden">
                         <div class="card-body p-3 d-flex justify-content-between align-items-center">
                             <div>
-                                <div class="small fw-semibold text-secondary text-uppercase mb-1" style="font-size: 10.5px; letter-spacing: 0.5px; color: #64748b;">Active Batches</div>
-                                <div class="fs-3 fw-bold mb-0" style="color: #0f172a; font-family: 'Inter', sans-serif;">{{ $total_batches }}</div>
+                                <div class="small fw-semibold text-secondary text-uppercase mb-1" style="font-size: 10.5px; letter-spacing: 0.5px;">Active Batches</div>
+                                <div class="fs-3 fw-bold mb-0 text-dark">{{ $total_batches }}</div>
                             </div>
                             <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; background-color: #fef3c7; color: #d97706;">
                                 <i class="bi bi-calendar3 fs-5"></i>
@@ -70,11 +70,11 @@
 
                 <!-- Card 4: Pending (Rose Accent) -->
                 <div class="col-sm-6 col-xl-3">
-                    <div class="card bg-white border border-light rounded-3 shadow-sm h-100 position-relative overflow-hidden" style="border-left: 4px solid #f43f5e !important;">
+                    <div class="card card-accent-danger bg-white border border-light rounded-3 shadow-sm h-100 position-relative overflow-hidden">
                         <div class="card-body p-3 d-flex justify-content-between align-items-center">
                             <div>
-                                <div class="small fw-semibold text-secondary text-uppercase mb-1" style="font-size: 10.5px; letter-spacing: 0.5px; color: #64748b;">Pending Collections</div>
-                                <div class="fs-3 fw-bold mb-0" style="color: #0f172a; font-family: 'Inter', sans-serif;">₹{{ number_format($total_fees_pending, 0) }}</div>
+                                <div class="small fw-semibold text-secondary text-uppercase mb-1" style="font-size: 10.5px; letter-spacing: 0.5px;">Pending Collections</div>
+                                <div class="fs-3 fw-bold mb-0 text-dark">₹{{ number_format($total_fees_pending, 0) }}</div>
                             </div>
                             <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; background-color: #ffe4e6; color: #e11d48;">
                                 <i class="bi bi-exclamation-circle-fill fs-5"></i>
@@ -237,7 +237,7 @@
                                     <li class="list-group-item d-flex justify-content-between align-items-center py-2 px-1 border-light">
                                         <div class="d-flex align-items-center">
                                             <!-- Colored initials badge -->
-                                            <div class="rounded-circle me-2.5 d-inline-flex align-items-center justify-content-center bg-dark text-white fw-bold" style="width: 32px; height: 32px; font-size: 11px; min-width: 32px; background-color: #f1f5f9 !important; color: #475569 !important; border: 1px solid #e2e8f0;">
+                                            <div class="trainee-avatar me-2.5">
                                                 {{ strtoupper(substr($player->firstname, 0, 1) . substr($player->lastname, 0, 1)) }}
                                             </div>
                                             <div>

@@ -20,31 +20,35 @@
         <!-- Enrolled Batches Section (Dynamic) -->
         <div id="playerBatchesSection" class="d-none"></div>
 
-        <!-- Start & End Date -->
+        <!-- Start & End Month -->
         <div class="row g-3 mb-3">
             <div class="col-md-6">
-                <label for="startDate" class="form-label fw-semibold text-dark small">Start Date</label>
+                <label for="startMonth" class="form-label fw-semibold text-dark small">Start Month</label>
                 <div class="input-group">
                     <span class="input-group-text bg-white text-secondary border-end-0">
                         <i class="bi bi-calendar-date"></i>
                     </span>
-                    <input type="date" name="start_date" id="startDate" class="form-control border-start-0 ps-1"
-                        required>
+                    <input type="text" id="startMonth" class="form-control border-start-0 ps-1 bg-white"
+                        placeholder="Select Month" required readonly>
                 </div>
                 <p class="text-danger small mb-0" id="start_dateError"></p>
             </div>
             <div class="col-md-6">
-                <label for="endDate" class="form-label fw-semibold text-dark small">End Date</label>
+                <label for="endMonth" class="form-label fw-semibold text-dark small">End Month</label>
                 <div class="input-group">
                     <span class="input-group-text bg-white text-secondary border-end-0">
                         <i class="bi bi-calendar-date"></i>
                     </span>
-                    <input type="date" name="end_date" id="endDate" class="form-control border-start-0 ps-1"
-                        required>
+                    <input type="text" id="endMonth" class="form-control border-start-0 ps-1 bg-white"
+                        placeholder="Select Month" required readonly>
                 </div>
                 <p class="text-danger small mb-0" id="end_dateError"></p>
             </div>
         </div>
+
+        <!-- Hidden actual date fields sent to backend -->
+        <input type="hidden" name="start_date" id="startDate">
+        <input type="hidden" name="end_date" id="endDate">
 
         <!-- Calculated Duration Info -->
         <div class="mb-3">

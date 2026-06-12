@@ -1,100 +1,99 @@
- <div class="sidebar sidebar-dark sidebar-fixed border-end" id="sidebar">
-     <div class="sidebar-header border-bottom">
-         <div class="sidebar-brand me-auto">
-             <svg role="img" aria-label="CoreUI Logo Full" class="sidebar-brand-full" width="88" height="32"
-                 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 312 115">
-                 <g style="fill: currentColor">
-                     <path
-                         d="M96 24.124 57 1.608a12 12 0 0 0-12 0L6 24.124a12.034 12.034 0 0 0-6 10.393V79.55a12.033 12.033 0 0 0 6 10.392l39 22.517a12 12 0 0 0 12 0l39-22.517a12.033 12.033 0 0 0 6-10.392V34.517a12.034 12.034 0 0 0-6-10.393ZM94 79.55a4 4 0 0 1-2 3.464l-39 22.517a4 4 0 0 1-4 0L10 83.014a4 4 0 0 1-2-3.464V34.517a4 4 0 0 1 2-3.464L49 8.536a4 4 0 0 1 4 0l39 22.517a4 4 0 0 1 2 3.464V79.55Z" />
-                     <path
-                         d="M74.022 70.071h-2.866a4 4 0 0 0-1.925.494L51.95 80.05 32 68.531V45.554l19.95-11.519 17.29 9.455a4 4 0 0 0 1.919.49h2.863a2 2 0 0 0 2-2v-2.71a2 2 0 0 0-1.04-1.756L55.793 27.02a8.04 8.04 0 0 0-7.843.09L28 38.626a8.025 8.025 0 0 0-4 6.929V68.53a8 8 0 0 0 4 6.928l19.95 11.519a8.043 8.043 0 0 0 7.843.088l19.19-10.532a2 2 0 0 0 1.038-1.753v-2.71a2 2 0 0 0-2-2Z" />
-                     <g transform="translate(118 33)">
-                         <path
-                             d="M50.745.428c-8.28.01-14.99 6.72-15 15v17.277c0 8.285 6.715 15 15 15 8.284 0 15-6.715 15-15V15.428c-.01-8.28-6.72-14.99-15-15Zm7 32.277a7 7 0 0 1-14 0V15.428a7 7 0 0 1 14 0v17.277ZM14.079 8.488a7.01 7.01 0 0 1 7.868 6.075.99.99 0 0 0 .984.865h6.03a1.01 1.01 0 0 0 1-1.097C29.354 6.206 22.38.046 14.243.447 6.161 1-.086 7.762 0 15.864V32.27c-.087 8.101 6.161 14.864 14.244 15.416 8.137.401 15.11-5.759 15.716-13.883a1.01 1.01 0 0 0-.999-1.098h-6.03a.99.99 0 0 0-.985.865 7.01 7.01 0 0 1-7.868 6.076A7.164 7.164 0 0 1 8 32.461V15.672a7.164 7.164 0 0 1 6.079-7.184ZM96.922 27.994a12.158 12.158 0 0 0 7.184-11.077v-3.7c0-6.71-5.44-12.15-12.149-12.15H75a1 1 0 0 0-1 1v44a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-17h6.621l7.916 17.413a1 1 0 0 0 .91.587h6.591a1 1 0 0 0 .91-1.414l-8.026-17.659Zm-.816-11.077a4.154 4.154 0 0 1-4.148 4.15h-9.852v-12h9.852a4.154 4.154 0 0 1 4.148 4.15v3.7ZM139 1.067h-26a1 1 0 0 0-1 1v44a1 1 0 0 0 1 1h26a1 1 0 0 0 1-1v-6a1 1 0 0 0-1-1h-19v-12h13a1 1 0 0 0 1-1v-6a1 1 0 0 0-1-1h-13v-10h19a1 1 0 0 0 1-1v-6a1 1 0 0 0-1-1ZM177 1.067h-6a1 1 0 0 0-1 1v22.647a7.007 7.007 0 1 1-14 0V2.067a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v22.647a15.003 15.003 0 1 0 30 0V2.067a1 1 0 0 0-1-1Z" />
-                         <rect width="8" height="38" x="186" y="1.067" rx="1" />
-                     </g>
-                 </g>
-             </svg>
-             <svg role="img" aria-label="CoreUI Logo Signet" class="sidebar-brand-narrow" width="88"
-                 height="32" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-                 viewBox="0 0 102 115">
-                 <g style="fill: currentColor">
-                     <path
-                         d="M96 24.124 57 1.608a12 12 0 0 0-12 0L6 24.124a12.034 12.034 0 0 0-6 10.393V79.55a12.033 12.033 0 0 0 6 10.392l39 22.517a12 12 0 0 0 12 0l39-22.517a12.033 12.033 0 0 0 6-10.392V34.517a12.034 12.034 0 0 0-6-10.393ZM94 79.55a4 4 0 0 1-2 3.464l-39 22.517a4 4 0 0 1-4 0L10 83.014a4 4 0 0 1-2-3.464V34.517a4 4 0 0 1 2-3.464L49 8.536a4 4 0 0 1 4 0l39 22.517a4 4 0 0 1 2 3.464V79.55Z" />
-                     <path
-                         d="M74.022 70.071h-2.866a4 4 0 0 0-1.925.494L51.95 80.05 32 68.531V45.554l19.95-11.519 17.29 9.455a4 4 0 0 0 1.919.49h2.863a2 2 0 0 0 2-2v-2.71a2 2 0 0 0-1.04-1.756L55.793 27.02a8.04 8.04 0 0 0-7.843.09L28 38.626a8.025 8.025 0 0 0-4 6.929V68.53a8 8 0 0 0 4 6.928l19.95 11.519a8.043 8.043 0 0 0 7.843.088l19.19-10.532a2 2 0 0 0 1.038-1.753v-2.71a2 2 0 0 0-2-2Z" />
-                 </g>
-             </svg>
-         </div>
-         <button class="btn-close d-lg-none" type="button" data-coreui-theme="dark" aria-label="Close"
-             onclick="coreui.Sidebar.getInstance(document.querySelector('#sidebar')).toggle()"></button>
-     </div>
-     <ul class="sidebar-nav" data-coreui="navigation" data-simplebar>
+<div class="sidebar sidebar-dark sidebar-fixed border-end" id="sidebar">
+    <div class="sidebar-header border-bottom">
+        <div class="sidebar-brand me-auto">
+            <!-- Full Logo (Shown in normal state) -->
+            <div class="sidebar-brand-full d-flex align-items-center gap-2 px-2">
+                <div class="rounded-3 d-flex align-items-center justify-content-center bg-primary text-white"
+                    style="width: 32px; height: 32px; box-shadow: 0 4px 8px rgba(79, 70, 229, 0.25);">
+                    <i class="bi bi-award-fill fs-5"></i>
+                </div>
+                <div class="text-start">
+                    <span class="fw-bold text-white d-block"
+                        style="font-size: 14px; letter-spacing: 0.5px; font-family: 'Plus Jakarta Sans', sans-serif; line-height: 1.2;">SPORTS
+                        ACADEMY</span>
+                    <span
+                        style="font-size: 9px; font-weight: 700; color: #94a3b8; letter-spacing: 1px; text-transform: uppercase; line-height: 1; display: block; margin-top: 2px;">Management</span>
+                </div>
+            </div>
 
-         <!-- Dashboard -->
-         <li class="nav-item">
-             <a class="nav-link" href="/">
-                 <i class="bi bi-grid nav-icon"></i>
-                 Dashboard
-             </a>
-         </li>
+            <!-- Narrow Logo (Shown in minimized/narrow state) -->
+            <div class="sidebar-brand-narrow">
+                <div class="rounded-3 d-flex align-items-center justify-content-center bg-primary text-white"
+                    style="width: 32px; height: 32px; box-shadow: 0 4px 8px rgba(79, 70, 229, 0.25);">
+                    <i class="bi bi-award-fill fs-5"></i>
+                </div>
+            </div>
+        </div>
+        <button class="btn-close d-lg-none" type="button" data-coreui-theme="dark" aria-label="Close"
+            onclick="coreui.Sidebar.getInstance(document.querySelector('#sidebar')).toggle()"></button>
+    </div>
+    <ul class="sidebar-nav" data-coreui="navigation" data-simplebar>
 
-         <!-- User Management -->
-         <li class="nav-item">
-             <a class="nav-link" href="{{ route('users.index') }}">
-                 <i class="bi bi-people nav-icon"></i>
-                 User
-             </a>
-         </li>
-         <li class="nav-item">
-             <a class="nav-link" href="{{ route('players.index') }}">
-                 <i class="bi bi-person nav-icon"></i>
-                 Players
-             </a>
-         </li>
+        <!-- Dashboard -->
+        <li class="nav-item">
+            <a class="nav-link {{ request()->is('/') ? 'active' : '' }}" href="/">
+                <i class="bi bi-grid nav-icon"></i>
+                Dashboard
+            </a>
+        </li>
 
-         <!-- Sports Management -->
-         <li class="nav-item">
-             <a class="nav-link" href="{{ route('sports.index') }}">
-                 <i class="bi bi-trophy nav-icon"></i>
-                 Sports
-             </a>
-         </li>
-         <li class="nav-item">
-             <a class="nav-link" href="{{ route('levels.index') }}">
-                 <i class="bi bi-layers nav-icon"></i>
-                 Levels
-             </a>
-         </li>
-         <li class="nav-item">
-             <a class="nav-link" href="{{ route('sport-levels.index') }}">
-                 <i class="bi bi-grid-3x3-gap nav-icon"></i>
-                 Sports Levels
-             </a>
-         </li>
-         <li class="nav-item">
-             <a class="nav-link" href="{{ route('batches.index') }}">
-                 <i class="bi bi-calendar-event nav-icon"></i>
-                 Batches
-             </a>
-         </li>
-          <li class="nav-item">
-              <a class="nav-link" href="{{ route('player-fees.index') }}">
-                  <i class="bi bi-wallet2 nav-icon"></i>
-                  Fees
-              </a>
-          </li>
+        <!-- User Management -->
+        <li class="nav-item">
+            <a class="nav-link {{ request()->is('users*') ? 'active' : '' }}" href="{{ route('users.index') }}">
+                <i class="bi bi-people nav-icon"></i>
+                User
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {{ request()->is('players*') ? 'active' : '' }}" href="{{ route('players.index') }}">
+                <i class="bi bi-person nav-icon"></i>
+                Players
+            </a>
+        </li>
 
-         <!-- Settings -->
-         <li class="nav-item">
-             <a class="nav-link {{ request()->routeIs('settings.index') ? 'active' : '' }}"
-                 href="{{ route('settings.index') }}">
-                 <i class="bi bi-gear nav-icon"></i>
-                 Settings
-             </a>
-         </li>
-     </ul>
-     <div class="sidebar-footer border-top d-none d-md-flex">
-         <button class="sidebar-toggler" type="button" data-coreui-toggle="unfoldable"></button>
-     </div>
- </div>
+        <!-- Sports Management -->
+        <li class="nav-item">
+            <a class="nav-link {{ request()->is('sports*') ? 'active' : '' }}" href="{{ route('sports.index') }}">
+                <i class="bi bi-trophy nav-icon"></i>
+                Sports
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {{ request()->is('levels*') ? 'active' : '' }}" href="{{ route('levels.index') }}">
+                <i class="bi bi-layers nav-icon"></i>
+                Levels
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {{ request()->is('sport-levels*') ? 'active' : '' }}"
+                href="{{ route('sport-levels.index') }}">
+                <i class="bi bi-grid-3x3-gap nav-icon"></i>
+                Sports Levels
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {{ request()->is('batches*') ? 'active' : '' }}" href="{{ route('batches.index') }}">
+                <i class="bi bi-calendar-event nav-icon"></i>
+                Batches
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {{ request()->is('player-fees*') ? 'active' : '' }}"
+                href="{{ route('player-fees.index') }}">
+                <i class="bi bi-wallet2 nav-icon"></i>
+                Fees
+            </a>
+        </li>
+
+        <!-- Settings -->
+        <li class="nav-item">
+            <a class="nav-link {{ request()->is('settings*') ? 'active' : '' }}" href="{{ route('settings.index') }}">
+                <i class="bi bi-gear nav-icon"></i>
+                Settings
+            </a>
+        </li>
+    </ul>
+    <div class="sidebar-footer border-top d-none d-md-flex">
+        <button class="sidebar-toggler" type="button" data-coreui-toggle="unfoldable"></button>
+    </div>
+</div>

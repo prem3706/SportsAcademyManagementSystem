@@ -120,7 +120,7 @@
                     @foreach ($filters as $filter)
                         <div style="min-width: 150px;">
 
-                            <select id="{{ $filter['id'] }}" class="form-select rounded-3 shadow-sm border-0">
+                            <select id="{{ $filter['id'] }}" class="form-select rounded-3 shadow-sm border-0 {{ $filter['class'] ?? '' }}">
 
                                 <option value="">
                                     {{ $filter['placeholder'] }}

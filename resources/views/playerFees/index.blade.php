@@ -9,9 +9,41 @@
         <div class="container-fluid px-4 py-3">
 
             <x-table-crud-card heading="Player Fees Management" subheading="Manage Player Fees" title="Record Player Fee"
-                url="{{ route('player-fees.create') }}"
-                id="addPlayerFeeBtn"
-                :filters="[
+                url="{{ route('player-fees.create') }}" id="addPlayerFeeBtn" :filters="[
+                    [
+                        'id' => 'playerFilter',
+                        'placeholder' => 'All Players',
+                        'class' => 'select2',
+                        'options' => $players,
+                    ],
+
+                    [
+                        'id' => 'monthFilter',
+                        'placeholder' => 'All Months',
+                        'default' => date('n'),
+                        'options' => [
+                            '1' => 'January',
+                            '2' => 'February',
+                            '3' => 'March',
+                            '4' => 'April',
+                            '5' => 'May',
+                            '6' => 'June',
+                            '7' => 'July',
+                            '8' => 'August',
+                            '9' => 'September',
+                            '10' => 'October',
+                            '11' => 'November',
+                            '12' => 'December',
+                        ],
+                    ],
+
+                    [
+                        'id' => 'yearFilter',
+                        'placeholder' => 'All Years',
+                        'default' => date('Y'),
+                        'options' => $years,
+                    ],
+
                     [
                         'id' => 'statusFilter',
                         'placeholder' => 'All Statuses',

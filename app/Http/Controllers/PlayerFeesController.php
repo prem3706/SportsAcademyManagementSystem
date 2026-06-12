@@ -19,7 +19,23 @@ class PlayerFeesController extends Controller
      */
     public function index(PlayerFeesDataTable $dataTable)
     {
-        return $dataTable->render('playerFees.index');
+        $players = User::where('role', 'player')
+            ->where('status', 'active')
+            ->orderBy('firstname')
+            ->orderBy('lastname')
+            ->get()
+            ->mapWithKeys(function ($user) {
+                return [$user->id => $user->firstname . ' ' . $user->lastname];
+            })
+            ->toArray();
+
+        $currentYear = intval(date('Y'));
+        $years = [];
+        for ($y = $currentYear - 2; $y <= $currentYear + 2; $y++) {
+            $years[$y] = (string)$y;
+        }
+
+        return $dataTable->render('playerFees.index', compact('players', 'years'));
     }
 
     /**

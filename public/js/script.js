@@ -42,10 +42,44 @@ $(document).ready(function () {
 
     // Date Picker Initialization
     function initDatePicker() {
-        if (typeof flatpickr !== 'undefined') {
-            flatpickr('#startDate, #endDate', {
-                dateFormat: 'Y-m-d',
-                allowInput: true
+        if ($('#startMonth').length) {
+            flatpickr("#startMonth", {
+                plugins: [
+                    new monthSelectPlugin({
+                        shorthand: true,
+                        dateFormat: "Y-m",
+                        altFormat: "F Y"
+                    })
+                ],
+                onChange: function (selectedDates, dateStr, instance) {
+                    if (dateStr) {
+                        $('#startDate').val(dateStr + '-01');
+                    } else {
+                        $('#startDate').val('');
+                    }
+                    calculateFees();
+                }
+            });
+        }
+
+        if ($('#endMonth').length) {
+            flatpickr("#endMonth", {
+                plugins: [
+                    new monthSelectPlugin({
+                        shorthand: true,
+                        dateFormat: "Y-m",
+                        altFormat: "F Y"
+                    })
+                ],
+                onChange: function (selectedDates, dateStr, instance) {
+                    if (dateStr) {
+                        let lastDate = getLastDayOfMonth(dateStr);
+                        $('#endDate').val(lastDate);
+                    } else {
+                        $('#endDate').val('');
+                    }
+                    calculateFees();
+                }
             });
         }
     }
@@ -1502,7 +1536,7 @@ $(document).ready(function () {
 
 
     // edit Player Fee Form Open
-    $(document).on('click', '#editPlayerFeeBtn', function () {
+    $(document).on('click', '.edit-fee-btn', function () {
         let url = $(this).data('url');
         let title = $(this).data('title');
         console.log(title);
@@ -1571,6 +1605,45 @@ $(document).ready(function () {
             }
         });
 
+    });
+
+    // Delete Single Player Fee
+    $(document).on('click', '.delete-fee-btn', function () {
+
+        let url = $(this).data('url');
+
+        swalWithBootstrapButtons.fire({
+            title: "Are you sure?",
+            text: "This player fee record will be deleted permanently!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, delete!",
+            cancelButtonText: "Cancel",
+            reverseButtons: true
+        }).then((result) => {
+
+            if (result.isConfirmed) {
+
+                $.ajax({
+                    url: url,
+                    type: "DELETE",
+
+                    success: function (response) {
+
+                        toastr.success(response.message);
+
+                        $('#datatable').DataTable().ajax.reload();
+
+                    },
+
+                    error: function () {
+
+                        toastr.error(
+                            'Something went wrong.');
+                    }
+                });
+            }
+        });
     });
 
     /*
@@ -2058,8 +2131,35 @@ $(document).ready(function () {
         calculateFees();
     });
 
-    // Date changes handler
-    $(document).on('change', '#startDate, #endDate', function () {
+    // Function to calculate last day of a YYYY-MM month
+    function getLastDayOfMonth(monthStr) {
+        if (!monthStr) return '';
+        let parts = monthStr.split('-');
+        let year = parseInt(parts[0]);
+        let month = parseInt(parts[1]);
+        let lastDay = new Date(year, month, 0).getDate();
+        return year + '-' + String(month).padStart(2, '0') + '-' + String(lastDay).padStart(2, '0');
+    }
+
+    // Month changes handler
+    $(document).on('change', '#startMonth', function () {
+        let val = $(this).val();
+        if (val) {
+            $('#startDate').val(val + '-01');
+        } else {
+            $('#startDate').val('');
+        }
+        calculateFees();
+    });
+
+    $(document).on('change', '#endMonth', function () {
+        let val = $(this).val();
+        if (val) {
+            let lastDate = getLastDayOfMonth(val);
+            $('#endDate').val(lastDate);
+        } else {
+            $('#endDate').val('');
+        }
         calculateFees();
     });
 

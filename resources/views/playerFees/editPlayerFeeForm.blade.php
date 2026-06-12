@@ -15,31 +15,37 @@
         <!-- Enrolled Batches Section (Dynamic) -->
         <div id="playerBatchesSectionEdit" class="mb-3"></div>
 
-        <!-- Start & End Date -->
+        <!-- Start & End Month -->
         <div class="row g-3 mb-3">
             <div class="col-md-6">
-                <label for="startDateEdit" class="form-label fw-semibold text-dark small">Start Date</label>
+                <label for="startMonthEdit" class="form-label fw-semibold text-dark small">Start Month</label>
                 <div class="input-group">
                     <span class="input-group-text bg-white text-secondary border-end-0">
                         <i class="bi bi-calendar-date"></i>
                     </span>
-                    <input type="date" name="start_date" id="startDateEdit" class="form-control border-start-0 ps-1" 
-                           value="{{ $playerFee->start_date ? $playerFee->start_date->format('Y-m-d') : '' }}" required>
+                    <input type="text" id="startMonthEdit" class="form-control border-start-0 ps-1 bg-white" 
+                           value="{{ $playerFee->start_date ? $playerFee->start_date->format('Y-m') : '' }}" 
+                           placeholder="Select Month" required readonly>
                 </div>
                 <p class="text-danger small mb-0" id="start_dateError"></p>
             </div>
             <div class="col-md-6">
-                <label for="endDateEdit" class="form-label fw-semibold text-dark small">End Date</label>
+                <label for="endMonthEdit" class="form-label fw-semibold text-dark small">End Month</label>
                 <div class="input-group">
                     <span class="input-group-text bg-white text-secondary border-end-0">
                         <i class="bi bi-calendar-date"></i>
                     </span>
-                    <input type="date" name="end_date" id="endDateEdit" class="form-control border-start-0 ps-1" 
-                           value="{{ $playerFee->end_date ? $playerFee->end_date->format('Y-m-d') : '' }}" required>
+                    <input type="text" id="endMonthEdit" class="form-control border-start-0 ps-1 bg-white" 
+                           value="{{ $playerFee->end_date ? $playerFee->end_date->format('Y-m') : '' }}" 
+                           placeholder="Select Month" required readonly>
                 </div>
                 <p class="text-danger small mb-0" id="end_dateError"></p>
             </div>
         </div>
+
+        <!-- Hidden actual date fields sent to backend -->
+        <input type="hidden" name="start_date" id="startDateEdit" value="{{ $playerFee->start_date ? $playerFee->start_date->format('Y-m-d') : '' }}">
+        <input type="hidden" name="end_date" id="endDateEdit" value="{{ $playerFee->end_date ? $playerFee->end_date->format('Y-m-d') : '' }}">
 
         <!-- Calculated Duration Info -->
         <div class="mb-3">
@@ -129,13 +135,7 @@
 
 <script>
     $(document).ready(function () {
-        // Initialize Flatpickr if available
-        if (typeof flatpickr !== 'undefined') {
-            flatpickr('#startDateEdit, #endDateEdit', {
-                dateFormat: 'Y-m-d',
-                allowInput: true
-            });
-        }
+
 
         // State variables
         let monthlyFeeSum = 0;
@@ -197,9 +197,52 @@
             calculateFeesEdit();
         });
 
-        // Date changes handler
-        $('#startDateEdit, #endDateEdit').on('change', function () {
-            calculateFeesEdit();
+        // Function to calculate last day of a YYYY-MM month
+        function getLastDayOfMonthEdit(monthStr) {
+            if (!monthStr) return '';
+            let parts = monthStr.split('-');
+            let year = parseInt(parts[0]);
+            let month = parseInt(parts[1]);
+            let lastDay = new Date(year, month, 0).getDate();
+            return year + '-' + String(month).padStart(2, '0') + '-' + String(lastDay).padStart(2, '0');
+        }
+
+        // Initialize Flatpickr MonthSelect pickers
+        flatpickr("#startMonthEdit", {
+            plugins: [
+                new monthSelectPlugin({
+                    shorthand: true,
+                    dateFormat: "Y-m",
+                    altFormat: "F Y"
+                })
+            ],
+            onChange: function(selectedDates, dateStr, instance) {
+                if (dateStr) {
+                    $('#startDateEdit').val(dateStr + '-01');
+                } else {
+                    $('#startDateEdit').val('');
+                }
+                calculateFeesEdit();
+            }
+        });
+
+        flatpickr("#endMonthEdit", {
+            plugins: [
+                new monthSelectPlugin({
+                    shorthand: true,
+                    dateFormat: "Y-m",
+                    altFormat: "F Y"
+                })
+            ],
+            onChange: function(selectedDates, dateStr, instance) {
+                if (dateStr) {
+                    let lastDate = getLastDayOfMonthEdit(dateStr);
+                    $('#endDateEdit').val(lastDate);
+                } else {
+                    $('#endDateEdit').val('');
+                }
+                calculateFeesEdit();
+            }
         });
 
         // Manual amount editing recalculation

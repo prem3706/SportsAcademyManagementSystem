@@ -25,9 +25,9 @@ class PlayerFeesDataTable extends DataTable
             })
             ->addColumn('duration', function ($fee) {
                 if ($fee->start_date && $fee->end_date) {
-                    return $fee->start_date->format('d M Y').
+                    return $fee->start_date->format('M Y').
                         '<br><span class="small text-muted">to '.
-                        $fee->end_date->format('d M Y').
+                        $fee->end_date->format('M Y').
                         '</span>';
                 }
 
@@ -71,8 +71,7 @@ class PlayerFeesDataTable extends DataTable
                 return '
                 <div class="d-flex justify-content-center gap-2">
                     <button type="button"
-                        class="btn btn-light btn-action text-primary shadow-sm"
-                        id="editPlayerFeeBtn"
+                        class="btn btn-light btn-action text-primary shadow-sm edit-fee-btn"
                         data-title="Edit Player Fee"
                         data-url="'.route('player-fees.edit', $fee->id).'"
                         data-bs-toggle="offcanvas"
@@ -80,8 +79,7 @@ class PlayerFeesDataTable extends DataTable
                         <i class="bi bi-pencil-square"></i>
                     </button>
                     <button type="button"
-                        class="btn btn-light btn-action text-danger shadow-sm"
-                        id="deletePlayerFeeBtn"
+                        class="btn btn-light btn-action text-danger shadow-sm delete-fee-btn"
                         data-id="'.$fee->id.'"
                         data-url="'.route('player-fees.destroy', $fee->id).'">
                         <i class="bi bi-trash"></i>
@@ -114,6 +112,21 @@ class PlayerFeesDataTable extends DataTable
         // Payment Type Filter
         if (request()->filled('payment_type')) {
             $query->where('payment_type', request('payment_type'));
+        }
+
+        // Player Filter
+        if (request()->filled('player_id')) {
+            $query->where('player_id', request('player_id'));
+        }
+
+        // Month Filter
+        if (request()->filled('month')) {
+            $query->whereMonth('start_date', request('month'));
+        }
+
+        // Year Filter
+        if (request()->filled('year')) {
+            $query->whereYear('start_date', request('year'));
         }
 
         return $query;
