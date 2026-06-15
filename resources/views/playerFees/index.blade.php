@@ -16,10 +16,10 @@
                         'class' => 'select2',
                         'options' => $players,
                     ],
-
                     [
                         'id' => 'monthFilter',
                         'placeholder' => 'All Months',
+                        'class' => 'select2',
                         'default' => date('n'),
                         'options' => [
                             '1' => 'January',
@@ -36,14 +36,14 @@
                             '12' => 'December',
                         ],
                     ],
-
+                
                     [
                         'id' => 'yearFilter',
                         'placeholder' => 'All Years',
                         'default' => date('Y'),
                         'options' => $years,
                     ],
-
+                
                     [
                         'id' => 'statusFilter',
                         'placeholder' => 'All Statuses',
@@ -52,7 +52,7 @@
                             'pending' => 'Pending',
                         ],
                     ],
-
+                
                     [
                         'id' => 'paymentTypeFilter',
                         'placeholder' => 'All Payments',

@@ -8,7 +8,9 @@
         <!-- Player (Read Only) -->
         <div class="mb-3">
             <label class="form-label fw-semibold text-secondary small">Player</label>
-            <input type="text" class="form-control bg-light" value="{{ $playerFee->player->firstname }} {{ $playerFee->player->lastname }} ({{ $playerFee->player->email }})" readonly>
+            <input type="text" class="form-control bg-light"
+                value="{{ $playerFee->player->firstname }} {{ $playerFee->player->lastname }} ({{ $playerFee->player->phone }})"
+                readonly>
             <input type="hidden" name="player_id" value="{{ $playerFee->player_id }}">
         </div>
 
@@ -23,9 +25,9 @@
                     <span class="input-group-text bg-white text-secondary border-end-0">
                         <i class="bi bi-calendar-date"></i>
                     </span>
-                    <input type="text" id="startMonthEdit" class="form-control border-start-0 ps-1 bg-white" 
-                           value="{{ $playerFee->start_date ? $playerFee->start_date->format('Y-m') : '' }}" 
-                           placeholder="Select Month" required readonly>
+                    <input type="text" id="startMonthEdit" class="form-control border-start-0 ps-1 bg-white"
+                        value="{{ $playerFee->start_date ? $playerFee->start_date->format('Y-m') : '' }}"
+                        placeholder="Select Month" required readonly>
                 </div>
                 <p class="text-danger small mb-0" id="start_dateError"></p>
             </div>
@@ -35,24 +37,33 @@
                     <span class="input-group-text bg-white text-secondary border-end-0">
                         <i class="bi bi-calendar-date"></i>
                     </span>
-                    <input type="text" id="endMonthEdit" class="form-control border-start-0 ps-1 bg-white" 
-                           value="{{ $playerFee->end_date ? $playerFee->end_date->format('Y-m') : '' }}" 
-                           placeholder="Select Month" required readonly>
+                    <input type="text" id="endMonthEdit" class="form-control border-start-0 ps-1 bg-white"
+                        value="{{ $playerFee->end_date ? $playerFee->end_date->format('Y-m') : '' }}"
+                        placeholder="Select Month" required readonly>
                 </div>
                 <p class="text-danger small mb-0" id="end_dateError"></p>
             </div>
         </div>
 
         <!-- Hidden actual date fields sent to backend -->
-        <input type="hidden" name="start_date" id="startDateEdit" value="{{ $playerFee->start_date ? $playerFee->start_date->format('Y-m-d') : '' }}">
-        <input type="hidden" name="end_date" id="endDateEdit" value="{{ $playerFee->end_date ? $playerFee->end_date->format('Y-m-d') : '' }}">
+        <input type="hidden" name="start_date" id="startDateEdit"
+            value="{{ $playerFee->start_date ? $playerFee->start_date->format('Y-m-d') : '' }}">
+        <input type="hidden" name="end_date" id="endDateEdit"
+            value="{{ $playerFee->end_date ? $playerFee->end_date->format('Y-m-d') : '' }}">
 
         <!-- Calculated Duration Info -->
         <div class="mb-3">
-            <div class="bg-light-subtle border border-secondary-subtle rounded-3 p-2 d-flex justify-content-between align-items-center">
+            <div
+                class="bg-light-subtle border border-secondary-subtle rounded-3 p-2 d-flex justify-content-between align-items-center">
                 <span class="text-secondary small fw-semibold text-uppercase">Calculated Duration</span>
                 <span class="fw-bold text-dark small" id="calculatedDurationEdit">0 Month(s)</span>
             </div>
+        </div>
+
+        <!-- Warning Alert for Overlapping Fees -->
+        <div id="paymentOverlapWarningEdit" class="alert alert-danger d-none py-2 px-3 mb-3 small fw-semibold" style="border-radius: 8px;">
+            <i class="bi bi-exclamation-triangle-fill me-1"></i>
+            <span id="paymentOverlapWarningTextEdit"></span>
         </div>
 
         <!-- Calculations Fields -->
@@ -61,7 +72,9 @@
                 <label class="form-label fw-semibold text-secondary small">Subtotal</label>
                 <div class="input-group">
                     <span class="input-group-text bg-white text-secondary border-end-0">₹</span>
-                    <input type="number" step="0.01" name="sub_totalamount" id="sub_totalamount_edit" class="form-control border-start-0 ps-1 fw-semibold text-dark" value="{{ $playerFee->sub_totalamount }}">
+                    <input type="number" step="0.01" name="sub_totalamount" id="sub_totalamount_edit"
+                        class="form-control border-start-0 ps-1 fw-semibold text-dark"
+                        value="{{ $playerFee->sub_totalamount }}">
                 </div>
                 <p class="text-danger small mb-0" id="sub_totalamountError"></p>
             </div>
@@ -69,7 +82,9 @@
                 <label class="form-label fw-semibold text-secondary small">Discount Applied</label>
                 <div class="input-group">
                     <span class="input-group-text bg-white text-secondary border-end-0">₹</span>
-                    <input type="number" step="0.01" name="discount_amount" id="discount_amount_edit" class="form-control border-start-0 ps-1 fw-semibold text-success" value="{{ $playerFee->discount_amount }}">
+                    <input type="number" step="0.01" name="discount_amount" id="discount_amount_edit"
+                        class="form-control border-start-0 ps-1 fw-semibold text-success"
+                        value="{{ $playerFee->discount_amount }}">
                 </div>
                 <p class="text-danger small mb-0" id="discount_amountError"></p>
             </div>
@@ -77,7 +92,9 @@
                 <label class="form-label fw-semibold text-secondary small">Total Amount</label>
                 <div class="input-group">
                     <span class="input-group-text bg-white text-secondary border-end-0">₹</span>
-                    <input type="number" step="0.01" name="total_amt" id="total_amt_edit" class="form-control border-start-0 ps-1 fw-bold text-primary" value="{{ $playerFee->total_amt }}">
+                    <input type="number" step="0.01" name="total_amt" id="total_amt_edit"
+                        class="form-control border-start-0 ps-1 fw-bold text-primary"
+                        value="{{ $playerFee->total_amt }}">
                 </div>
                 <p class="text-danger small mb-0" id="total_amtError"></p>
             </div>
@@ -95,14 +112,18 @@
         </div>
 
         <!-- UPI Details -->
-        <div id="upiFieldsEdit" class="{{ $playerFee->payment_type === 'upi' ? '' : 'd-none' }} bg-light p-3 rounded-3 border mb-3">
+        <div id="upiFieldsEdit"
+            class="{{ $playerFee->payment_type === 'upi' ? '' : 'd-none' }} bg-light p-3 rounded-3 border mb-3">
             <div class="mb-3">
-                <label for="upi_id_edit" class="form-label fw-semibold text-dark small">UPI ID / Reference Number</label>
-                <input type="text" name="upi_id" id="upi_id_edit" class="form-control" placeholder="e.g. name@upi or txn_12345" value="{{ $playerFee->upi_id }}">
+                <label for="upi_id_edit" class="form-label fw-semibold text-dark small">UPI ID / Reference
+                    Number</label>
+                <input type="text" name="upi_id" id="upi_id_edit" class="form-control"
+                    placeholder="e.g. name@upi or txn_12345" value="{{ $playerFee->upi_id }}">
                 <p class="text-danger small mb-0" id="upi_idError"></p>
             </div>
             <div class="mb-3">
-                <label for="img_upi_edit" class="form-label fw-semibold text-dark small">Upload New Transaction Slip / Screenshot</label>
+                <label for="img_upi_edit" class="form-label fw-semibold text-dark small">Upload New Transaction Slip /
+                    Screenshot</label>
                 <input type="file" name="img_upi" id="img_upi_edit" class="form-control" accept="image/*">
                 <p class="text-danger small mb-0" id="img_upiError"></p>
             </div>
@@ -110,7 +131,8 @@
                 <div class="mt-2">
                     <span class="small text-secondary d-block mb-1">Current Receipt Slip:</span>
                     <a href="{{ asset($playerFee->img_upi) }}" target="_blank" class="d-inline-block">
-                        <img src="{{ asset($playerFee->img_upi) }}" class="img-thumbnail rounded-3" style="max-height: 120px;">
+                        <img src="{{ asset($playerFee->img_upi) }}" class="img-thumbnail rounded-3"
+                            style="max-height: 120px;">
                     </a>
                 </div>
             @endif
@@ -134,7 +156,7 @@
 </div>
 
 <script>
-    $(document).ready(function () {
+    $(document).ready(function() {
 
 
         // State variables
@@ -145,34 +167,48 @@
         // Load details initially
         if (playerId) {
             $.ajax({
-                url: '{{ url("player-fees/player-details") }}/' + playerId,
+                url: '{{ url('player-fees/player-details') }}/' + playerId,
                 method: 'GET',
-                success: function (response) {
+                success: function(response) {
                     discountSettings = response;
                     monthlyFeeSum = 0;
 
-                    let html = '<div class="card border border-light-subtle rounded-3 p-3 bg-light mb-3">';
-                    html += '<h6 class="fw-bold mb-2 text-dark small text-uppercase" style="letter-spacing: 0.5px;">Enrolled Batches</h6>';
+                    let html =
+                        '<div class="card border border-light-subtle rounded-3 p-3 bg-light mb-3">';
+                    html +=
+                        '<h6 class="fw-bold mb-2 text-dark small text-uppercase" style="letter-spacing: 0.5px;">Enrolled Batches</h6>';
 
                     if (response.batches.length === 0) {
-                        html += '<p class="text-warning small mb-0"><i class="bi bi-exclamation-triangle me-1"></i> Player has no active batch assignments.</p>';
+                        html +=
+                            '<p class="text-warning small mb-0"><i class="bi bi-exclamation-triangle me-1"></i> Player has no active batch assignments.</p>';
                     } else {
-                        response.batches.forEach(function (batch) {
-                            html += '<div class="d-flex justify-content-between align-items-center mb-1">';
-                            html += '  <div class="form-check mb-0 d-flex align-items-center">';
-                            html += '    <input class="form-check-input batch-fee-checkbox-edit me-2" type="checkbox" value="' + batch.fees + '" checked id="batch_chk_edit_' + batch.id + '">';
-                            html += '    <label class="form-check-label small text-secondary" for="batch_chk_edit_' + batch.id + '">';
-                            html +=        batch.name + ' (' + batch.sport + ' - ' + batch.level + ')';
+                        response.batches.forEach(function(batch) {
+                            html +=
+                                '<div class="d-flex justify-content-between align-items-center mb-1">';
+                            html +=
+                                '  <div class="form-check mb-0 d-flex align-items-center">';
+                            html +=
+                                '    <input class="form-check-input batch-fee-checkbox-edit me-2" type="checkbox" value="' +
+                                batch.fees + '" checked id="batch_chk_edit_' + batch.id +
+                                '">';
+                            html +=
+                                '    <label class="form-check-label small text-secondary" for="batch_chk_edit_' +
+                                batch.id + '">';
+                            html += batch.name + ' (' + batch.sport + ' - ' + batch.level +
+                                ')';
                             html += '    </label>';
                             html += '  </div>';
-                            html += '  <span class="fw-bold small text-dark">₹ ' + batch.fees.toFixed(2) + '</span>';
+                            html += '  <span class="fw-bold small text-dark">₹ ' + batch
+                                .fees.toFixed(2) + '</span>';
                             html += '</div>';
                             monthlyFeeSum += batch.fees;
                         });
                         html += '<hr class="my-2">';
                         html += '<div class="d-flex justify-content-between align-items-center">';
                         html += '  <span class="fw-bold text-dark small">Monthly Total</span>';
-                        html += '  <span class="fw-bold text-primary" id="monthlyTotalDisplayEdit">₹ ' + monthlyFeeSum.toFixed(2) + '</span>';
+                        html +=
+                            '  <span class="fw-bold text-primary" id="monthlyTotalDisplayEdit">₹ ' +
+                            monthlyFeeSum.toFixed(2) + '</span>';
                         html += '</div>';
                     }
                     html += '</div>';
@@ -180,16 +216,16 @@
                     $('#playerBatchesSectionEdit').html(html);
                     calculateFeesEdit();
                 },
-                error: function () {
+                error: function() {
                     toastr.error('Failed to retrieve player batch details.');
                 }
             });
         }
 
         // Batch Checkboxes changes handler
-        $('#playerBatchesSectionEdit').on('change', '.batch-fee-checkbox-edit', function () {
+        $('#playerBatchesSectionEdit').on('change', '.batch-fee-checkbox-edit', function() {
             let sum = 0;
-            $('.batch-fee-checkbox-edit:checked').each(function () {
+            $('.batch-fee-checkbox-edit:checked').each(function() {
                 sum += parseFloat($(this).val()) || 0;
             });
             monthlyFeeSum = sum;
@@ -246,7 +282,7 @@
         });
 
         // Manual amount editing recalculation
-        $(document).on('input', '#sub_totalamount_edit, #discount_amount_edit', function () {
+        $(document).on('input', '#sub_totalamount_edit, #discount_amount_edit', function() {
             let subtotal = parseFloat($('#sub_totalamount_edit').val()) || 0;
             let discountAmt = parseFloat($('#discount_amount_edit').val()) || 0;
             let totalAmt = subtotal - discountAmt;
@@ -260,6 +296,9 @@
             let endVal = $('#endDateEdit').val();
 
             if (!startVal || !endVal || monthlyFeeSum === 0) {
+                $('#paymentOverlapWarningEdit').addClass('d-none');
+                $('#paymentOverlapWarningTextEdit').text('');
+                $('#editPlayerFeeForm button[type="submit"]').prop('disabled', false);
                 return; // Keep initial database values if something is missing
             }
 
@@ -268,6 +307,9 @@
 
             if (end < start) {
                 $('#end_dateError').text('End date cannot be earlier than start date.');
+                $('#paymentOverlapWarningEdit').addClass('d-none');
+                $('#paymentOverlapWarningTextEdit').text('');
+                $('#editPlayerFeeForm button[type="submit"]').prop('disabled', false);
                 return;
             } else {
                 $('#end_dateError').text('');
@@ -318,10 +360,44 @@
             $('#sub_totalamount_edit').val(subtotal.toFixed(2));
             $('#discount_amount_edit').val(discountAmt.toFixed(2));
             $('#total_amt_edit').val(totalAmt.toFixed(2));
+
+            // Check for payment overlap
+            let excludeId = '{{ $playerFee->id }}';
+            if (playerId && startVal && endVal) {
+                $.ajax({
+                    url: '/player-fees/check-overlap',
+                    method: 'GET',
+                    data: {
+                        player_id: playerId,
+                        start_date: startVal,
+                        end_date: endVal,
+                        exclude_id: excludeId
+                    },
+                    success: function (response) {
+                        if (response.overlap) {
+                            $('#paymentOverlapWarningTextEdit').text(response.message);
+                            $('#paymentOverlapWarningEdit').removeClass('d-none');
+                            $('#editPlayerFeeForm button[type="submit"]').prop('disabled', true);
+                        } else {
+                            $('#paymentOverlapWarningEdit').addClass('d-none');
+                            $('#paymentOverlapWarningTextEdit').text('');
+                            $('#editPlayerFeeForm button[type="submit"]').prop('disabled', false);
+                        }
+                    },
+                    error: function () {
+                        $('#paymentOverlapWarningEdit').addClass('d-none');
+                        $('#paymentOverlapWarningTextEdit').text('');
+                    }
+                });
+            } else {
+                $('#paymentOverlapWarningEdit').addClass('d-none');
+                $('#paymentOverlapWarningTextEdit').text('');
+                $('#editPlayerFeeForm button[type="submit"]').prop('disabled', false);
+            }
         }
 
         // Payment Type changed
-        $('#payment_type_edit').on('change', function () {
+        $('#payment_type_edit').on('change', function() {
             let val = $(this).val();
             if (val === 'upi') {
                 $('#upiFieldsEdit').removeClass('d-none');
@@ -333,12 +409,13 @@
         });
 
         // Form Submit
-        $('#editPlayerFeeForm').on('submit', function (e) {
+        $('#editPlayerFeeForm').on('submit', function(e) {
             e.preventDefault();
 
             let formData = new FormData(this);
             let submitBtn = $(this).find('button[type="submit"]');
-            submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Updating...');
+            submitBtn.prop('disabled', true).html(
+                '<span class="spinner-border spinner-border-sm me-2"></span>Updating...');
 
             $.ajax({
                 url: $('#url').val(),
@@ -346,18 +423,19 @@
                 data: formData,
                 processData: false,
                 contentType: false,
-                success: function (response) {
+                success: function(response) {
                     toastr.success(response.message);
                     $('#offcanvasScrolling').offcanvas('hide');
                     $('#datatable').DataTable().ajax.reload();
                 },
-                error: function (xhr) {
-                    submitBtn.prop('disabled', false).html('<i class="bi bi-check-circle me-1"></i> Update Fee Payment');
+                error: function(xhr) {
+                    submitBtn.prop('disabled', false).html(
+                        '<i class="bi bi-check-circle me-1"></i> Update Fee Payment');
                     $('.text-danger').text('');
-                    
+
                     if (xhr.status === 422) {
                         let errors = xhr.responseJSON.errors;
-                        $.each(errors, function (key, value) {
+                        $.each(errors, function(key, value) {
                             $('#' + key + 'Error').text(value[0]);
                         });
                     } else {

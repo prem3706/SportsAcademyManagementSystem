@@ -3,6 +3,7 @@
 namespace App\DataTables;
 
 use App\Models\PlayerFee;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
 use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
@@ -119,14 +120,39 @@ class PlayerFeesDataTable extends DataTable
             $query->where('player_id', request('player_id'));
         }
 
-        // Month Filter
-        if (request()->filled('month')) {
-            $query->whereMonth('start_date', request('month'));
-        }
+        // Month and Year Filters (Period-wise search)
+        if (request()->filled('month') && request()->filled('year')) {
+            $month = request('month');
+            $year = request('year');
+            $targetStart = Carbon::createFromDate($year, $month, 1)->startOfMonth()->format('Y-m-d');
+            $targetEnd = Carbon::createFromDate($year, $month, 1)->endOfMonth()->format('Y-m-d');
 
-        // Year Filter
-        if (request()->filled('year')) {
-            $query->whereYear('start_date', request('year'));
+            $query->where('start_date', '<=', $targetEnd)
+                ->where('end_date', '>=', $targetStart);
+        } elseif (request()->filled('month')) {
+            $month = (int) request('month');
+            $query->where(function ($q) use ($month) {
+                $q->whereRaw('TIMESTAMPDIFF(MONTH, start_date, end_date) >= 11')
+                    ->orWhere(function ($sub) use ($month) {
+                        $sub->whereRaw('YEAR(start_date) = YEAR(end_date)')
+                            ->whereRaw('MONTH(start_date) <= ?', [$month])
+                            ->whereRaw('MONTH(end_date) >= ?', [$month]);
+                    })
+                    ->orWhere(function ($sub) use ($month) {
+                        $sub->whereRaw('YEAR(end_date) > YEAR(start_date)')
+                            ->where(function ($inner) use ($month) {
+                                $inner->whereRaw('MONTH(start_date) <= ?', [$month])
+                                    ->orWhereRaw('MONTH(end_date) >= ?', [$month]);
+                            });
+                    });
+            });
+        } elseif (request()->filled('year')) {
+            $year = request('year');
+            $targetStart = Carbon::createFromDate($year, 1, 1)->startOfYear()->format('Y-m-d');
+            $targetEnd = Carbon::createFromDate($year, 1, 1)->endOfYear()->format('Y-m-d');
+
+            $query->where('start_date', '<=', $targetEnd)
+                ->where('end_date', '>=', $targetStart);
         }
 
         return $query;

@@ -94,6 +94,8 @@ Route::middleware('auth')->group(function () {
 
     Route::get('player-fees/player-details/{id}', [PlayerFeesController::class, 'getPlayerDetails'])
         ->name('player-fees.player-details');
+    Route::get('player-fees/check-overlap', [PlayerFeesController::class, 'checkOverlap'])
+        ->name('player-fees.check-overlap');
     Route::resource('player-fees', PlayerFeesController::class);
 
     Route::get('settings', [SettingController::class, 'index'])->name('settings.index');

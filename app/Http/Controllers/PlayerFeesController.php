@@ -25,14 +25,14 @@ class PlayerFeesController extends Controller
             ->orderBy('lastname')
             ->get()
             ->mapWithKeys(function ($user) {
-                return [$user->id => $user->firstname . ' ' . $user->lastname];
+                return [$user->id => $user->firstname.' '.$user->lastname];
             })
             ->toArray();
 
         $currentYear = intval(date('Y'));
         $years = [];
         for ($y = $currentYear - 2; $y <= $currentYear + 2; $y++) {
-            $years[$y] = (string)$y;
+            $years[$y] = (string) $y;
         }
 
         return $dataTable->render('playerFees.index', compact('players', 'years'));
@@ -89,6 +89,7 @@ class PlayerFeesController extends Controller
             'discount_quarterly' => floatval($settings->discount_quarterly),
             'discount_half_yearly' => floatval($settings->discount_half_yearly),
             'discount_yearly' => floatval($settings->discount_yearly),
+            'penalty_allow' => $settings->allow_penalty,
         ]);
     }
 
@@ -270,6 +271,43 @@ class PlayerFeesController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Player fee deleted successfully.',
+        ]);
+    }
+
+    /**
+     * Check for overlapping player fee payments.
+     */
+    public function checkOverlap(Request $request)
+    {
+        $request->validate([
+            'player_id' => 'required|exists:users,id',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'exclude_id' => 'nullable|integer',
+        ]);
+
+        $query = PlayerFee::where('player_id', $request->player_id)
+            ->where('start_date', '<=', $request->end_date)
+            ->where('end_date', '>=', $request->start_date);
+
+        if ($request->filled('exclude_id')) {
+            $query->where('id', '!=', $request->exclude_id);
+        }
+
+        $overlap = $query->first();
+
+        if ($overlap) {
+            $startFormatted = $overlap->start_date->format('F Y');
+            $endFormatted = $overlap->end_date->format('F Y');
+
+            return response()->json([
+                'overlap' => true,
+                'message' => "Player has already paid fees for the period: {$startFormatted} to {$endFormatted}.",
+            ]);
+        }
+
+        return response()->json([
+            'overlap' => false,
         ]);
     }
 }

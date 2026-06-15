@@ -70,7 +70,7 @@
                     @if ($statusFilter === 'True')
                         <div style="min-width: 150px;">
 
-                            <select id="statusFilter" class="form-select rounded-3 shadow-sm border-0">
+                            <select id="statusFilter" class="form-select select2 select2-no-search rounded-3 shadow-sm border-0">
 
                                 <option value="">
                                     All Status
@@ -93,7 +93,7 @@
                     @if ($roleFilter === 'True')
                         <div style="min-width: 150px;">
 
-                            <select id="roleFilter" class="form-select rounded-3 shadow-sm border-0">
+                            <select id="roleFilter" class="form-select select2 select2-no-search rounded-3 shadow-sm border-0">
 
                                 <option value="">
                                     All Roles
@@ -120,7 +120,7 @@
                     @foreach ($filters as $filter)
                         <div style="min-width: 150px;">
 
-                            <select id="{{ $filter['id'] }}" class="form-select rounded-3 shadow-sm border-0 {{ $filter['class'] ?? '' }}">
+                            <select id="{{ $filter['id'] }}" class="form-select select2 {{ $filter['id'] !== 'playerFilter' ? 'select2-no-search' : '' }} rounded-3 shadow-sm border-0 {{ $filter['class'] ?? '' }}">
 
                                 <option value="">
                                     {{ $filter['placeholder'] }}
@@ -141,7 +141,6 @@
                     @endforeach
 
                 </div>
-
                 <!-- Refresh -->
                 <button type="button"
                     class="btn btn-light border shadow-sm rounded-3 px-3 d-flex align-items-center justify-content-center d-none"

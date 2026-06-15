@@ -59,6 +59,12 @@
             </div>
         </div>
 
+        <!-- Warning Alert for Overlapping Fees -->
+        <div id="paymentOverlapWarning" class="alert alert-danger d-none py-2 px-3 mb-3 small fw-semibold" style="border-radius: 8px;">
+            <i class="bi bi-exclamation-triangle-fill me-1"></i>
+            <span id="paymentOverlapWarningText"></span>
+        </div>
+
         <!-- Calculations Fields -->
         <div class="row g-3 mb-3">
             <div class="col-md-4">

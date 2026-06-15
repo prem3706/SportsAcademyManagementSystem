@@ -85,25 +85,45 @@ $(document).ready(function () {
     }
 
     // Initialize Select2
-    function initSelect2() {
+    function initSelect2(container) {
 
-        $('.select2').each(function () {
+        let target = container ? $(container).find('select.select2, select.form-select') : $('select.select2, select.form-select');
+
+        target = target.not('.dataTables_length select');
+
+        target.each(function () {
 
             if (!$(this).hasClass('select2-hidden-accessible')) {
 
-                $(this).select2({
+                let select = $(this);
+                let dropdownParent = select.closest('#offcanvasScrolling').length ? $('#offcanvasScrolling') : null;
 
+                // Only search if explicitly select2 and doesn't have select2-no-search class
+                let isSearchable = select.hasClass('select2') && !select.hasClass('select2-no-search');
+
+                let options = {
                     width: '100%',
+                    dropdownParent: dropdownParent
+                };
 
-                    dropdownParent: $('#offcanvasScrolling')
+                if (!isSearchable) {
+                    options.minimumResultsForSearch = Infinity;
+                }
 
-                });
+                select.select2(options);
 
             }
 
         });
 
     }
+
+    initSelect2();
+
+    // Auto-initialize Select2 on dynamically loaded content
+    $(document).ajaxComplete(function () {
+        initSelect2('#offCanvasContent');
+    });
 
 
     // CSRF TOKEN
@@ -155,12 +175,16 @@ $(document).ready(function () {
         data.month = $('#monthFilter').val();
         data.year = $('#yearFilter').val();
         data.payment_type = $('#paymentTypeFilter').val();
+        data.player_id = $('#playerFilter').val();
     });
 
 
+    let isResetting = false;
+
     $(document).on('change',
-        '#statusFilter, #roleFilter, #sportFilter, #levelFilter, #batchFilter, #monthFilter, #yearFilter, #paymentTypeFilter',
+        '#statusFilter, #roleFilter, #sportFilter, #levelFilter, #batchFilter, #monthFilter, #yearFilter, #paymentTypeFilter, #playerFilter',
         function () {
+            if (isResetting) return;
 
             $('#datatable').DataTable().ajax.reload();
 
@@ -172,17 +196,28 @@ $(document).ready(function () {
 
 
     $(document).on('click', '#refreshTableBtn', function () {
+        var currentMonth = new Date().getMonth() + 1;
+        var currentYear = new Date().getFullYear();
+
+        isResetting = true;
 
         // Reset All Filters
-        $('#statusFilter').val('');
-        $('#roleFilter').val('');
+        $('#statusFilter').val('').trigger('change');
+        $('#roleFilter').val('').trigger('change');
 
-        $('#sportFilter').val('');
-        $('#levelFilter').val('');
-        $('#batchFilter').val('');
-        $('#monthFilter').val('');
-        $('#yearFilter').val('');
-        $('#paymentTypeFilter').val('');
+        $('#sportFilter').val('').trigger('change');
+        $('#levelFilter').val('').trigger('change');
+        $('#batchFilter').val('').trigger('change');
+        $('#monthFilter').val(currentMonth).trigger('change');
+
+        $('#yearFilter').val(currentYear).trigger('change');
+        $('#paymentTypeFilter').val('').trigger('change');
+
+        if ($('#playerFilter').length) {
+            $('#playerFilter').val(null).trigger('change');
+        }
+
+        isResetting = false;
 
         // Reload Table
         $('#datatable').DataTable().ajax.reload();
@@ -193,15 +228,16 @@ $(document).ready(function () {
 
     function checkRefreshButton() {
 
-        let status = $('#statusFilter').val();
-        let role = $('#roleFilter').val();
+        let status = $('#statusFilter').val() || '';
+        let role = $('#roleFilter').val() || '';
 
-        let sport = $('#sportFilter').val();
-        let level = $('#levelFilter').val();
-        let batch = $('#batchFilter').val();
-        let month = $('#monthFilter').val();
-        let year = $('#yearFilter').val();
-        let payment_type = $('#paymentTypeFilter').val();
+        let sport = $('#sportFilter').val() || '';
+        let level = $('#levelFilter').val() || '';
+        let batch = $('#batchFilter').val() || '';
+        let month = $('#monthFilter').val() || '';
+        let year = $('#yearFilter').val() || '';
+        let payment_type = $('#paymentTypeFilter').val() || '';
+        let player = $('#playerFilter').val() || '';
 
         if (
             status !== '' ||
@@ -211,7 +247,8 @@ $(document).ready(function () {
             batch !== '' ||
             month !== '' ||
             year !== '' ||
-            payment_type !== ''
+            payment_type !== '' ||
+            player !== ''
         ) {
 
             $('#refreshTableBtn').removeClass('d-none');
@@ -1176,7 +1213,7 @@ $(document).ready(function () {
         // Reset Levels
         $('#levelDropdown').html(
             '<option value="">Choose Level</option>'
-        );
+        ).trigger('change');
 
         // Check Sport Selected
         if (sportId != '') {
@@ -1200,6 +1237,8 @@ $(document).ready(function () {
                         );
 
                     });
+
+                    $('#levelDropdown').trigger('change');
 
                 }
 
@@ -1226,7 +1265,7 @@ $(document).ready(function () {
             success: function (response) {
 
                 $('#offCanvasContent').html(response);
-                initSelect2();
+                initSelect2('#offCanvasContent');
                 initTimePicker();
             }
         });
@@ -1287,7 +1326,7 @@ $(document).ready(function () {
 
                 $('#addBatchForm')[0].reset();
 
-                $('.select2').val(null).trigger('change');
+                $('#offcanvasScrolling select.select2').val(null).trigger('change');
 
             },
 
@@ -1327,7 +1366,7 @@ $(document).ready(function () {
             success: function (response) {
 
                 $('#offCanvasContent').html(response);
-                initSelect2();
+                initSelect2('#offCanvasContent');
                 initTimePicker();
             }
         });
@@ -1528,7 +1567,7 @@ $(document).ready(function () {
 
             success: function (response) {
                 $('#offCanvasContent').html(response);
-                initSelect2();
+                initSelect2('#offCanvasContent');
                 initDatePicker();
             }
         });
@@ -1539,7 +1578,6 @@ $(document).ready(function () {
     $(document).on('click', '.edit-fee-btn', function () {
         let url = $(this).data('url');
         let title = $(this).data('title');
-        console.log(title);
 
         $('#offcanvasScrollingLabel').text(title);
 
@@ -1553,6 +1591,17 @@ $(document).ready(function () {
             }
         });
     });
+
+    // Clear Offcanvas Content on Close to prevent duplicate Select2/DOM conflicts
+    $(document).on('hidden.bs.offcanvas', '#offcanvasScrolling', function () {
+        // Destroy Select2 instances to clean up event listeners and DOM containers
+        $('#offCanvasContent').find('.select2-hidden-accessible').each(function () {
+            $(this).select2('destroy');
+        });
+        $('#offCanvasContent').empty();
+        $('#offcanvasScrollingLabel').text('');
+    });
+
     // Edit Player Fee Form Submit
 
     $(document).on('submit', '#editPlayerFeeForm', function (e) {
@@ -1692,6 +1741,7 @@ $(document).ready(function () {
         </div>`;
 
         container.append(rowHtml);
+        initSelect2(container);
         updateRemoveButtons();
     });
 
@@ -1731,8 +1781,8 @@ $(document).ready(function () {
         let levelSelect = row.find('.level-select');
         let batchSelect = row.find('.batch-select');
 
-        levelSelect.html('<option value="" disabled selected>Loading...</option>').prop('disabled', true);
-        batchSelect.html('<option value="" disabled selected>Select level first</option>').prop('disabled', true);
+        levelSelect.html('<option value="" disabled selected>Loading...</option>').prop('disabled', true).trigger('change');
+        batchSelect.html('<option value="" disabled selected>Select level first</option>').prop('disabled', true).trigger('change');
 
         if (!sportId) return;
 
@@ -1745,9 +1795,10 @@ $(document).ready(function () {
                     let fees = level.pivot ? level.pivot.fees : 0;
                     levelSelect.append(`<option value="${level.id}" data-fees="${fees}">${level.name} (Fees: ₹${fees})</option>`);
                 });
+                levelSelect.trigger('change');
             },
             error: function () {
-                levelSelect.html('<option value="" disabled selected>Error loading levels</option>');
+                levelSelect.html('<option value="" disabled selected>Error loading levels</option>').trigger('change');
             }
         });
     });
@@ -1760,7 +1811,7 @@ $(document).ready(function () {
         let sportId = row.find('.sport-select').val();
         let batchSelect = row.find('.batch-select');
 
-        batchSelect.html('<option value="" disabled selected>Loading...</option>').prop('disabled', true);
+        batchSelect.html('<option value="" disabled selected>Loading...</option>').prop('disabled', true).trigger('change');
 
         if (!sportId || !levelId) return;
 
@@ -1776,9 +1827,10 @@ $(document).ready(function () {
                         batchSelect.append(`<option value="${batch.id}">${batch.name} (${batch.start_time} - ${batch.end_time})</option>`);
                     });
                 }
+                batchSelect.trigger('change');
             },
             error: function () {
-                batchSelect.html('<option value="" disabled selected>Error loading batches</option>');
+                batchSelect.html('<option value="" disabled selected>Error loading batches</option>').trigger('change');
             }
         });
     });
@@ -2072,7 +2124,7 @@ $(document).ready(function () {
         }
 
         $.ajax({
-            url: 'player-fees/player-details/' + playerId,
+            url: '/player-fees/player-details/' + playerId,
             method: 'GET',
             success: function (response) {
                 discountSettings = response;
@@ -2119,6 +2171,7 @@ $(document).ready(function () {
             }
         });
     });
+
 
     // Batch Checkboxes changes handler
     $(document).on('change', '.batch-fee-checkbox', function () {
@@ -2230,6 +2283,39 @@ $(document).ready(function () {
         $('#sub_totalamount').val(subtotal.toFixed(2));
         $('#discount_amount').val(discountAmt.toFixed(2));
         $('#total_amt').val(totalAmt.toFixed(2));
+
+        // Check for payment overlap
+        let playerId = $('#player_id').val();
+        if (playerId && startVal && endVal) {
+            $.ajax({
+                url: '/player-fees/check-overlap',
+                method: 'GET',
+                data: {
+                    player_id: playerId,
+                    start_date: startVal,
+                    end_date: endVal
+                },
+                success: function (response) {
+                    if (response.overlap) {
+                        $('#paymentOverlapWarningText').text(response.message);
+                        $('#paymentOverlapWarning').removeClass('d-none');
+                        $('#addPlayerFeeForm button[type="submit"]').prop('disabled', true);
+                    } else {
+                        $('#paymentOverlapWarning').addClass('d-none');
+                        $('#paymentOverlapWarningText').text('');
+                        $('#addPlayerFeeForm button[type="submit"]').prop('disabled', false);
+                    }
+                },
+                error: function () {
+                    $('#paymentOverlapWarning').addClass('d-none');
+                    $('#paymentOverlapWarningText').text('');
+                }
+            });
+        } else {
+            $('#paymentOverlapWarning').addClass('d-none');
+            $('#paymentOverlapWarningText').text('');
+            $('#addPlayerFeeForm button[type="submit"]').prop('disabled', false);
+        }
     }
 
     function resetCalculation() {
@@ -2237,6 +2323,9 @@ $(document).ready(function () {
         $('#sub_totalamount').val('0.00');
         $('#discount_amount').val('0.00');
         $('#total_amt').val('0.00');
+        $('#paymentOverlapWarning').addClass('d-none');
+        $('#paymentOverlapWarningText').text('');
+        $('#addPlayerFeeForm button[type="submit"]').prop('disabled', false);
     }
 
     // Manual amount editing recalculation
@@ -2291,6 +2380,7 @@ $(document).ready(function () {
                 if (xhr.status === 422) {
                     let errors = xhr.responseJSON.errors;
                     $.each(errors, function (key, value) {
+
                         $('#' + key + 'Error').text(value[0]);
                     });
                 } else {
