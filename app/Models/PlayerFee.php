@@ -8,8 +8,10 @@ class PlayerFee extends Model
 {
     protected $fillable = [
         'player_id',
+        'batch_id',
         'sub_totalamount',
         'discount_amount',
+        'penalty_amount',
         'total_amt',
         'start_date',
         'end_date',
@@ -28,10 +30,16 @@ class PlayerFee extends Model
     |--------------------------------------------------------------------------
     | Relationships
     |--------------------------------------------------------------------------
+    |
     */
 
     public function player()
     {
         return $this->belongsTo(User::class, 'player_id');
+    }
+
+    public function batch()
+    {
+        return $this->belongsTo(Batch::class, 'batch_id');
     }
 }

@@ -4,6 +4,7 @@
         @method('PUT')
         <input type="hidden" id="url" value="{{ route('player-fees.update', $playerFee->id) }}">
         <input type="hidden" id="selected_player_id" value="{{ $playerFee->player_id }}">
+        <input type="hidden" id="batch_fee" value="{{ $batchFee }}">
 
         <!-- Player (Read Only) -->
         <div class="mb-3">
@@ -14,8 +15,15 @@
             <input type="hidden" name="player_id" value="{{ $playerFee->player_id }}">
         </div>
 
-        <!-- Enrolled Batches Section (Dynamic) -->
-        <div id="playerBatchesSectionEdit" class="mb-3"></div>
+        <!-- Batch (Read Only) -->
+        <div class="mb-3">
+            <label class="form-label fw-semibold text-secondary small">Batch</label>
+            <input type="text" class="form-control bg-light"
+                value="{{ $playerFee->batch ? $playerFee->batch->name . ' (' . ($playerFee->batch->sport->name ?? '') . ' - ' . ($playerFee->batch->level->name ?? '') . ')' : 'N/A' }}"
+                readonly>
+            <input type="hidden" name="batch_id" value="{{ $playerFee->batch_id }}">
+            <p class="text-danger small mb-0" id="batch_idError"></p>
+        </div>
 
         <!-- Start & End Month -->
         <div class="row g-3 mb-3">
@@ -68,17 +76,27 @@
 
         <!-- Calculations Fields -->
         <div class="row g-3 mb-3">
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <label class="form-label fw-semibold text-secondary small">Subtotal</label>
                 <div class="input-group">
                     <span class="input-group-text bg-white text-secondary border-end-0">₹</span>
                     <input type="number" step="0.01" name="sub_totalamount" id="sub_totalamount_edit"
                         class="form-control border-start-0 ps-1 fw-semibold text-dark"
-                        value="{{ $playerFee->sub_totalamount }}">
+                        value="{{ $playerFee->sub_totalamount }}" readonly>
                 </div>
                 <p class="text-danger small mb-0" id="sub_totalamountError"></p>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
+                <label class="form-label fw-semibold text-secondary small">Penalty Amount</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white text-secondary border-end-0">₹</span>
+                    <input type="number" step="0.01" name="penalty_amount" id="penalty_amount_edit"
+                        class="form-control border-start-0 ps-1 fw-semibold text-danger"
+                        value="{{ $playerFee->penalty_amount ?? 0.00 }}" readonly>
+                </div>
+                <p class="text-danger small mb-0" id="penalty_amountError"></p>
+            </div>
+            <div class="col-md-3">
                 <label class="form-label fw-semibold text-secondary small">Discount Applied</label>
                 <div class="input-group">
                     <span class="input-group-text bg-white text-secondary border-end-0">₹</span>
@@ -88,13 +106,13 @@
                 </div>
                 <p class="text-danger small mb-0" id="discount_amountError"></p>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <label class="form-label fw-semibold text-secondary small">Total Amount</label>
                 <div class="input-group">
                     <span class="input-group-text bg-white text-secondary border-end-0">₹</span>
                     <input type="number" step="0.01" name="total_amt" id="total_amt_edit"
                         class="form-control border-start-0 ps-1 fw-bold text-primary"
-                        value="{{ $playerFee->total_amt }}">
+                        value="{{ $playerFee->total_amt }}" readonly>
                 </div>
                 <p class="text-danger small mb-0" id="total_amtError"></p>
             </div>
@@ -158,9 +176,8 @@
 <script>
     $(document).ready(function() {
 
-
         // State variables
-        let monthlyFeeSum = 0;
+        let monthlyFeeSum = parseFloat($('#batch_fee').val()) || 0;
         let discountSettings = null;
         let playerId = $('#selected_player_id').val();
 
@@ -171,49 +188,6 @@
                 method: 'GET',
                 success: function(response) {
                     discountSettings = response;
-                    monthlyFeeSum = 0;
-
-                    let html =
-                        '<div class="card border border-light-subtle rounded-3 p-3 bg-light mb-3">';
-                    html +=
-                        '<h6 class="fw-bold mb-2 text-dark small text-uppercase" style="letter-spacing: 0.5px;">Enrolled Batches</h6>';
-
-                    if (response.batches.length === 0) {
-                        html +=
-                            '<p class="text-warning small mb-0"><i class="bi bi-exclamation-triangle me-1"></i> Player has no active batch assignments.</p>';
-                    } else {
-                        response.batches.forEach(function(batch) {
-                            html +=
-                                '<div class="d-flex justify-content-between align-items-center mb-1">';
-                            html +=
-                                '  <div class="form-check mb-0 d-flex align-items-center">';
-                            html +=
-                                '    <input class="form-check-input batch-fee-checkbox-edit me-2" type="checkbox" value="' +
-                                batch.fees + '" checked id="batch_chk_edit_' + batch.id +
-                                '">';
-                            html +=
-                                '    <label class="form-check-label small text-secondary" for="batch_chk_edit_' +
-                                batch.id + '">';
-                            html += batch.name + ' (' + batch.sport + ' - ' + batch.level +
-                                ')';
-                            html += '    </label>';
-                            html += '  </div>';
-                            html += '  <span class="fw-bold small text-dark">₹ ' + batch
-                                .fees.toFixed(2) + '</span>';
-                            html += '</div>';
-                            monthlyFeeSum += batch.fees;
-                        });
-                        html += '<hr class="my-2">';
-                        html += '<div class="d-flex justify-content-between align-items-center">';
-                        html += '  <span class="fw-bold text-dark small">Monthly Total</span>';
-                        html +=
-                            '  <span class="fw-bold text-primary" id="monthlyTotalDisplayEdit">₹ ' +
-                            monthlyFeeSum.toFixed(2) + '</span>';
-                        html += '</div>';
-                    }
-                    html += '</div>';
-
-                    $('#playerBatchesSectionEdit').html(html);
                     calculateFeesEdit();
                 },
                 error: function() {
@@ -221,17 +195,6 @@
                 }
             });
         }
-
-        // Batch Checkboxes changes handler
-        $('#playerBatchesSectionEdit').on('change', '.batch-fee-checkbox-edit', function() {
-            let sum = 0;
-            $('.batch-fee-checkbox-edit:checked').each(function() {
-                sum += parseFloat($(this).val()) || 0;
-            });
-            monthlyFeeSum = sum;
-            $('#monthlyTotalDisplayEdit').text('₹ ' + monthlyFeeSum.toFixed(2));
-            calculateFeesEdit();
-        });
 
         // Function to calculate last day of a YYYY-MM month
         function getLastDayOfMonthEdit(monthStr) {
@@ -282,10 +245,11 @@
         });
 
         // Manual amount editing recalculation
-        $(document).on('input', '#sub_totalamount_edit, #discount_amount_edit', function() {
+        $(document).on('input', '#sub_totalamount_edit, #discount_amount_edit, #penalty_amount_edit', function() {
             let subtotal = parseFloat($('#sub_totalamount_edit').val()) || 0;
             let discountAmt = parseFloat($('#discount_amount_edit').val()) || 0;
-            let totalAmt = subtotal - discountAmt;
+            let penaltyAmt = parseFloat($('#penalty_amount_edit').val()) || 0;
+            let totalAmt = subtotal + penaltyAmt - discountAmt;
             if (totalAmt < 0) totalAmt = 0;
             $('#total_amt_edit').val(totalAmt.toFixed(2));
         });
@@ -327,9 +291,49 @@
 
             let subtotal = monthlyFeeSum * durationMonths;
             let discountValue = 0;
+            let totalPenalty = 0;
+            let isAnyMonthLate = false;
 
-            if (discountSettings) {
+            // --- 1. LATE FEE / PENALTY CALCULATION ---
+            if (discountSettings && discountSettings.penalty_allow) {
+                const penaltyDays = parseInt(discountSettings.penalty_days) || 0;
+                const penaltyType = discountSettings.penalty_type || 'fixed';
+                const penaltyAmtSetting = parseFloat(discountSettings.penalty_amount) || 0;
+
+                const today = new Date();
+                const currentYear = today.getFullYear();
+                const currentMonth = today.getMonth() + 1; // 1-indexed (Jan=1, Feb=2...)
+                const currentDay = today.getDate();
+
+                // Set up a loop starting from the Start Month to the End Month
+                let currentCursor = new Date(start.getFullYear(), start.getMonth(), 1);
+                let endLimit = new Date(end.getFullYear(), end.getMonth(), 1);
+
+                while (currentCursor <= endLimit) {
+                    let targetYear = currentCursor.getFullYear();
+                    let targetMonth = currentCursor.getMonth() + 1;
+
+                    let isLate = (targetYear < currentYear) || 
+                                 (targetYear === currentYear && targetMonth < currentMonth) || 
+                                 (targetYear === currentYear && targetMonth === currentMonth && currentDay > penaltyDays);
+
+                    if (isLate) {
+                        isAnyMonthLate = true;
+                        let monthPenalty = (penaltyType === 'fixed') 
+                            ? penaltyAmtSetting 
+                            : monthlyFeeSum * (penaltyAmtSetting / 100);
+                        totalPenalty += monthPenalty;
+                    }
+
+                    currentCursor.setMonth(currentCursor.getMonth() + 1);
+                }
+            }
+
+            // --- 2. PREPAYMENT DISCOUNT CALCULATION ---
+            let discountAmt = 0;
+            if (discountSettings && !isAnyMonthLate) {
                 let settings = discountSettings;
+                
                 if (durationMonths >= 12) {
                     discountValue = settings.discount_yearly;
                 } else if (durationMonths >= 6) {
@@ -340,35 +344,39 @@
                     discountValue = settings.discount_monthly;
                 }
 
-                var discountAmt = 0;
-                if (settings.discount_type === 'percentage') {
-                    discountAmt = subtotal * (discountValue / 100);
-                } else {
-                    discountAmt = discountValue;
-                }
+                discountAmt = (settings.discount_type === 'percentage') 
+                    ? subtotal * (discountValue / 100) 
+                    : discountValue;
 
                 if (discountAmt > subtotal) {
                     discountAmt = subtotal;
                 }
-            } else {
-                var discountAmt = parseFloat($('#discount_amount_edit').val()) || 0;
             }
 
-            let totalAmt = subtotal - discountAmt;
+            // --- 3. TOTAL AMOUNT & RENDERING ---
+            let totalAmt = subtotal + totalPenalty - discountAmt;
 
-            // Render
             $('#sub_totalamount_edit').val(subtotal.toFixed(2));
+            $('#penalty_amount_edit').val(totalPenalty.toFixed(2));
             $('#discount_amount_edit').val(discountAmt.toFixed(2));
             $('#total_amt_edit').val(totalAmt.toFixed(2));
 
+            if (totalPenalty > 0) {
+                $('#penalty_amount_edit').prop('readonly', false);
+            } else {
+                $('#penalty_amount_edit').prop('readonly', true);
+            }
+
             // Check for payment overlap
             let excludeId = '{{ $playerFee->id }}';
-            if (playerId && startVal && endVal) {
+            let batchId = $('#editPlayerFeeForm input[name="batch_id"]').val();
+            if (playerId && batchId && startVal && endVal) {
                 $.ajax({
                     url: '/player-fees/check-overlap',
                     method: 'GET',
                     data: {
                         player_id: playerId,
+                        batch_id: batchId,
                         start_date: startVal,
                         end_date: endVal,
                         exclude_id: excludeId
@@ -411,38 +419,7 @@
         // Form Submit
         $('#editPlayerFeeForm').on('submit', function(e) {
             e.preventDefault();
-
-            let formData = new FormData(this);
-            let submitBtn = $(this).find('button[type="submit"]');
-            submitBtn.prop('disabled', true).html(
-                '<span class="spinner-border spinner-border-sm me-2"></span>Updating...');
-
-            $.ajax({
-                url: $('#url').val(),
-                method: 'POST', // Sent as POST with _method = PUT in the form
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    toastr.success(response.message);
-                    $('#offcanvasScrolling').offcanvas('hide');
-                    $('#datatable').DataTable().ajax.reload();
-                },
-                error: function(xhr) {
-                    submitBtn.prop('disabled', false).html(
-                        '<i class="bi bi-check-circle me-1"></i> Update Fee Payment');
-                    $('.text-danger').text('');
-
-                    if (xhr.status === 422) {
-                        let errors = xhr.responseJSON.errors;
-                        $.each(errors, function(key, value) {
-                            $('#' + key + 'Error').text(value[0]);
-                        });
-                    } else {
-                        toastr.error(xhr.responseJSON?.message || 'Something went wrong.');
-                    }
-                }
-            });
+            submitFormAjax(this);
         });
     });
 </script>

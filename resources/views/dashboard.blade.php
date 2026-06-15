@@ -20,34 +20,34 @@
                 </div>
             </div>
 
-            <!-- Hybrid Theme Summary Cards Row (No Charts) -->
+            <!-- Premium Summary Cards Row -->
             <div class="row g-3 mb-4">
                 
                 <!-- Card 1: Players (Indigo Accent) -->
                 <div class="col-sm-6 col-xl-3">
-                    <div class="card card-accent-indigo bg-white border border-light rounded-3 shadow-sm h-100 position-relative overflow-hidden">
+                    <div class="card dashboard-stat-card stat-card-indigo border-0 h-100">
                         <div class="card-body p-3 d-flex justify-content-between align-items-center">
                             <div>
-                                <div class="small fw-semibold text-secondary text-uppercase mb-1" style="font-size: 10.5px; letter-spacing: 0.5px;">Active Players</div>
+                                <div class="small fw-semibold text-secondary text-uppercase mb-1" style="font-size: 10.5px; letter-spacing: 0.5px;">Total Players</div>
                                 <div class="fs-3 fw-bold mb-0 text-dark">{{ $total_players }}</div>
                             </div>
-                            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; background-color: #e0e7ff; color: #4f46e5;">
+                            <div class="icon-box" style="background-color: #e0e7ff; color: #4f46e5;">
                                 <i class="bi bi-people-fill fs-5"></i>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Card 2: Income (Emerald Accent) -->
+                <!-- Card 2: Coaches (Emerald Accent) -->
                 <div class="col-sm-6 col-xl-3">
-                    <div class="card card-accent-success bg-white border border-light rounded-3 shadow-sm h-100 position-relative overflow-hidden">
+                    <div class="card dashboard-stat-card stat-card-success border-0 h-100">
                         <div class="card-body p-3 d-flex justify-content-between align-items-center">
                             <div>
-                                <div class="small fw-semibold text-secondary text-uppercase mb-1" style="font-size: 10.5px; letter-spacing: 0.5px;">Fees Collected</div>
-                                <div class="fs-3 fw-bold mb-0 text-dark">₹{{ number_format($total_fees_paid, 0) }}</div>
+                                <div class="small fw-semibold text-secondary text-uppercase mb-1" style="font-size: 10.5px; letter-spacing: 0.5px;">Total Coaches</div>
+                                <div class="fs-3 fw-bold mb-0 text-dark">{{ $total_coaches }}</div>
                             </div>
-                            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; background-color: #d1fae5; color: #10b981;">
-                                <i class="bi bi-currency-rupee fs-5"></i>
+                            <div class="icon-box" style="background-color: #d1fae5; color: #10b981;">
+                                <i class="bi bi-person-badge-fill fs-5"></i>
                             </div>
                         </div>
                     </div>
@@ -55,34 +55,67 @@
 
                 <!-- Card 3: Batches (Amber Accent) -->
                 <div class="col-sm-6 col-xl-3">
-                    <div class="card card-accent-warning bg-white border border-light rounded-3 shadow-sm h-100 position-relative overflow-hidden">
+                    <div class="card dashboard-stat-card stat-card-warning border-0 h-100">
                         <div class="card-body p-3 d-flex justify-content-between align-items-center">
                             <div>
-                                <div class="small fw-semibold text-secondary text-uppercase mb-1" style="font-size: 10.5px; letter-spacing: 0.5px;">Active Batches</div>
+                                <div class="small fw-semibold text-secondary text-uppercase mb-1" style="font-size: 10.5px; letter-spacing: 0.5px;">Total Batches</div>
                                 <div class="fs-3 fw-bold mb-0 text-dark">{{ $total_batches }}</div>
                             </div>
-                            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; background-color: #fef3c7; color: #d97706;">
+                            <div class="icon-box" style="background-color: #fef3c7; color: #d97706;">
                                 <i class="bi bi-calendar3 fs-5"></i>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Card 4: Pending (Rose Accent) -->
+                <!-- Card 4: Fees Collected (Rose Accent) -->
                 <div class="col-sm-6 col-xl-3">
-                    <div class="card card-accent-danger bg-white border border-light rounded-3 shadow-sm h-100 position-relative overflow-hidden">
+                    <div class="card dashboard-stat-card stat-card-danger border-0 h-100">
                         <div class="card-body p-3 d-flex justify-content-between align-items-center">
                             <div>
-                                <div class="small fw-semibold text-secondary text-uppercase mb-1" style="font-size: 10.5px; letter-spacing: 0.5px;">Pending Collections</div>
-                                <div class="fs-3 fw-bold mb-0 text-dark">₹{{ number_format($total_fees_pending, 0) }}</div>
+                                <div class="small fw-semibold text-secondary text-uppercase mb-1" style="font-size: 10.5px; letter-spacing: 0.5px;">Fees Collected</div>
+                                <div class="fs-3 fw-bold mb-0 text-dark">₹{{ number_format($total_fees_paid, 0) }}</div>
                             </div>
-                            <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; background-color: #ffe4e6; color: #e11d48;">
-                                <i class="bi bi-exclamation-circle-fill fs-5"></i>
+                            <div class="icon-box" style="background-color: #ffe4e6; color: #e11d48;">
+                                <i class="bi bi-currency-rupee fs-5"></i>
                             </div>
                         </div>
                     </div>
                 </div>
 
+            </div>
+
+            <!-- Charts and Graphs Section -->
+            <div class="row g-4 mb-4">
+                <!-- Monthly Revenue Collection Chart (Bar) -->
+                <div class="col-lg-8">
+                    <div class="card border-0 shadow-sm rounded-3 h-100">
+                        <div class="card-header border-0 bg-transparent pt-3 px-3 pb-1">
+                            <h6 class="fw-bold mb-0" style="color: #1e293b;">Monthly Collections Overview</h6>
+                            <p class="text-secondary small mb-0" style="font-size: 11px;">Paid vs Outstanding collections (Last 6 Months)</p>
+                        </div>
+                        <div class="card-body p-3">
+                            <div style="height: 300px; position: relative;">
+                                <canvas id="monthlyCollectionsChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sport-wise Revenue Doughnut Chart -->
+                <div class="col-lg-4">
+                    <div class="card border-0 shadow-sm rounded-3 h-100">
+                        <div class="card-header border-0 bg-transparent pt-3 px-3 pb-1">
+                            <h6 class="fw-bold mb-0" style="color: #1e293b;">Sport-Wise Revenue Distribution</h6>
+                            <p class="text-secondary small mb-0" style="font-size: 11px;">Realized earnings share per sport</p>
+                        </div>
+                        <div class="card-body p-3 d-flex align-items-center justify-content-center">
+                            <div style="height: 260px; width: 100%; position: relative;">
+                                <canvas id="sportRevenueChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Main Split Layout - SaaS Styled -->
@@ -264,4 +297,135 @@
 
     </div>
 
+    @push('scripts')
+        <!-- Load Chart.js from CDN -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        
+        <script>
+            $(document).ready(function() {
+                // 1. Monthly Revenue Collections Chart (Bar Chart)
+                const monthlyData = @json($monthly_earnings);
+                const months = monthlyData.map(d => d.month);
+                const paidAmounts = monthlyData.map(d => d.paid);
+                const pendingAmounts = monthlyData.map(d => d.pending);
+
+                const ctxMonthly = document.getElementById('monthlyCollectionsChart').getContext('2d');
+                new Chart(ctxMonthly, {
+                    type: 'bar',
+                    data: {
+                        labels: months,
+                        datasets: [
+                            {
+                                label: 'Paid (₹)',
+                                data: paidAmounts,
+                                backgroundColor: '#10b981',
+                                borderRadius: 6,
+                                borderSkipped: false,
+                            },
+                            {
+                                label: 'Pending (₹)',
+                                data: pendingAmounts,
+                                backgroundColor: '#f43f5e',
+                                borderRadius: 6,
+                                borderSkipped: false,
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                labels: {
+                                    boxWidth: 12,
+                                    usePointStyle: true,
+                                    pointStyle: 'circle',
+                                    font: { size: 11, family: 'Inter' }
+                                }
+                            },
+                            tooltip: {
+                                padding: 10,
+                                cornerRadius: 8,
+                                font: { family: 'Inter' },
+                                callbacks: {
+                                    label: function(context) {
+                                        return ' ' + context.dataset.label.replace(' (₹)', '') + ': ₹' + context.raw.toLocaleString();
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: { display: false },
+                                ticks: { font: { size: 10.5, family: 'Inter' } }
+                            },
+                            y: {
+                                border: { dash: [4, 4] },
+                                grid: { color: '#e2e8f0' },
+                                ticks: {
+                                    font: { size: 10.5, family: 'Inter' },
+                                    callback: function(value) {
+                                        return '₹' + value.toLocaleString();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                // 2. Sport-wise Revenue Distribution (Doughnut Chart)
+                const sportsData = @json($sports_earnings);
+                const sportNames = sportsData.map(d => d.name);
+                const sportEarnings = sportsData.map(d => d.earnings);
+
+                const ctxSports = document.getElementById('sportRevenueChart').getContext('2d');
+                new Chart(ctxSports, {
+                    type: 'doughnut',
+                    data: {
+                        labels: sportNames,
+                        datasets: [{
+                            data: sportEarnings,
+                            backgroundColor: [
+                                '#4f46e5', // Indigo
+                                '#10b981', // Emerald
+                                '#f59e0b', // Amber
+                                '#ec4899', // Pink
+                                '#06b6d4'  // Cyan
+                            ],
+                            borderWidth: 2,
+                            borderColor: '#ffffff',
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                                labels: {
+                                    boxWidth: 10,
+                                    usePointStyle: true,
+                                    pointStyle: 'circle',
+                                    font: { size: 11, family: 'Inter' }
+                                }
+                            },
+                            tooltip: {
+                                padding: 10,
+                                cornerRadius: 8,
+                                font: { family: 'Inter' },
+                                callbacks: {
+                                    label: function(context) {
+                                        return ' ' + context.label + ': ₹' + context.raw.toLocaleString();
+                                    }
+                                }
+                            }
+                        },
+                        cutout: '65%'
+                    }
+                });
+            });
+        </script>
+    @endpush
 </x-layout>

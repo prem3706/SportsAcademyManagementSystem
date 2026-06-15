@@ -24,6 +24,11 @@ class PlayerFeesDataTable extends DataTable
                     ? ($fee->player->firstname.' '.$fee->player->lastname)
                     : 'Unknown Player';
             })
+            ->addColumn('batch', function ($fee) {
+                return $fee->batch
+                    ? $fee->batch->name
+                    : 'N/A';
+            })
             ->addColumn('duration', function ($fee) {
                 if ($fee->start_date && $fee->end_date) {
                     return $fee->start_date->format('M Y').
@@ -40,6 +45,9 @@ class PlayerFeesDataTable extends DataTable
             })
             ->editColumn('discount_amount', function ($fee) {
                 return '₹'.number_format($fee->discount_amount, 0);
+            })
+            ->editColumn('penalty_amount', function ($fee) {
+                return '₹'.number_format($fee->penalty_amount, 0);
             })
             ->editColumn('total_amt', function ($fee) {
                 return '₹'.number_format($fee->total_amt, 0);
@@ -103,7 +111,7 @@ class PlayerFeesDataTable extends DataTable
      */
     public function query(PlayerFee $model)
     {
-        $query = $model->newQuery()->with(['player']);
+        $query = $model->newQuery()->with(['player', 'batch']);
 
         // Status Filter
         if (request()->filled('status')) {
@@ -118,6 +126,11 @@ class PlayerFeesDataTable extends DataTable
         // Player Filter
         if (request()->filled('player_id')) {
             $query->where('player_id', request('player_id'));
+        }
+
+        // Batch Filter
+        if (request()->filled('batch')) {
+            $query->where('batch_id', request('batch'));
         }
 
         // Month and Year Filters (Period-wise search)
@@ -188,6 +201,9 @@ class PlayerFeesDataTable extends DataTable
                 ->title('ID'),
             Column::make('player')
                 ->title('Player'),
+            Column::make('batch')
+                ->title('Batch')
+                ->addClass('text-nowrap'),
             Column::make('duration')
                 ->title('Period'),
             Column::make('sub_totalamount')
@@ -195,6 +211,9 @@ class PlayerFeesDataTable extends DataTable
                 ->addClass('text-nowrap'),
             Column::make('discount_amount')
                 ->title('Discount')
+                ->addClass('text-nowrap'),
+            Column::make('penalty_amount')
+                ->title('Penalty')
                 ->addClass('text-nowrap'),
             Column::make('total_amt')
                 ->title('Total')

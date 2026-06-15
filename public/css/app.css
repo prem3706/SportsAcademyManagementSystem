@@ -208,7 +208,7 @@ html[data-coreui-theme="dark"] .dataTables_length select:focus {
    SELECT2 DESIGN (Single & Multiple)
 ========================= */
 
-.select2-container {
+select + .select2-container {
     width: 100% !important;
 }
 
@@ -721,4 +721,59 @@ html[data-coreui-theme="dark"] .trainee-avatar {
     align-items: center;
     justify-content: center;
     width: 100%;
+}
+
+/* Premium Dashboard Summary Cards */
+.dashboard-stat-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(226, 232, 240, 0.8) !important;
+    background: #ffffff;
+    border-radius: 16px !important;
+    position: relative;
+    overflow: hidden;
+}
+.dashboard-stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    transition: all 0.3s ease;
+}
+.dashboard-stat-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 27px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Card Accent Gradients */
+.stat-card-indigo::before { background: linear-gradient(90deg, #4f46e5, #818cf8); }
+.stat-card-indigo:hover .icon-box { background-color: #4f46e5 !important; color: #ffffff !important; transform: rotate(10deg); }
+
+.stat-card-success::before { background: linear-gradient(90deg, #10b981, #34d399); }
+.stat-card-success:hover .icon-box { background-color: #10b981 !important; color: #ffffff !important; transform: rotate(10deg); }
+
+.stat-card-warning::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+.stat-card-warning:hover .icon-box { background-color: #f59e0b !important; color: #ffffff !important; transform: rotate(10deg); }
+
+.stat-card-danger::before { background: linear-gradient(90deg, #f43f5e, #fb7185); }
+.stat-card-danger:hover .icon-box { background-color: #f43f5e !important; color: #ffffff !important; transform: rotate(10deg); }
+
+.icon-box {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html[data-coreui-theme="dark"] .dashboard-stat-card {
+    background-color: #3c4b64 !important;
+    border-color: #4f5d73 !important;
+}
+html[data-coreui-theme="dark"] .dashboard-stat-card .text-dark {
+    color: #f1f5f9 !important;
 }

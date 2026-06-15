@@ -48,7 +48,44 @@ Route::middleware('auth')->group(function () {
             'recent_players' => \App\Models\User::where('role', 'player')->latest()->take(5)->get(),
             'recent_batches' => \App\Models\Batch::with(['sport', 'level', 'coaches'])->latest()->take(5)->get(),
         ];
-        return view('dashboard', $stats);
+
+        // 1. Monthly Revenue collections (Last 6 Months)
+        $monthly_earnings = collect(range(5, 0))->map(function ($i) {
+            $date = now()->subMonths($i);
+            $monthName = $date->format('M Y');
+            $yearMonth = $date->format('Y-m');
+
+            $paid = \App\Models\PlayerFee::where('status', 'paid')
+                ->whereRaw("DATE_FORMAT(start_date, '%Y-%m') = ?", [$yearMonth])
+                ->sum('total_amt');
+
+            $pending = \App\Models\PlayerFee::where('status', 'pending')
+                ->whereRaw("DATE_FORMAT(start_date, '%Y-%m') = ?", [$yearMonth])
+                ->sum('total_amt');
+
+            return [
+                'month' => $monthName,
+                'paid' => floatval($paid),
+                'pending' => floatval($pending)
+            ];
+        })->values()->toArray();
+
+        // 2. Sport-wise Revenue distribution
+        $sports_earnings = \App\Models\Sport::all()->map(function ($sport) {
+            $earnings = \App\Models\PlayerFee::whereHas('batch', function ($q) use ($sport) {
+                $q->where('sport_id', $sport->id);
+            })->where('status', 'paid')->sum('total_amt');
+
+            return [
+                'name' => $sport->name,
+                'earnings' => floatval($earnings)
+            ];
+        })->values()->toArray();
+
+        return view('dashboard', array_merge($stats, [
+            'monthly_earnings' => $monthly_earnings,
+            'sports_earnings' => $sports_earnings
+        ]));
     });
 
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout');

@@ -17,8 +17,14 @@
             <p class="text-danger small mb-0" id="player_idError"></p>
         </div>
 
-        <!-- Enrolled Batches Section (Dynamic) -->
-        <div id="playerBatchesSection" class="d-none"></div>
+        <!-- Select Batch (Dynamic) -->
+        <div class="mb-3 d-none" id="batchSelectContainer">
+            <label for="batch_id" class="form-label fw-semibold text-dark small">Select Batch</label>
+            <select name="batch_id" id="batch_id" class="form-select select2">
+                <option value="">-- Choose Batch --</option>
+            </select>
+            <p class="text-danger small mb-0" id="batch_idError"></p>
+        </div>
 
         <!-- Start & End Month -->
         <div class="row g-3 mb-3">
@@ -67,15 +73,23 @@
 
         <!-- Calculations Fields -->
         <div class="row g-3 mb-3">
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <label class="form-label fw-semibold text-secondary small">Subtotal</label>
                 <div class="input-group">
                     <span class="input-group-text bg-white text-secondary border-end-0">₹</span>
-                    <input type="number" step="0.01" name="sub_totalamount" id="sub_totalamount" class="form-control border-start-0 ps-1 fw-semibold text-dark" value="0.00">
+                    <input type="number" step="0.01" name="sub_totalamount" id="sub_totalamount" class="form-control border-start-0 ps-1 fw-semibold text-dark" value="0.00" readonly>
                 </div>
                 <p class="text-danger small mb-0" id="sub_totalamountError"></p>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
+                <label class="form-label fw-semibold text-secondary small">Penalty Amount</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white text-secondary border-end-0">₹</span>
+                    <input type="number" step="0.01" name="penalty_amount" id="penalty_amount" class="form-control border-start-0 ps-1 fw-semibold text-danger" value="0.00" readonly>
+                </div>
+                <p class="text-danger small mb-0" id="penalty_amountError"></p>
+            </div>
+            <div class="col-md-3">
                 <label class="form-label fw-semibold text-secondary small">Discount Applied</label>
                 <div class="input-group">
                     <span class="input-group-text bg-white text-secondary border-end-0">₹</span>
@@ -83,11 +97,11 @@
                 </div>
                 <p class="text-danger small mb-0" id="discount_amountError"></p>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <label class="form-label fw-semibold text-secondary small">Total Amount</label>
                 <div class="input-group">
                     <span class="input-group-text bg-white text-secondary border-end-0">₹</span>
-                    <input type="number" step="0.01" name="total_amt" id="total_amt" class="form-control border-start-0 ps-1 fw-bold text-primary" value="0.00">
+                    <input type="number" step="0.01" name="total_amt" id="total_amt" class="form-control border-start-0 ps-1 fw-bold text-primary" value="0.00" readonly>
                 </div>
                 <p class="text-danger small mb-0" id="total_amtError"></p>
             </div>

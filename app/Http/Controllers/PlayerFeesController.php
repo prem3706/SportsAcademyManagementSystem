@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\DataTables\PlayerFeesDataTable;
+use App\Models\Batch;
 use App\Models\PlayerFee;
 use App\Models\Setting;
 use App\Models\SportsLevel;
@@ -29,13 +30,21 @@ class PlayerFeesController extends Controller
             })
             ->toArray();
 
+        $batches = Batch::where('status', 'active')
+            ->orderBy('name')
+            ->get()
+            ->mapWithKeys(function ($batch) {
+                return [$batch->id => $batch->name];
+            })
+            ->toArray();
+
         $currentYear = intval(date('Y'));
         $years = [];
         for ($y = $currentYear - 2; $y <= $currentYear + 2; $y++) {
             $years[$y] = (string) $y;
         }
 
-        return $dataTable->render('playerFees.index', compact('players', 'years'));
+        return $dataTable->render('playerFees.index', compact('players', 'years', 'batches'));
     }
 
     /**
@@ -90,6 +99,9 @@ class PlayerFeesController extends Controller
             'discount_half_yearly' => floatval($settings->discount_half_yearly),
             'discount_yearly' => floatval($settings->discount_yearly),
             'penalty_allow' => $settings->allow_penalty,
+            'penalty_days' => intval($settings->penalty_days),
+            'penalty_type' => $settings->penalty_type,
+            'penalty_amount' => floatval($settings->penalty_amount),
         ]);
     }
 
@@ -100,10 +112,12 @@ class PlayerFeesController extends Controller
     {
         $rules = [
             'player_id' => 'required|exists:users,id',
+            'batch_id' => 'required|exists:batches,id',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'sub_totalamount' => 'required|numeric|min:0',
             'discount_amount' => 'required|numeric|min:0',
+            'penalty_amount' => 'required|numeric|min:0',
             'total_amt' => 'required|numeric|min:0',
             'payment_type' => 'required|in:upi,cash,card',
             'status' => 'required|in:paid,pending',
@@ -116,24 +130,27 @@ class PlayerFeesController extends Controller
 
         $request->validate($rules);
 
-        // Check for overlapping fee payments for this player
+        // Check for overlapping fee payments for this player and batch
         $overlapping = PlayerFee::where('player_id', $request->player_id)
+            ->where('batch_id', $request->batch_id)
             ->where('start_date', '<=', $request->end_date)
             ->where('end_date', '>=', $request->start_date)
             ->exists();
 
         if ($overlapping) {
             throw ValidationException::withMessages([
-                'start_date' => ['The player has already paid fees for the selected date range.'],
+                'start_date' => ['The player has already paid fees for the selected date range for this batch.'],
             ]);
         }
 
         $data = $request->only([
             'player_id',
+            'batch_id',
             'start_date',
             'end_date',
             'sub_totalamount',
             'discount_amount',
+            'penalty_amount',
             'total_amt',
             'payment_type',
             'status',
@@ -177,7 +194,15 @@ class PlayerFeesController extends Controller
             ->orderBy('lastname')
             ->get();
 
-        return view('playerFees.editPlayerFeeForm', compact('playerFee', 'players'));
+        $batchFee = 0.00;
+        if ($playerFee->batch) {
+            $sportsLevel = SportsLevel::where('sport_id', $playerFee->batch->sport_id)
+                ->where('level_id', $playerFee->batch->level_id)
+                ->first();
+            $batchFee = $sportsLevel ? floatval($sportsLevel->fees) : 0.00;
+        }
+
+        return view('playerFees.editPlayerFeeForm', compact('playerFee', 'players', 'batchFee'));
     }
 
     /**
@@ -187,10 +212,12 @@ class PlayerFeesController extends Controller
     {
         $rules = [
             'player_id' => 'required|exists:users,id',
+            'batch_id' => 'required|exists:batches,id',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'sub_totalamount' => 'required|numeric|min:0',
             'discount_amount' => 'required|numeric|min:0',
+            'penalty_amount' => 'required|numeric|min:0',
             'total_amt' => 'required|numeric|min:0',
             'payment_type' => 'required|in:upi,cash,card',
             'status' => 'required|in:paid,pending',
@@ -203,8 +230,9 @@ class PlayerFeesController extends Controller
 
         $request->validate($rules);
 
-        // Check for overlapping fee payments for this player, excluding the current record
+        // Check for overlapping fee payments for this player and batch, excluding the current record
         $overlapping = PlayerFee::where('player_id', $request->player_id)
+            ->where('batch_id', $request->batch_id)
             ->where('id', '!=', $playerFee->id)
             ->where('start_date', '<=', $request->end_date)
             ->where('end_date', '>=', $request->start_date)
@@ -212,16 +240,18 @@ class PlayerFeesController extends Controller
 
         if ($overlapping) {
             throw ValidationException::withMessages([
-                'start_date' => ['The player has already paid fees for the selected date range.'],
+                'start_date' => ['The player has already paid fees for the selected date range for this batch.'],
             ]);
         }
 
         $data = $request->only([
             'player_id',
+            'batch_id',
             'start_date',
             'end_date',
             'sub_totalamount',
             'discount_amount',
+            'penalty_amount',
             'total_amt',
             'payment_type',
             'status',
@@ -281,12 +311,14 @@ class PlayerFeesController extends Controller
     {
         $request->validate([
             'player_id' => 'required|exists:users,id',
+            'batch_id' => 'required|exists:batches,id',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
             'exclude_id' => 'nullable|integer',
         ]);
 
         $query = PlayerFee::where('player_id', $request->player_id)
+            ->where('batch_id', $request->batch_id)
             ->where('start_date', '<=', $request->end_date)
             ->where('end_date', '>=', $request->start_date);
 

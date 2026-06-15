@@ -17,6 +17,12 @@
                         'options' => $players,
                     ],
                     [
+                        'id' => 'batchFilter',
+                        'placeholder' => 'All Batches',
+                        'class' => 'select2',
+                        'options' => $batches,
+                    ],
+                    [
                         'id' => 'monthFilter',
                         'placeholder' => 'All Months',
                         'class' => 'select2',
