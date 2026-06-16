@@ -95,7 +95,7 @@ class SportsDataTable extends DataTable
         return $this->builder()
             ->setTableId('datatable')
             ->columns($this->getColumns())
-            ->minifiedAjax()
+            ->minifiedAjax('', 'data.status = $("#statusFilter").val();')
             ->orderBy(1)
             ->selectStyleSingle()
             ->buttons([

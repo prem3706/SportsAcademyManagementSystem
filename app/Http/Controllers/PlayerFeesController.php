@@ -20,6 +20,7 @@ class PlayerFeesController extends Controller
      */
     public function index(PlayerFeesDataTable $dataTable)
     {
+        // Log::info('PLAYER FEES REQUEST: ' . json_encode(request()->all()));
         $players = User::where('role', 'player')
             ->where('status', 'active')
             ->orderBy('firstname')
@@ -58,7 +59,18 @@ class PlayerFeesController extends Controller
             ->orderBy('lastname')
             ->get();
 
-        return view('playerFees.createPlayerFeeForm', compact('players'));
+        $preselected_player_id = request('player_id');
+        $preselected_batch_id = request('batch_id');
+        $preselected_month = request('month');
+        $preselected_year = request('year');
+
+        return view('playerFees.createPlayerFeeForm', compact(
+            'players',
+            'preselected_player_id',
+            'preselected_batch_id',
+            'preselected_month',
+            'preselected_year'
+        ));
     }
 
     /**
@@ -86,6 +98,7 @@ class PlayerFeesController extends Controller
                 'sport' => $batch->sport?->name ?? 'Unknown',
                 'level' => $batch->level?->name ?? 'Unknown',
                 'fees' => $feeAmount,
+                'joined_at' => $batch->pivot->joined_at ? \Carbon\Carbon::parse($batch->pivot->joined_at)->toDateString() : null,
             ];
         });
 

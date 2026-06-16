@@ -74,6 +74,12 @@
             <span id="paymentOverlapWarningTextEdit"></span>
         </div>
 
+        <!-- Warning Alert for Joined Date -->
+        <div id="joinedDateWarningEdit" class="alert alert-danger d-none py-2 px-3 mb-3 small fw-semibold" style="border-radius: 8px;">
+            <i class="bi bi-exclamation-triangle-fill me-1"></i>
+            <span id="joinedDateWarningTextEdit"></span>
+        </div>
+
         <!-- Calculations Fields -->
         <div class="row g-3 mb-3">
             <div class="col-md-3">
@@ -279,6 +285,32 @@
                 $('#end_dateError').text('');
             }
 
+            // Check if period starts before player joined the batch
+            let joinedAtStr = null;
+            let currentBatchId = $('#editPlayerFeeForm input[name="batch_id"]').val();
+            if (discountSettings && discountSettings.batches) {
+                let currentBatch = discountSettings.batches.find(b => b.id == currentBatchId);
+                if (currentBatch) {
+                    joinedAtStr = currentBatch.joined_at;
+                }
+            }
+            if (joinedAtStr && startVal) {
+                let joinedDate = new Date(joinedAtStr);
+                let joinedMonthStart = new Date(joinedDate.getFullYear(), joinedDate.getMonth(), 1);
+                let startDate = new Date(startVal);
+                if (startDate < joinedMonthStart) {
+                    let formattedJoinedDate = joinedDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                    $('#joinedDateWarningTextEdit').text(`Player joined this batch on ${formattedJoinedDate}. Selected fee period starts before the joining date.`);
+                    $('#joinedDateWarningEdit').removeClass('d-none');
+                } else {
+                    $('#joinedDateWarningEdit').addClass('d-none');
+                    $('#joinedDateWarningTextEdit').text('');
+                }
+            } else {
+                $('#joinedDateWarningEdit').addClass('d-none');
+                $('#joinedDateWarningTextEdit').text('');
+            }
+
             // Calculate duration in days
             let timeDiff = end.getTime() - start.getTime();
             let diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1;
@@ -389,18 +421,37 @@
                         } else {
                             $('#paymentOverlapWarningEdit').addClass('d-none');
                             $('#paymentOverlapWarningTextEdit').text('');
-                            $('#editPlayerFeeForm button[type="submit"]').prop('disabled', false);
+                            
+                            let hasJoinedDateWarning = !$('#joinedDateWarningEdit').hasClass('d-none');
+                            if (hasJoinedDateWarning) {
+                                $('#editPlayerFeeForm button[type="submit"]').prop('disabled', true);
+                            } else {
+                                $('#editPlayerFeeForm button[type="submit"]').prop('disabled', false);
+                            }
                         }
                     },
                     error: function () {
                         $('#paymentOverlapWarningEdit').addClass('d-none');
                         $('#paymentOverlapWarningTextEdit').text('');
+                        
+                        let hasJoinedDateWarning = !$('#joinedDateWarningEdit').hasClass('d-none');
+                        if (hasJoinedDateWarning) {
+                            $('#editPlayerFeeForm button[type="submit"]').prop('disabled', true);
+                        } else {
+                            $('#editPlayerFeeForm button[type="submit"]').prop('disabled', false);
+                        }
                     }
                 });
             } else {
                 $('#paymentOverlapWarningEdit').addClass('d-none');
                 $('#paymentOverlapWarningTextEdit').text('');
-                $('#editPlayerFeeForm button[type="submit"]').prop('disabled', false);
+                
+                let hasJoinedDateWarning = !$('#joinedDateWarningEdit').hasClass('d-none');
+                if (hasJoinedDateWarning) {
+                    $('#editPlayerFeeForm button[type="submit"]').prop('disabled', true);
+                } else {
+                    $('#editPlayerFeeForm button[type="submit"]').prop('disabled', false);
+                }
             }
         }
 
@@ -419,6 +470,14 @@
         // Form Submit
         $('#editPlayerFeeForm').on('submit', function(e) {
             e.preventDefault();
+
+            let hasOverlapWarning = !$('#paymentOverlapWarningEdit').hasClass('d-none');
+            let hasJoinedDateWarning = !$('#joinedDateWarningEdit').hasClass('d-none');
+            if (hasOverlapWarning || hasJoinedDateWarning) {
+                toastr.error('Please resolve the warnings before submitting.');
+                return false;
+            }
+
             submitFormAjax(this);
         });
     });

@@ -1,11 +1,12 @@
-/* ==========================================================================
-   1. GLOBAL REUSABLE AJAX HELPERS
-   ========================================================================== */
-
 // Open form inside Bootstrap Offcanvas using AJAX
 function openOffcanvasForm(url, title, onSuccess) {
     $('#offcanvasScrollingLabel').text(title);
-    $('#offCanvasContent').html('<div class="d-flex justify-content-center align-items-center py-5"><div class="spinner-border text-primary" role="status"></div></div>');
+    $('#offCanvasContent').html(`
+        <div class="modern-loader-container">
+            <div class="modern-loader"></div>
+            <div class="modern-loader-text">Loading form...</div>
+        </div>
+    `);
 
     $.ajax({
         type: 'GET',
@@ -76,18 +77,23 @@ function submitFormAjax(formSelector, onSuccess, onError) {
             submitBtn.prop('disabled', false).html(originalHtml);
 
             if (xhr.status === 422) {
-                let errors = xhr.responseJSON.errors;
-                if (errors) {
-                    $.each(errors, function (key, value) {
-                        let errorId = key.replace(/\./g, '_') + 'Error';
-                        let errorEl = $form.find('#' + errorId).length ? $form.find('#' + errorId) : $form.find('#' + key + 'Error');
-                        if (errorEl.length) {
-                            errorEl.text(value[0]);
-                        } else {
-                            $('#' + errorId).text(value[0]);
-                            $('#' + key + 'Error').text(value[0]);
-                        }
-                    });
+                let response = xhr.responseJSON;
+                if (response) {
+                    if (response.message) {
+                        toastr.error(response.message);
+                    }
+                    if (response.errors) {
+                        $.each(response.errors, function (key, value) {
+                            let errorId = key.replace(/\./g, '_') + 'Error';
+                            let errorEl = $form.find('#' + errorId).length ? $form.find('#' + errorId) : $form.find('#' + key + 'Error');
+                            if (errorEl.length) {
+                                errorEl.text(value[0]);
+                            } else {
+                                $('#' + errorId).text(value[0]);
+                                $('#' + key + 'Error').text(value[0]);
+                            }
+                        });
+                    }
                 }
             } else {
                 toastr.error(xhr.responseJSON?.message || 'Something went wrong.');
@@ -225,10 +231,25 @@ $(document).ready(function () {
         }
     }
 
+    // Standard Flatpickr Datepicker Initializer
+    function initFlatpickrDate(container) {
+        let target = container ? $(container).find('.datepicker-input') : $('.datepicker-input');
+        target.each(function () {
+            if (!this._flatpickr) {
+                flatpickr(this, {
+                    dateFormat: "Y-m-d",
+                    altInput: true,
+                    altFormat: "d M Y",
+                    allowInput: true
+                });
+            }
+        });
+    }
+
     // Select2 Custom Styling Initializer
     function initSelect2(container) {
         let target = container ? $(container).find('select.select2, select.form-select') : $('select.select2, select.form-select');
-        target = target.not('.dataTables_length select');
+        target = target.not('.dataTables_length select, .no-select2');
 
         target.each(function () {
             if (!$(this).hasClass('select2-hidden-accessible')) {
@@ -252,10 +273,12 @@ $(document).ready(function () {
 
     // Run initial Select2 styling
     initSelect2();
+    initFlatpickrDate();
 
     // Auto-initialize Select2 on dynamically loaded content (AJAX Complete)
     $(document).ajaxComplete(function () {
         initSelect2('#offCanvasContent');
+        initFlatpickrDate('#offCanvasContent');
     });
 
     /* --- 3. CSRF TOKEN SETUP --- */
@@ -266,19 +289,6 @@ $(document).ready(function () {
     });
 
     /* --- 4. DATATABLE CUSTOM FILTERS & REFRESH LOGIC --- */
-
-    // Inject Filter values before AJAX request
-    $('#datatable').on('preXhr.dt', function (e, settings, data) {
-        data.status = $('#statusFilter').val();
-        data.role = $('#roleFilter').val();
-        data.sport = $('#sportFilter').val();
-        data.level = $('#levelFilter').val();
-        data.batch = $('#batchFilter').val();
-        data.month = $('#monthFilter').val();
-        data.year = $('#yearFilter').val();
-        data.payment_type = $('#paymentTypeFilter').val();
-        data.player_id = $('#playerFilter').val();
-    });
 
     // Reload Table on filter values change
     let isResetting = false;
@@ -663,7 +673,7 @@ $(document).ready(function () {
         submitFormAjax(this);
     });
 
-    /* --- 10. BATCHES MANAGEMENT --- */
+    /* ------------ BATCHES MANAGEMENT -------------- */
 
     // Sport dropdown change -> load levels dropdown
     $(document).on('change', '#sportDropdown', function () {
@@ -766,6 +776,7 @@ $(document).ready(function () {
         let index = assignmentIndex++;
         let sportsOptions = $('#sport_options_helper').html();
 
+        let today = new Date().toISOString().split('T')[0];
         let rowHtml = `
         <div class="card border border-secondary-subtle rounded-4 mb-3 p-3 assignment-row bg-white animate__animated animate__fadeIn">
             <div class="d-flex justify-content-between align-items-center mb-2">
@@ -775,30 +786,35 @@ $(document).ready(function () {
                 </button>
             </div>
             <div class="row g-2">
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="form-label small fw-semibold text-dark mb-1">Sport</label>
                     <select class="form-select form-select-sm sport-select" name="assignments[${index}][sport_id]" required>
                         <option value="" disabled selected>Select sport</option>
                         ${sportsOptions}
                     </select>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="form-label small fw-semibold text-dark mb-1">Level</label>
                     <select class="form-select form-select-sm level-select" name="assignments[${index}][level_id]" required disabled>
                         <option value="" disabled selected>Select sport first</option>
                     </select>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="form-label small fw-semibold text-dark mb-1">Batch</label>
                     <select class="form-select form-select-sm batch-select" name="assignments[${index}][batch_id]" required disabled>
                         <option value="" disabled selected>Select level first</option>
                     </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold text-dark mb-1">Joined Date</label>
+                    <input type="date" class="form-control form-control-sm joined-date-input" name="assignments[${index}][joined_at]" value="${today}" required>
                 </div>
             </div>
         </div>`;
 
         container.append(rowHtml);
         initSelect2(container);
+        initFlatpickrDate(container);
         updateRemoveButtons();
     });
 
@@ -818,6 +834,7 @@ $(document).ready(function () {
             row.find('.sport-select').attr('name', `assignments[${idx}][sport_id]`);
             row.find('.level-select').attr('name', `assignments[${idx}][level_id]`);
             row.find('.batch-select').attr('name', `assignments[${idx}][batch_id]`);
+            row.find('.joined-date-input').attr('name', `assignments[${idx}][joined_at]`);
             assignmentIndex = idx + 1;
         });
     }
@@ -958,11 +975,17 @@ $(document).ready(function () {
                     toastr.warning('Player has no active batch assignments.');
                 } else {
                     response.batches.forEach(function (batch) {
-                        options += `<option value="${batch.id}" data-fees="${batch.fees}">${batch.name} (${batch.sport} - ${batch.level}) - ₹${batch.fees.toFixed(2)}</option>`;
+                        options += `<option value="${batch.id}" data-fees="${batch.fees}" data-joined-at="${batch.joined_at}">${batch.name} (${batch.sport} - ${batch.level}) - ₹${batch.fees.toFixed(2)}</option>`;
                     });
                 }
 
-                $('#batch_id').html(options).trigger('change');
+                let preselectedBatchId = $('#batch_id').data('preselected');
+                $('#batch_id').html(options);
+                if (preselectedBatchId) {
+                    $('#batch_id').val(preselectedBatchId);
+                    $('#batch_id').data('preselected', '');
+                }
+                $('#batch_id').trigger('change');
                 $('#batchSelectContainer').removeClass('d-none');
                 calculateFees();
             },
@@ -1031,6 +1054,26 @@ $(document).ready(function () {
             return;
         } else {
             $('#end_dateError').text('');
+        }
+
+        // Check if period starts before player joined the batch
+        let selectedBatchOption = $('#batch_id').find('option:selected');
+        let joinedAtStr = selectedBatchOption.data('joined-at');
+        if (joinedAtStr && startVal) {
+            let joinedDate = new Date(joinedAtStr);
+            let joinedMonthStart = new Date(joinedDate.getFullYear(), joinedDate.getMonth(), 1);
+            let startDate = new Date(startVal);
+            if (startDate < joinedMonthStart) {
+                let formattedJoinedDate = joinedDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                $('#joinedDateWarningText').text(`Player joined this batch on ${formattedJoinedDate}. Selected fee period starts before the joining date.`);
+                $('#joinedDateWarning').removeClass('d-none');
+            } else {
+                $('#joinedDateWarning').addClass('d-none');
+                $('#joinedDateWarningText').text('');
+            }
+        } else {
+            $('#joinedDateWarning').addClass('d-none');
+            $('#joinedDateWarningText').text('');
         }
 
         let timeDiff = end.getTime() - start.getTime();
@@ -1138,18 +1181,37 @@ $(document).ready(function () {
                     } else {
                         $('#paymentOverlapWarning').addClass('d-none');
                         $('#paymentOverlapWarningText').text('');
-                        $('#addPlayerFeeForm button[type="submit"]').prop('disabled', false);
+
+                        let hasJoinedDateWarning = !$('#joinedDateWarning').hasClass('d-none');
+                        if (hasJoinedDateWarning) {
+                            $('#addPlayerFeeForm button[type="submit"]').prop('disabled', true);
+                        } else {
+                            $('#addPlayerFeeForm button[type="submit"]').prop('disabled', false);
+                        }
                     }
                 },
                 error: function () {
                     $('#paymentOverlapWarning').addClass('d-none');
                     $('#paymentOverlapWarningText').text('');
+
+                    let hasJoinedDateWarning = !$('#joinedDateWarning').hasClass('d-none');
+                    if (hasJoinedDateWarning) {
+                        $('#addPlayerFeeForm button[type="submit"]').prop('disabled', true);
+                    } else {
+                        $('#addPlayerFeeForm button[type="submit"]').prop('disabled', false);
+                    }
                 }
             });
         } else {
             $('#paymentOverlapWarning').addClass('d-none');
             $('#paymentOverlapWarningText').text('');
-            $('#addPlayerFeeForm button[type="submit"]').prop('disabled', false);
+
+            let hasJoinedDateWarning = !$('#joinedDateWarning').hasClass('d-none');
+            if (hasJoinedDateWarning) {
+                $('#addPlayerFeeForm button[type="submit"]').prop('disabled', true);
+            } else {
+                $('#addPlayerFeeForm button[type="submit"]').prop('disabled', false);
+            }
         }
     }
 
@@ -1162,6 +1224,8 @@ $(document).ready(function () {
         $('#total_amt').val('0.00');
         $('#paymentOverlapWarning').addClass('d-none');
         $('#paymentOverlapWarningText').text('');
+        $('#joinedDateWarning').addClass('d-none');
+        $('#joinedDateWarningText').text('');
         $('#addPlayerFeeForm button[type="submit"]').prop('disabled', false);
     }
 
@@ -1192,6 +1256,14 @@ $(document).ready(function () {
     // Add Player Fee Form Submit
     $(document).on('submit', '#addPlayerFeeForm', function (e) {
         e.preventDefault();
+
+        let hasOverlapWarning = !$('#paymentOverlapWarning').hasClass('d-none');
+        let hasJoinedDateWarning = !$('#joinedDateWarning').hasClass('d-none');
+        if (hasOverlapWarning || hasJoinedDateWarning) {
+            toastr.error('Please resolve the warnings before submitting.');
+            return false;
+        }
+
         submitFormAjax(this);
     });
 
@@ -1206,10 +1278,46 @@ $(document).ready(function () {
         submitFormAjax(this);
     });
 
+    // Unpaid Players Dashboard Filter Change Listeners
+    $(document).on('change', '#unpaidMonthFilter, #unpaidYearFilter', function () {
+        let monthName = $('#unpaidMonthFilter option:selected').text().trim();
+        let yearVal = $('#unpaidYearFilter').val();
+        $('#unpaidCardTitle').text('Unpaid Players (' + monthName + ' ' + yearVal + ')');
+
+        $('#datatable').DataTable().ajax.reload();
+    });
+
+    // Apply visual card body loading state (dimming) on Unpaid Players Dashboard DataTable
+    $(document).on('preXhr.dt', '#datatable', function (e, settings, data) {
+        $('#unpaidPlayersCard').find('.card-body').css({
+            'opacity': '0.5',
+            'pointer-events': 'none',
+            'transition': 'opacity 0.15s ease'
+        });
+    });
+
+    // Restore card opacity after DataTable drawing/refreshing finishes
+    $(document).on('draw.dt', '#datatable', function () {
+        $('#unpaidPlayersCard').find('.card-body').css({
+            'opacity': '1',
+            'pointer-events': 'auto'
+        });
+    });
+
     // Add Player Fee Form Open
-    $(document).on('click', '#addPlayerFeeBtn', function () {
+    $(document).on('click', '#addPlayerFeeBtn, .collect-fee-btn', function () {
+        // Explicitly trigger the Bootstrap offcanvas just in case data attributes didn't fire (e.g. dynamic elements)
+        let offcanvasEl = document.getElementById('offcanvasScrolling');
+        if (offcanvasEl) {
+            let bsOffcanvas = bootstrap.Offcanvas.getOrCreateInstance(offcanvasEl);
+            bsOffcanvas.show();
+        }
+
         openOffcanvasForm($(this).data('url'), $(this).data('title'), function () {
             initDatePicker();
+            if ($('#player_id').val()) {
+                $('#player_id').trigger('change');
+            }
         });
     });
 
@@ -1299,5 +1407,4 @@ $(document).ready(function () {
     if ($('#discount_type').length > 0) {
         updateDiscountTypeUI();
     }
-
 });

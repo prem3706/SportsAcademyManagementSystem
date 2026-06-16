@@ -179,7 +179,7 @@ class PlayerFeesDataTable extends DataTable
         return $this->builder()
             ->setTableId('datatable')
             ->columns($this->getColumns())
-            ->minifiedAjax()
+            ->minifiedAjax('', 'data.month = $("#monthFilter").val(); data.year = $("#yearFilter").val(); data.status = $("#statusFilter").val(); data.batch = $("#batchFilter").val(); data.payment_type = $("#paymentTypeFilter").val(); data.player_id = $("#playerFilter").val();')
             ->orderBy(1)
             ->buttons([
                 Button::make('excel'),

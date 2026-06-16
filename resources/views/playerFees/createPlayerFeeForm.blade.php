@@ -1,3 +1,14 @@
+@php
+    $start_month_val = '';
+    $start_date_val = '';
+    $end_date_val = '';
+    if (!empty($preselected_month) && !empty($preselected_year)) {
+        $start_month_val = sprintf('%04d-%02d', $preselected_year, $preselected_month);
+        $start_date_val = sprintf('%04d-%02d-01', $preselected_year, $preselected_month);
+        $end_date_val = \Carbon\Carbon::createFromDate($preselected_year, $preselected_month, 1)->endOfMonth()->format('Y-m-d');
+    }
+@endphp
+
 <div class="container py-3">
     <form id="addPlayerFeeForm" method="POST" enctype="multipart/form-data">
         @csrf
@@ -7,9 +18,9 @@
         <div class="mb-3">
             <label for="player_id" class="form-label fw-semibold text-dark small">Select Player</label>
             <select name="player_id" id="player_id" class="form-select select2">
-                <option value="">-- Choose Player --</option>
+                <option value="" disabled {{ !$preselected_player_id ? 'selected' : '' }}>-- Choose Player --</option>
                 @foreach ($players as $player)
-                    <option value="{{ $player->id }}">{{ $player->firstname }} {{ $player->lastname }}
+                    <option value="{{ $player->id }}" {{ $preselected_player_id == $player->id ? 'selected' : '' }}>{{ $player->firstname }} {{ $player->lastname }}
                         ({{ $player->phone }})
                     </option>
                 @endforeach
@@ -18,9 +29,9 @@
         </div>
 
         <!-- Select Batch (Dynamic) -->
-        <div class="mb-3 d-none" id="batchSelectContainer">
+        <div class="mb-3 {{ $preselected_player_id ? '' : 'd-none' }}" id="batchSelectContainer">
             <label for="batch_id" class="form-label fw-semibold text-dark small">Select Batch</label>
-            <select name="batch_id" id="batch_id" class="form-select select2">
+            <select name="batch_id" id="batch_id" class="form-select select2" data-preselected="{{ $preselected_batch_id }}">
                 <option value="">-- Choose Batch --</option>
             </select>
             <p class="text-danger small mb-0" id="batch_idError"></p>
@@ -35,7 +46,7 @@
                         <i class="bi bi-calendar-date"></i>
                     </span>
                     <input type="text" id="startMonth" class="form-control border-start-0 ps-1 bg-white"
-                        placeholder="Select Month" required readonly>
+                        placeholder="Select Month" required readonly value="{{ $start_month_val }}">
                 </div>
                 <p class="text-danger small mb-0" id="start_dateError"></p>
             </div>
@@ -46,15 +57,15 @@
                         <i class="bi bi-calendar-date"></i>
                     </span>
                     <input type="text" id="endMonth" class="form-control border-start-0 ps-1 bg-white"
-                        placeholder="Select Month" required readonly>
+                        placeholder="Select Month" required readonly value="{{ $start_month_val }}">
                 </div>
                 <p class="text-danger small mb-0" id="end_dateError"></p>
             </div>
         </div>
 
         <!-- Hidden actual date fields sent to backend -->
-        <input type="hidden" name="start_date" id="startDate">
-        <input type="hidden" name="end_date" id="endDate">
+        <input type="hidden" name="start_date" id="startDate" value="{{ $start_date_val }}">
+        <input type="hidden" name="end_date" id="endDate" value="{{ $end_date_val }}">
 
         <!-- Calculated Duration Info -->
         <div class="mb-3">
@@ -69,6 +80,12 @@
         <div id="paymentOverlapWarning" class="alert alert-danger d-none py-2 px-3 mb-3 small fw-semibold" style="border-radius: 8px;">
             <i class="bi bi-exclamation-triangle-fill me-1"></i>
             <span id="paymentOverlapWarningText"></span>
+        </div>
+
+        <!-- Warning Alert for Joined Date -->
+        <div id="joinedDateWarning" class="alert alert-danger d-none py-2 px-3 mb-3 small fw-semibold" style="border-radius: 8px;">
+            <i class="bi bi-exclamation-triangle-fill me-1"></i>
+            <span id="joinedDateWarningText"></span>
         </div>
 
         <!-- Calculations Fields -->
