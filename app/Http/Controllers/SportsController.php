@@ -32,18 +32,30 @@ class SportsController extends Controller
     public function store(Request $request)
     {
         $request->merge([
-            'slug' => Str::lower($request->input('slug')),
+            'slug' => Str::slug($request->input('name')),
         ]);
 
-        // 2. Validate the updated request data
-        $validatedData = $request->validate([
+        $validator = validator($request->all(), [
             'name' => 'required|string|max:255',
             'slug' => 'required|string|max:255|unique:sports,slug',
             'description' => 'nullable|string|max:1000',
             'status' => 'required|in:active,inactive',
+        ], [
+            'slug.unique' => 'This sport name has already been taken.',
         ]);
 
-        Sport::create($validatedData);
+        if ($validator->fails()) {
+            $errors = $validator->errors();
+            if ($errors->has('slug')) {
+                $errors->add('name', $errors->first('slug'));
+            }
+            return response()->json([
+                'message' => 'The given data was invalid.',
+                'errors' => $errors
+            ], 422);
+        }
+
+        Sport::create($validator->validated());
 
         return response()->json([
             'success' => true,
@@ -72,18 +84,31 @@ class SportsController extends Controller
      */
     public function update(Request $request, Sport $sport)
     {
-        $validatedData = $request->validate([
-
-            'name' => 'required|string|max:255',
-
-            'slug' => 'required|string|max:255|unique:sports,slug,'.$sport->id,
-
-            'description' => 'nullable|string|max:1000',
-
-            'status' => 'required|in:active,inactive',
-
+        $request->merge([
+            'slug' => Str::slug($request->input('name')),
         ]);
-        $sport->update($validatedData);
+
+        $validator = validator($request->all(), [
+            'name' => 'required|string|max:255',
+            'slug' => 'required|string|max:255|unique:sports,slug,'.$sport->id,
+            'description' => 'nullable|string|max:1000',
+            'status' => 'required|in:active,inactive',
+        ], [
+            'slug.unique' => 'This sport name has already been taken.',
+        ]);
+
+        if ($validator->fails()) {
+            $errors = $validator->errors();
+            if ($errors->has('slug')) {
+                $errors->add('name', $errors->first('slug'));
+            }
+            return response()->json([
+                'message' => 'The given data was invalid.',
+                'errors' => $errors
+            ], 422);
+        }
+
+        $sport->update($validator->validated());
 
         return response()->json([
             'success' => true,

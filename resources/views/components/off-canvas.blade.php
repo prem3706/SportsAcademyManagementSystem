@@ -1,5 +1,15 @@
-<div class="offcanvas offcanvas-end border-0 shadow-lg w-75" data-bs-backdrop="false" tabindex="-1" id="offcanvasScrolling"
-    aria-labelledby="offcanvasScrollingLabel ">
+<style>
+    #offcanvasScrolling.offcanvas-medium {
+        width: 600px !important;
+        max-width: 100% !important;
+    }
+    #offcanvasScrolling.offcanvas-wide {
+        width: 75% !important;
+        max-width: 100% !important;
+    }
+</style>
+<div class="offcanvas offcanvas-end border-0 shadow-lg offcanvas-wide" data-bs-backdrop="false" tabindex="-1" id="offcanvasScrolling"
+    aria-labelledby="offcanvasScrollingLabel">
 
     <!-- Header -->
     <div class="offcanvas-header border-bottom bg-white px-4 py-3">

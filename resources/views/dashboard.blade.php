@@ -22,8 +22,9 @@
                 </div>
             </div>
 
-            <!-- Premium Summary Cards Row -->
-            <div class="row g-3 mb-4">
+            <!-- Premium Summary Cards Section -->
+            <!-- Row 1: Academy Overview -->
+            <div class="row g-3 mb-3">
 
                 <!-- Card 1: Players (Indigo Accent) -->
                 <div class="col-sm-6 col-xl-3">
@@ -73,8 +74,29 @@
                     </div>
                 </div>
 
-                <!-- Card 4: Fees Collected (Rose Accent) -->
+                <!-- Card 4: Total Sports (Purple Accent) -->
                 <div class="col-sm-6 col-xl-3">
+                    <div class="card dashboard-stat-card stat-card-purple border-0 h-100">
+                        <div class="card-body p-3 d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="small fw-semibold text-secondary text-uppercase mb-1"
+                                    style="font-size: 10.5px; letter-spacing: 0.5px;">Total Sports</div>
+                                <div class="fs-3 fw-bold mb-0 text-dark">{{ $total_sports }}</div>
+                            </div>
+                            <div class="icon-box" style="background-color: #f3e8ff; color: #8b5cf6;">
+                                <i class="bi bi-trophy-fill fs-5"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Row 2: Financial Overview -->
+            <div class="row g-3 mb-4">
+
+                <!-- Card 5: Month Fees Collected (Rose Accent) -->
+                <div class="col-sm-6 col-md-4 col-xl">
                     <div class="card dashboard-stat-card stat-card-danger border-0 h-100">
                         <div class="card-body p-3 d-flex justify-content-between align-items-center">
                             <div>
@@ -89,6 +111,87 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Card 6: Month Expenses (Pink Accent) -->
+                <div class="col-sm-6 col-md-4 col-xl">
+                    <div class="card dashboard-stat-card stat-card-pink border-0 h-100">
+                        <div class="card-body p-3 d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="small fw-semibold text-secondary text-uppercase mb-1"
+                                    style="font-size: 10.5px; letter-spacing: 0.5px;">Month Expenses</div>
+                                <div class="fs-3 fw-bold mb-0 text-dark">₹{{ number_format($month_expenses, 0) }}</div>
+                            </div>
+                            <div class="icon-box" style="background-color: #fce7f3; color: #db2777;">
+                                <i class="bi bi-journal-minus fs-5"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 7: Net Monthly Balance (Info Accent) -->
+                <div class="col-sm-6 col-md-4 col-xl">
+                    <div class="card dashboard-stat-card stat-card-info border-0 h-100">
+                        <div class="card-body p-3 d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="small fw-semibold text-secondary text-uppercase mb-1"
+                                    style="font-size: 10.5px; letter-spacing: 0.5px;">Net Monthly Balance</div>
+                                <div
+                                    class="fs-3 fw-bold mb-0 {{ $net_monthly_balance >= 0 ? 'text-success' : 'text-danger' }}">
+                                    ₹{{ number_format($net_monthly_balance, 0) }}
+                                </div>
+                            </div>
+                            <div class="icon-box" style="background-color: #e0f2fe; color: #0ea5e9;">
+                                <i class="bi bi-wallet2 fs-5"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 8: Total Expenses (Dark Accent) -->
+                <div class="col-sm-6 col-md-4 col-xl">
+                    <div class="card dashboard-stat-card stat-card-dark border-0 h-100">
+                        <div class="card-body p-3 d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="small fw-semibold text-secondary text-uppercase mb-1"
+                                    style="font-size: 10.5px; letter-spacing: 0.5px;">Total Expenses</div>
+                                <div class="fs-3 fw-bold mb-0 text-dark">₹{{ number_format($total_expenses, 0) }}</div>
+                            </div>
+                            <div class="icon-box" style="background-color: #f1f5f9; color: #1e293b;">
+                                <i class="bi bi-receipt fs-5"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 9: Outstanding Fees (Warning Accent) -->
+                {{-- <div class="col-sm-6 col-md-4 col-xl">
+                    <div class="card dashboard-stat-card stat-card-warning border-0 h-100">
+                        <div class="card-body p-3 d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="small fw-semibold text-secondary text-uppercase mb-1"
+                                    style="font-size: 10.5px; letter-spacing: 0.5px;">Outstanding Fees</div>
+                                <div class="fs-3 fw-bold mb-0 text-dark">₹{{ number_format($total_fees_pending, 0) }}</div>
+                            </div>
+                            <div class="icon-box" style="background-color: #fef3c7; color: #d97706;">
+                                <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-4 col-xl">
+                    <div class="card dashboard-stat-card stat-card-warning border-0 h-100">
+                        <div class="card-body p-3 d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="small fw-semibold text-secondary text-uppercase mb-1"
+                                    style="font-size: 10.5px; letter-spacing: 0.5px;">Outstanding This Monthly Fees</div>
+                                <div class="fs-3 fw-bold mb-0 text-dark">₹{{ number_format($total_monthly_fees_pending, 0) }}</div>
+                            </div>
+                            <div class="icon-box" style="background-color: #fef3c7; color: #d97706;">
+                                <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div> --}}
 
             </div>
 

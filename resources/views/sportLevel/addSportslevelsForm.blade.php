@@ -10,7 +10,7 @@
         <div class="mb-3">
 
             <label class="form-label fw-semibold">
-                Select Sport
+                Select Sport <span class="text-danger">*</span>
             </label>
 
             <select name="sport_id" class="form-select">
@@ -38,7 +38,7 @@
             <div class="col-md-5">
 
                 <label class="form-label fw-semibold">
-                    Select Level
+                    Select Level <span class="text-danger">*</span>
                 </label>
 
                 <select id="levelDropdown" class="form-select">
@@ -63,7 +63,7 @@
             <div class="col-md-5">
 
                 <label class="form-label fw-semibold">
-                    Fees
+                    Fees <span class="text-danger">*</span>
                 </label>
 
                 <input type="number" id="levelFees" class="form-control" placeholder="Enter fees">

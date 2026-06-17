@@ -11,7 +11,7 @@
         <div class="mb-4">
 
             <label class="form-label fw-semibold">
-                Sport Name
+                Sport Name <span class="text-danger">*</span>
             </label>
 
             <input type="text" class="form-control bg-light" value="{{ $sport->name }}" readonly>
@@ -25,7 +25,7 @@
             <div class="col-md-5">
 
                 <label class="form-label fw-semibold">
-                    Select Level
+                    Select Level <span class="text-danger">*</span>
                 </label>
 
                 <select id="levelDropdown" class="form-select">
@@ -47,7 +47,7 @@
             <div class="col-md-5">
 
                 <label class="form-label fw-semibold">
-                    Fees
+                    Fees <span class="text-danger">*</span>
                 </label>
 
                 <input type="number" id="levelFees" class="form-control" placeholder="Enter fees">

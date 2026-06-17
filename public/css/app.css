@@ -725,39 +725,35 @@ html[data-coreui-theme="dark"] .trainee-avatar {
 
 /* Premium Dashboard Summary Cards */
 .dashboard-stat-card {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    border: 1px solid rgba(226, 232, 240, 0.8) !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 0 !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03) !important;
     background: #ffffff;
-    border-radius: 16px !important;
+    border-radius: 12px !important;
     position: relative;
     overflow: hidden;
 }
-.dashboard-stat-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 4px;
-    transition: all 0.3s ease;
-}
 .dashboard-stat-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 20px 27px rgba(0, 0, 0, 0.05) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.04) !important;
 }
 
 /* Card Accent Gradients */
-.stat-card-indigo::before { background: linear-gradient(90deg, #4f46e5, #818cf8); }
 .stat-card-indigo:hover .icon-box { background-color: #4f46e5 !important; color: #ffffff !important; transform: rotate(10deg); }
 
-.stat-card-success::before { background: linear-gradient(90deg, #10b981, #34d399); }
 .stat-card-success:hover .icon-box { background-color: #10b981 !important; color: #ffffff !important; transform: rotate(10deg); }
 
-.stat-card-warning::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
 .stat-card-warning:hover .icon-box { background-color: #f59e0b !important; color: #ffffff !important; transform: rotate(10deg); }
 
-.stat-card-danger::before { background: linear-gradient(90deg, #f43f5e, #fb7185); }
 .stat-card-danger:hover .icon-box { background-color: #f43f5e !important; color: #ffffff !important; transform: rotate(10deg); }
+
+.stat-card-info:hover .icon-box { background-color: #0ea5e9 !important; color: #ffffff !important; transform: rotate(10deg); }
+
+.stat-card-dark:hover .icon-box { background-color: #1e293b !important; color: #ffffff !important; transform: rotate(10deg); }
+
+.stat-card-purple:hover .icon-box { background-color: #8b5cf6 !important; color: #ffffff !important; transform: rotate(10deg); }
+
+.stat-card-pink:hover .icon-box { background-color: #db2777 !important; color: #ffffff !important; transform: rotate(10deg); }
 
 .icon-box {
     width: 48px;
@@ -828,4 +824,42 @@ html[data-coreui-theme="dark"] .dashboard-stat-card .text-dark {
 @keyframes pulse {
     0%, 100% { opacity: 0.6; }
     50% { opacity: 1; }
+}
+
+/* =========================
+   Dropify Custom Styling
+   ========================= */
+.dropify-wrapper {
+    border: 2px dashed #e2e8f0 !important;
+    border-radius: 12px !important;
+    background-color: #f8fafc !important;
+    color: #475569 !important;
+    transition: all 0.2s ease-in-out !important;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+}
+.dropify-wrapper:hover {
+    background-color: #f1f5f9 !important;
+    border-color: #cbd5e1 !important;
+}
+.dropify-wrapper .dropify-message p {
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    color: #475569 !important;
+}
+.dropify-wrapper .dropify-preview {
+    background-color: #f8fafc !important;
+    border-radius: 10px !important;
+}
+.dropify-wrapper .dropify-clear {
+    border: 1px solid #cbd5e1 !important;
+    background: #ffffff !important;
+    color: #64748b !important;
+    border-radius: 8px !important;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-weight: 600 !important;
+    transition: all 0.15s ease-in-out !important;
+}
+.dropify-wrapper .dropify-clear:hover {
+    background: #f1f5f9 !important;
+    color: #0f172a !important;
 }

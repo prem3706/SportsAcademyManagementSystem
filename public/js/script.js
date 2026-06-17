@@ -8,11 +8,37 @@ function openOffcanvasForm(url, title, onSuccess) {
         </div>
     `);
 
+    // Set size class immediately based on URL to prevent slide-in snapping glitch
+    let offcanvas = $('#offcanvasScrolling');
+    offcanvas.removeClass('offcanvas-wide offcanvas-medium');
+
+    let isSmallUrl = url.includes('/sports') ||
+                     url.includes('/levels') ||
+                     url.includes('/expense-category');
+
+    if (isSmallUrl) {
+        offcanvas.addClass('offcanvas-medium');
+    } else {
+        offcanvas.addClass('offcanvas-wide');
+    }
+
     $.ajax({
         type: 'GET',
         url: url,
         success: function (response) {
             $('#offCanvasContent').html(response);
+
+            // Verify and refine width after load if form has data-width
+            let $form = $('#offCanvasContent').find('form');
+            if ($form.length) {
+                offcanvas.removeClass('offcanvas-wide offcanvas-medium');
+                if ($form.attr('data-width') === 'medium') {
+                    offcanvas.addClass('offcanvas-medium');
+                } else {
+                    offcanvas.addClass('offcanvas-wide');
+                }
+            }
+
             if (onSuccess) onSuccess(response);
         },
         error: function () {
@@ -271,14 +297,27 @@ $(document).ready(function () {
         });
     }
 
+    // Dropify File Input Initializer
+    function initDropify(container) {
+        let target = container ? $(container).find('input[type="file"]') : $('input[type="file"]');
+        target.each(function () {
+            if (!$(this).parent().hasClass('dropify-wrapper')) {
+                $(this).addClass('dropify');
+                $(this).dropify();
+            }
+        });
+    }
+
     // Run initial Select2 styling
     initSelect2();
     initFlatpickrDate();
+    initDropify();
 
     // Auto-initialize Select2 on dynamically loaded content (AJAX Complete)
     $(document).ajaxComplete(function () {
         initSelect2('#offCanvasContent');
         initFlatpickrDate('#offCanvasContent');
+        initDropify('#offCanvasContent');
     });
 
     /* --- 3. CSRF TOKEN SETUP --- */
@@ -787,26 +826,26 @@ $(document).ready(function () {
             </div>
             <div class="row g-2">
                 <div class="col-md-3">
-                    <label class="form-label small fw-semibold text-dark mb-1">Sport</label>
+                    <label class="form-label small fw-semibold text-dark mb-1">Sport <span class="text-danger">*</span></label>
                     <select class="form-select form-select-sm sport-select" name="assignments[${index}][sport_id]" required>
                         <option value="" disabled selected>Select sport</option>
                         ${sportsOptions}
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label small fw-semibold text-dark mb-1">Level</label>
+                    <label class="form-label small fw-semibold text-dark mb-1">Level <span class="text-danger">*</span></label>
                     <select class="form-select form-select-sm level-select" name="assignments[${index}][level_id]" required disabled>
                         <option value="" disabled selected>Select sport first</option>
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label small fw-semibold text-dark mb-1">Batch</label>
+                    <label class="form-label small fw-semibold text-dark mb-1">Batch <span class="text-danger">*</span></label>
                     <select class="form-select form-select-sm batch-select" name="assignments[${index}][batch_id]" required disabled>
                         <option value="" disabled selected>Select level first</option>
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label small fw-semibold text-dark mb-1">Joined Date</label>
+                    <label class="form-label small fw-semibold text-dark mb-1">Joined Date <span class="text-danger">*</span></label>
                     <input type="date" class="form-control form-control-sm joined-date-input" name="assignments[${index}][joined_at]" value="${today}" required>
                 </div>
             </div>
@@ -1407,4 +1446,70 @@ $(document).ready(function () {
     if ($('#discount_type').length > 0) {
         updateDiscountTypeUI();
     }
+
+
+
+    // --------------------Expense Category-----------------------
+
+    // Add expense category Form Open
+    $(document).on('click', '#addExpenseCategoryBtn', function () {
+        openOffcanvasForm($(this).data('url'), $(this).data('title'));
+    });
+
+    // Add expense category Form Submit
+    $(document).on('submit', '#addExpenseCategoryForm', function (e) {
+        e.preventDefault();
+        submitFormAjax(this);
+    });
+
+    // Edit expense category Form Open
+    $(document).on('click', '#editExpenseCategoryBtn', function () {
+        openOffcanvasForm($(this).data('url'), $(this).data('title'));
+    });
+
+    // Edit expense category Form Submit
+    $(document).on('submit', '#editExpenseCategoryForm', function (e) {
+        e.preventDefault();
+        submitFormAjax(this);
+    });
+
+    // Delete Single expense category
+    $(document).on('click', '#deleteExpenseCategoryBtn', function () {
+        deleteResourceAjax($(this).data('url'), 'This Expense Category will be deleted permanently!');
+    });
+
+    Bulkdelete('expense-category', '.user-checkbox');
+    BulkUpdateStatus('expense-category', '.user-checkbox');
+
+    // --------------------Expenses Management-----------------------
+
+    // Add Expense Form Open
+    $(document).on('click', '#addExpenseBtn', function () {
+        openOffcanvasForm($(this).data('url'), $(this).data('title'));
+    });
+
+    // Add Expense Form Submit
+    $(document).on('submit', '#addExpenseForm', function (e) {
+        e.preventDefault();
+        submitFormAjax(this);
+    });
+
+    // Edit Expense Form Open
+    $(document).on('click', '#editExpenseBtn', function () {
+        openOffcanvasForm($(this).data('url'), $(this).data('title'));
+    });
+
+    // Edit Expense Form Submit
+    $(document).on('submit', '#editExpenseForm', function (e) {
+        e.preventDefault();
+        submitFormAjax(this);
+    });
+
+    // Delete Single Expense
+    $(document).on('click', '#deleteExpenseBtn', function () {
+        deleteResourceAjax($(this).data('url'), 'This Expense record will be deleted permanently!');
+    });
+
+    Bulkdelete('expenses', '.user-checkbox');
+
 });

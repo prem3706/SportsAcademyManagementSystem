@@ -2,19 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\DataTables\LevelsDataTable;
-use App\Models\Level;
+use App\DataTables\ExpenseCategoriesDataTable;
+use App\Models\ExpenseCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
-class LevelsController extends Controller
+class ExpenseCategoriesController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(LevelsDataTable $dataTable)
+    public function index(ExpenseCategoriesDataTable $dataTable)
     {
-        return $dataTable->render('levels.index');
+        return $dataTable->render('expenseCategories.index');
     }
 
     /**
@@ -22,7 +22,7 @@ class LevelsController extends Controller
      */
     public function create()
     {
-        return view('levels.addLevelForm');
+        return view('expenseCategories.addExpenseCategoryForm');
     }
 
     /**
@@ -36,10 +36,11 @@ class LevelsController extends Controller
 
         $validator = validator($request->all(), [
             'name' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:levels,slug',
-            'status' => 'required|in:active,inactive',
+            'slug' => 'required|string|max:255|unique:expense_categories,slug',
+            'description' => 'nullable|string|max:1000',
+            'status' => 'required|in:1,0',
         ], [
-            'slug.unique' => 'This level name has already been taken.',
+            'slug.unique' => 'This category name has already been taken.',
         ]);
 
         if ($validator->fails()) {
@@ -53,11 +54,11 @@ class LevelsController extends Controller
             ], 422);
         }
 
-        Level::create($validator->validated());
+        ExpenseCategory::create($validator->validated());
 
         return response()->json([
             'success' => true,
-            'message' => 'Level created successfully.',
+            'message' => 'Expense Category created successfully.',
         ]);
     }
 
@@ -72,15 +73,15 @@ class LevelsController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Level $level)
+    public function edit(ExpenseCategory $expenseCategory)
     {
-        return view('levels.editLevelForm', compact('level'));
+        return view('expenseCategories.editExpenseCategoryForm', compact('expenseCategory'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Level $level)
+    public function update(Request $request, ExpenseCategory $expenseCategory)
     {
         $request->merge([
             'slug' => Str::slug($request->input('name')),
@@ -88,10 +89,11 @@ class LevelsController extends Controller
 
         $validator = validator($request->all(), [
             'name' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:levels,slug,'.$level->id,
-            'status' => 'required|in:active,inactive',
+            'slug' => 'required|string|max:255|unique:expense_categories,slug,'.$expenseCategory->id,
+            'description' => 'nullable|string|max:1000',
+            'status' => 'required|in:1,0',
         ], [
-            'slug.unique' => 'This level name has already been taken.',
+            'slug.unique' => 'This category name has already been taken.',
         ]);
 
         if ($validator->fails()) {
@@ -105,75 +107,83 @@ class LevelsController extends Controller
             ], 422);
         }
 
-        $level->update($validator->validated());
+        $expenseCategory->update($validator->validated());
 
         return response()->json([
             'success' => true,
-            'message' => 'Level updated successfully.',
+            'message' => 'Expense Category updated successfully.',
         ]);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Level $level)
+    public function destroy(ExpenseCategory $expenseCategory)
     {
-        $level->delete();
+        $expenseCategory->delete();
 
         return response()->json([
             'success' => true,
-            'message' => 'Level deleted successfully.',
+            'message' => 'Expense Category deleted successfully.',
         ]);
     }
 
+    /**
+     * Bulk delete resources.
+     */
     public function bulkDelete(Request $request)
     {
         $ids = $request->input('select', []);
 
-        // Convert comma separated string into array
-        if (! is_array($ids)) {
-
-            $ids = array_filter(explode(',', $ids));
-        }
-
-        // Check selected users
-        if (count($ids) > 0) {
-
-            $deletedCount = Level::destroy($ids);
-
-            return response()->json([
-                'success' => true,
-                'message' => $deletedCount.' Sports deleted successfully.',
-            ]);
-        }
-    }
-
-    public function bulkUpdate(Request $request)
-    {
-        $validated = $request->validate([
-            'select' => 'required',
-            'status' => 'required|string|in:active,inactive',
-        ]);
-
-        $ids = $request->input('select', []);
-        $status = $request->input('status');
-
         if (! is_array($ids)) {
             $ids = array_filter(explode(',', $ids));
         }
 
         if (count($ids) > 0) {
-            $updatedCount = Level::whereIn('id', $ids)->update(['status' => $status]);
+            $deletedCount = ExpenseCategory::destroy($ids);
 
             return response()->json([
                 'success' => true,
-                'message' => $updatedCount.' Levels updated successfully.',
+                'message' => $deletedCount.' Expense Categories deleted successfully.',
             ]);
         }
 
         return response()->json([
             'success' => false,
-            'message' => 'No valid Levels selected for update.',
+            'message' => 'No valid Expense Categories selected for deletion.',
+        ], 422);
+    }
+
+    /**
+     * Bulk update status.
+     */
+    public function bulkUpdate(Request $request)
+    {
+        $validated = $request->validate([
+            'select' => 'required',
+            'status' => 'required|in:active,inactive',
+        ]);
+
+        $ids = $request->input('select', []);
+        // Map active/inactive back to 1/0
+        $status = $request->input('status') === 'active' ? 1 : 0;
+
+        if (! is_array($ids)) {
+            $ids = array_filter(explode(',', $ids));
+        }
+
+        if (count($ids) > 0) {
+            $updatedCount = ExpenseCategory::whereIn('id', $ids)->update(['status' => $status]);
+
+            return response()->json([
+                'success' => true,
+                'message' => $updatedCount.' Expense Categories updated successfully.',
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'No valid Expense Categories selected for update.',
         ], 422);
     }
 }

@@ -42,7 +42,7 @@ class PlayerController extends Controller
         $request->validate([
             'firstname' => 'required|string|max:255',
             'lastname' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
+            'email' => 'nullable|email|unique:users,email',
             'phone' => 'required|string|max:20|unique:users,phone',
             'joined_at' => 'required|date',
             'gender' => 'nullable|in:male,female,other',
@@ -116,7 +116,7 @@ class PlayerController extends Controller
         $request->validate([
             'firstname' => 'required|string|max:255',
             'lastname' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,'.$player->id,
+            'email' => 'nullable|email|unique:users,email,'.$player->id,
             'phone' => 'required|string|max:20|unique:users,phone,'.$player->id,
             'joined_at' => 'required|date',
             'gender' => 'nullable|in:male,female,other',

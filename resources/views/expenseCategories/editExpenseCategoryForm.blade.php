@@ -1,31 +1,33 @@
 <div class="d-flex justify-content-center">
 
-    <form method="POST" id="addSportForm" data-width="medium" style="max-width: 950px; width:100%;">
+    <form method="POST" id="editExpenseCategoryForm" data-width="medium" style="max-width: 950px; width:100%;">
 
         @csrf
+        @method('PUT')
 
-        <input type="hidden" name="url" id="url" value="{{ route('sports.store') }}">
+        <input type="hidden" name="url" id="url" value="{{ route('expense-category.update', $expenseCategory->id) }}">
 
         <div class="row g-3">
 
-            <!-- Sport Name -->
+            <!-- Category Name -->
             <div class="col-12">
 
                 <label for="name" class="form-label fw-semibold small text-dark mb-2">
-                    Sport Name <span class="text-danger">*</span>
+                    Category Name <span class="text-danger">*</span>
                 </label>
 
                 <div class="input-group">
 
                     <span class="input-group-text bg-white px-3">
-                        <i class="bi bi-trophy text-secondary"></i>
+                        <i class="bi bi-tag text-secondary"></i>
                     </span>
 
                     <input type="text"
                         class="form-control py-2"
                         id="name"
                         name="name"
-                        placeholder="Enter sport name">
+                        value="{{ $expenseCategory->name }}"
+                        placeholder="Enter category name">
 
                 </div>
 
@@ -44,11 +46,11 @@
 
                 <select class="form-select py-2" id="status" name="status">
 
-                    <option value="active" selected>
+                    <option value="1" {{ $expenseCategory->status ? 'selected' : '' }}>
                         Active
                     </option>
 
-                    <option value="inactive">
+                    <option value="0" {{ !$expenseCategory->status ? 'selected' : '' }}>
                         Inactive
                     </option>
 
@@ -77,7 +79,7 @@
                         id="description"
                         name="description"
                         rows="5"
-                        placeholder="Enter sport description"></textarea>
+                        placeholder="Enter category description">{{ $expenseCategory->description }}</textarea>
 
                 </div>
 
@@ -95,7 +97,7 @@
 
                     <i class="bi bi-check-circle me-1"></i>
 
-                    Create Sport
+                    Update Expense Category
 
                 </button>
 

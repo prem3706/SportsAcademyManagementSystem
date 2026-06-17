@@ -51,25 +51,42 @@
             </a>
         </li>
 
-        <!-- Sports Management -->
-        <li class="nav-item">
-            <a class="nav-link {{ request()->is('sports*') ? 'active' : '' }}" href="{{ route('sports.index') }}">
+        <!-- Sports Management Dropdown -->
+        <li class="nav-group {{ request()->is('sports*') || request()->is('levels*') || request()->is('sport-levels*') ? 'show' : '' }}">
+            <a class="nav-link nav-group-toggle" href="#">
                 <i class="bi bi-trophy nav-icon"></i>
                 Sports
             </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link {{ request()->is('levels*') ? 'active' : '' }}" href="{{ route('levels.index') }}">
-                <i class="bi bi-layers nav-icon"></i>
-                Levels
-            </a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link {{ request()->is('sport-levels*') ? 'active' : '' }}"
-                href="{{ route('sport-levels.index') }}">
-                <i class="bi bi-grid-3x3-gap nav-icon"></i>
-                Sports Levels
-            </a>
+
+            <ul class="nav-group-items">
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->is('sports*') ? 'active' : '' }}" href="{{ route('sports.index') }}">
+                        <span class="nav-icon">
+                            <i class="bi bi-trophy"></i>
+                        </span>
+                        Sports
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->is('levels*') ? 'active' : '' }}" href="{{ route('levels.index') }}">
+                        <span class="nav-icon">
+                            <i class="bi bi-layers"></i>
+                        </span>
+                        Levels
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->is('sport-levels*') ? 'active' : '' }}"
+                        href="{{ route('sport-levels.index') }}">
+                        <span class="nav-icon">
+                            <i class="bi bi-grid-3x3-gap"></i>
+                        </span>
+                        Sports Levels
+                    </a>
+                </li>
+            </ul>
         </li>
         <li class="nav-item">
             <a class="nav-link {{ request()->is('batches*') ? 'active' : '' }}" href="{{ route('batches.index') }}">
@@ -83,6 +100,37 @@
                 <i class="bi bi-wallet2 nav-icon"></i>
                 Fees
             </a>
+        </li>
+        <!-- Finance Management -->
+        <li class="nav-group {{ request()->is('expense-category*') || request()->is('expenses*') ? 'show' : '' }}">
+            <a class="nav-link nav-group-toggle" href="#">
+                <i class="bi bi-cash-stack nav-icon"></i>
+                Finance
+            </a>
+
+            <ul class="nav-group-items">
+
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->is('expense-category*') ? 'active' : '' }}"
+                        href="{{ route('expense-category.index') }}">
+                        <span class="nav-icon">
+                            <i class="bi bi-tags"></i>
+                        </span>
+                        Expense Categories
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->is('expenses*') ? 'active' : '' }}"
+                        href="{{ route('expenses.index') }}">
+                        <span class="nav-icon">
+                            <i class="bi bi-receipt"></i>
+                        </span>
+                        Expenses
+                    </a>
+                </li>
+
+            </ul>
         </li>
 
         <!-- Settings -->

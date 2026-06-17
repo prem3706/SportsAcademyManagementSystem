@@ -111,6 +111,10 @@
                                     Coach
                                 </option>
 
+                                <option value="manager">
+                                    Manager
+                                </option>
+
                             </select>
 
                         </div>

@@ -30,10 +30,10 @@ class UpdateUserRequest extends FormRequest
         return [
             'firstname' => 'required|string|max:255',
             'lastname' => 'required|string|max:255',
-            'email' => ['required', 'email', Rule::unique('users', 'email')->ignore($userId)],
+            'email' => ['nullable', 'email', Rule::unique('users', 'email')->ignore($userId)],
             'phone' => ['required', 'string', 'max:20', Rule::unique('users', 'phone')->ignore($userId)],
             'password' => 'nullable|string|min:8',
-            'role' => 'required|in:admin,player,coach',
+            'role' => 'required|in:admin,player,coach,manager',
             'gender' => 'required|in:male,female,other',
             'status' => 'required|in:active,inactive',
             'joined_at' => 'nullable|date',
