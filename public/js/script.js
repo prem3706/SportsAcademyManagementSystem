@@ -1267,16 +1267,16 @@ $(document).ready(function () {
         submitFormAjax(this);
     });
 
-    // Add Fees Generation Form Open
-    $(document).on('click', '#addFeesGenerateBtn', function () {
-        openOffcanvasForm($(this).data('url'), $(this).data('title'));
-    });
+    // // Add Fees Generation Form Open
+    // $(document).on('click', '#addFeesGenerateBtn', function () {
+    //     openOffcanvasForm($(this).data('url'), $(this).data('title'));
+    // });
 
-    // Add Fees Generation Form Submit
-    $(document).on('submit', '#addFeesGenerateForm', function (e) {
-        e.preventDefault();
-        submitFormAjax(this);
-    });
+    // // Add Fees Generation Form Submit
+    // $(document).on('submit', '#addFeesGenerateForm', function (e) {
+    //     e.preventDefault();
+    //     submitFormAjax(this);
+    // });
 
     // Unpaid Players Dashboard Filter Change Listeners
     $(document).on('change', '#unpaidMonthFilter, #unpaidYearFilter', function () {
