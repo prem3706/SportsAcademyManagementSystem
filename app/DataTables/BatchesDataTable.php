@@ -141,7 +141,7 @@ class BatchesDataTable extends DataTable
 
             ->columns($this->getColumns())
 
-            ->minifiedAjax()
+            ->minifiedAjax('', 'data.status = $("#statusFilter").val();')
 
             ->orderBy(1)
 

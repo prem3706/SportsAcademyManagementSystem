@@ -119,7 +119,7 @@ class UsersDataTable extends DataTable
         return $this->builder()
             ->setTableId('datatable')
             ->columns($this->getColumns())
-            ->minifiedAjax()
+            ->minifiedAjax('', 'data.status = $("#statusFilter").val(); data.role = $("#roleFilter").val();')
             ->orderBy(1)
             ->selectStyleSingle()
             ->buttons([

@@ -8,6 +8,8 @@ class SportsLevel extends Model
 {
     protected $table = 'sports_levels';
 
+    public $timestamps = false;
+
     protected $fillable = [
         'sport_id',
         'level_id',

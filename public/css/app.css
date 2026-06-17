@@ -12,31 +12,41 @@
    Table Design
 ========================= */
 table.dataTable {
-    border-collapse: separate !important;
-    border-spacing: 0 10px !important;
+    border-collapse: collapse !important;
+    border-spacing: 0 !important;
+    width: 100% !important;
 }
 
 table.dataTable tbody tr {
     background: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    transition: 0.2s ease;
+    border-bottom: 1px solid #f1f5f9 !important;
+    transition: background-color 0.15s ease;
 }
 
 table.dataTable tbody tr:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+    background-color: #f8fafc !important;
 }
 
 /* =========================
    Table Header
 ========================= */
 table.dataTable thead th {
-
-    font-weight: 700;
-    border: none !important;
-    padding: 14px 12px !important;
+    font-weight: 600;
+    color: #1e293b !important;
+    text-transform: uppercase !important;
+    font-size: 13px !important;
+    letter-spacing: 0.5px !important;
+    background-color: #f8fafc !important;
+    border-bottom: 2px solid #e2e8f0 !important;
+    padding: 10px 12px !important;
     white-space: nowrap;
+    position: relative;
+}
+
+table.dataTable thead th.sorting,
+table.dataTable thead th.sorting_asc,
+table.dataTable thead th.sorting_desc {
+    padding-right: 30px !important;
 }
 
 /* =========================
@@ -44,48 +54,124 @@ table.dataTable thead th {
 ========================= */
 table.dataTable tbody td {
     vertical-align: middle !important;
-    padding: 16px 12px !important;
+    padding: 10px 12px !important;
     border-top: none !important;
-    border-bottom: none !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    font-size: 14px;
+    font-weight: 500 !important;
+    color: #1e293b !important;
+    white-space: nowrap !important;
 }
 
 /* =========================
    Search Box
 ========================= */
+.dataTables_filter {
+    margin-bottom: 12px !important;
+}
+.dataTables_filter label {
+    font-weight: 500;
+    color: #475569 !important;
+    font-size: 13.5px;
+    display: inline-flex;
+    align-items: center;
+}
 .dataTables_filter input {
-    border: 1px solid #d0d5dd !important;
-    border-radius: 10px !important;
-    padding: 8px 14px !important;
-    min-width: 250px;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 8px !important;
+    padding: 6px 12px !important;
+    min-width: 200px;
     outline: none !important;
     box-shadow: none !important;
+    margin-left: 8px !important;
+    background-color: #fff !important;
+    font-size: 13.5px;
+    color: #1e293b !important;
+    transition: all 0.2s ease-in-out;
 }
-
 .dataTables_filter input:focus {
-    border-color: #0d6efd !important;
+    border-color: #4f46e5 !important;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1) !important;
 }
 
 /* =========================
    Entries Dropdown
 ========================= */
+.dataTables_length {
+    margin-bottom: 12px !important;
+}
+.dataTables_length label {
+    font-weight: 500;
+    color: #475569 !important;
+    font-size: 13.5px;
+    display: inline-flex;
+    align-items: center;
+}
 .dataTables_length select {
-    border-radius: 10px !important;
-    padding: 6px 30px 6px 10px !important;
-    border: 1px solid #d0d5dd !important;
-}
-
-/* =========================
-   Pagination
-========================= */
-.dataTables_paginate .paginate_button {
     border-radius: 8px !important;
-    margin: 0 3px;
+    padding: 6px 24px 6px 10px !important;
+    border: 1px solid #e2e8f0 !important;
+    background-color: #fff !important;
+    font-size: 13.5px;
+    color: #1e293b !important;
+    margin: 0 8px !important;
+    transition: all 0.2s ease-in-out;
+}
+.dataTables_length select:focus {
+    border-color: #4f46e5 !important;
+    outline: none !important;
 }
 
-.dataTables_wrapper .dataTables_paginate .paginate_button.current {
-    background: #212529 !important;
+.dataTables_wrapper .dataTables_paginate {
+    float: right !important;
+    display: flex !important;
+    align-items: center;
+    gap: 3px;
+    margin-top: 12px;
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    border-radius: 6px !important;
+    border: 1px solid #e2e8f0 !important;
+    background: #fff !important;
+    color: #475569 !important;
+    font-size: 11.5px !important;
+    font-weight: 500 !important;
+    padding: 3px 8px !important;
+    margin: 0 !important;
+    transition: all 0.15s ease-in-out !important;
+    cursor: pointer !important;
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+    background: #f1f5f9 !important;
+    color: #0f172a !important;
+    border-color: #cbd5e1 !important;
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button.current,
+.dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+    background: #212529 !important; /* Black Theme */
     color: #fff !important;
-    border: none !important;
+    border-color: #212529 !important;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1) !important;
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button.disabled,
+.dataTables_wrapper .dataTables_paginate .paginate_button.disabled:hover {
+    background: #f8fafc !important;
+    color: #94a3b8 !important;
+    border-color: #e2e8f0 !important;
+    cursor: not-allowed !important;
+    opacity: 0.6;
+}
+
+/* Dark Mode Form Element Helpers */
+html[data-coreui-theme="dark"] .dataTables_filter input,
+html[data-coreui-theme="dark"] .dataTables_length select {
+    background-color: #212631 !important;
+    border-color: #3c4b64 !important;
+    color: #cbd5e1 !important;
+}
+html[data-coreui-theme="dark"] .dataTables_filter input:focus,
+html[data-coreui-theme="dark"] .dataTables_length select:focus {
+    border-color: #5856d6 !important;
 }
 
 /* =========================
@@ -118,96 +204,628 @@ table.dataTable tbody td {
    SELECT2 DESIGN
 ========================= */
 
-.select2-container--default .select2-selection--multiple {
+/* =========================
+   SELECT2 DESIGN (Single & Multiple)
+========================= */
 
-    min-height: 44px !important;
-    border: 1px solid #d0d7de !important;
-    border-radius: 12px !important;
-    padding: 4px 6px !important;
+select + .select2-container {
+    width: 100% !important;
+}
+
+/* Single Select Box */
+.select2-container--default .select2-selection--single {
+    height: 38px !important;
+    border: 1px solid #dee2e6 !important;
+    border-radius: 8px !important;
+    background-color: #fff !important;
+    display: flex !important;
+    align-items: center !important;
+    padding-left: 6px !important;
+    padding-right: 30px !important;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+/* Single Select Text Alignment */
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: #212529 !important;
+    font-size: 14px !important;
+    padding-left: 4px !important;
+    line-height: normal !important;
+}
+
+/* Single Select Placeholder */
+.select2-container--default .select2-selection--single .select2-selection__placeholder {
+    color: #6c757d !important;
+}
+
+/* Single Select Arrow Position */
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 36px !important;
+    position: absolute !important;
+    top: 1px !important;
+    right: 8px !important;
+    width: 20px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* Multiple Select Box */
+.select2-container--default .select2-selection--multiple {
+    min-height: 38px !important;
+    border: 1px solid #dee2e6 !important;
+    border-radius: 8px !important;
+    padding: 3px 6px !important;
     background: #fff !important;
     display: flex !important;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 6px;
-
-}
-
-/* Focus Effect */
-.select2-container--default.select2-container--focus .select2-selection--multiple {
-
-    border-color: #000000 !important;
-    box-shadow: 0 0 0 0.2rem rgba(105, 108, 255, 0.15);
-
-}
-
-/* Selected Tag */
-.select2-container--default .select2-selection--multiple .select2-selection__choice {
-
-    background: #212529 !important;
-    color: #fff !important;
-    border: none !important;
-    border-radius: 30px !important;
-
-    display: flex !important;
     align-items: center !important;
-
-    padding: 6px 12px !important;
-    margin: 2px !important;
-
-    font-size: 13px;
-    font-weight: 500;
-    line-height: 1;
-
+    flex-wrap: wrap !important;
+    gap: 4px !important;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
-/* Remove Button */
-.select2-container--default .select2-selection__choice__remove {
+/* Focus Effect for Single & Multiple */
+.select2-container--default.select2-container--open .select2-selection--single,
+.select2-container--default.select2-container--focus .select2-selection--single,
+.select2-container--default.select2-container--focus .select2-selection--multiple {
+    border-color: #212529 !important;
+    box-shadow: 0 0 0 0.2rem rgba(33, 37, 41, 0.08) !important;
+}
 
-    position: relative !important;
-    color: #fff !important;
+/* Selected Tag in Multiple Select */
+.select2-container--default .select2-selection--multiple .select2-selection__choice {
+    background-color: #f1f5f9 !important;
+    color: #334155 !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 6px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    padding: 3px 8px !important;
+    margin: 2px !important;
+    font-size: 12.5px !important;
+    font-weight: 500 !important;
+}
+
+/* Remove Button in Tag */
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+    color: #64748b !important;
     margin-right: 6px !important;
     border-right: none !important;
-
-    font-size: 16px !important;
-    font-weight: 400 !important;
-
-    display: flex !important;
-    align-items: center !important;
-
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    order: -1;
 }
 
-/* Remove Hover */
-.select2-container--default .select2-selection__choice__remove:hover {
-
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+    color: #ef4444 !important;
     background: transparent !important;
-    color: #dfe3ff !important;
-
 }
 
-/* Search Input */
+/* Search Input in Multiple Select */
 .select2-search--inline .select2-search__field {
-
     margin-top: 0 !important;
-    height: 30px;
-
+    height: 28px !important;
+    font-size: 14px !important;
+    font-family: inherit !important;
 }
 
-/* Dropdown */
+/* Dropdown Container */
 .select2-dropdown {
-
-    border-radius: 12px !important;
-    padding: 8px !important;
-    border: 1px solid #000000 !important;
-    overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-
+    border-radius: 8px !important;
+    padding: 6px !important;
+    border: 1px solid #dee2e6 !important;
+    overflow: hidden !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+    z-index: 9999 !important;
 }
 
-/* Dropdown Option Hover */
-.select2-results__option--highlighted {
+/* Dropdown Search Box container */
+.select2-search--dropdown {
+    padding: 6px 4px !important;
+}
 
-    background: #ffffff !important;
-    color: #000000 !important;
+/* Dropdown Search Input Field */
+.select2-search--dropdown .select2-search__field {
+    border: 1px solid #dee2e6 !important;
+    border-radius: 6px !important;
+    padding: 6px 10px !important;
+    outline: none !important;
+    font-size: 13.5px !important;
+    transition: border-color 0.15s ease-in-out;
+}
 
+.select2-search--dropdown .select2-search__field:focus {
+    border-color: #212529 !important;
+}
 
+/* Dropdown Results List */
+.select2-results__options {
+    max-height: 200px !important;
+    padding: 2px !important;
+}
+
+/* Individual Option Style */
+.select2-results__option {
+    padding: 6px 10px !important;
+    font-size: 13.5px !important;
+    border-radius: 6px !important;
+    color: #334155 !important;
+    margin-bottom: 2px !important;
+}
+
+/* Hover/Highlighted Option Style */
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+    background-color: #212529 !important;
+    color: #ffffff !important;
+}
+
+/* Selected Option Style (Inactive) */
+.select2-container--default .select2-results__option[aria-selected=true] {
+    background-color: #e2e8f0 !important;
+    color: #0f172a !important;
+    font-weight: 500 !important;
+}
+
+/* Compact Table Layout overrides for .table-sm */
+table.dataTable.table-sm {
+    font-size: 13px !important;
+}
+
+table.dataTable.table-sm tbody td {
+    padding: 5px 8px !important;
+    line-height: 1.25 !important;
+}
+
+table.dataTable.table-sm thead th {
+    padding: 6px 8px !important;
+    font-size: 12px !important;
+    line-height: 1.25 !important;
+    position: relative;
+}
+
+table.dataTable.table-sm thead th.sorting,
+table.dataTable.table-sm thead th.sorting_asc,
+table.dataTable.table-sm thead th.sorting_desc {
+    padding-right: 24px !important;
+}
+
+/* Make action buttons slightly smaller in compact table */
+table.dataTable.table-sm .btn-action {
+    width: 26px !important;
+    height: 26px !important;
+    font-size: 12px !important;
+}
+
+table.dataTable.table-sm .btn:not(.btn-action) {
+    padding: 2px 6px !important;
+    font-size: 12px !important;
+}
+
+table.dataTable.table-sm .badge {
+    padding: 3px 6px !important;
+    font-size: 11.5px !important;
+}
+
+/* Ensure table container takes full width and wraps properly */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* =========================
+   DARK MODE OVERRIDES
+========================= */
+html[data-coreui-theme="dark"] table.dataTable thead th {
+    background-color: #2a303d !important;
+    color: #f8fafc !important;
+    border-bottom: 2px solid #3c4b64 !important;
+}
+
+html[data-coreui-theme="dark"] table.dataTable tbody tr {
+    background-color: transparent !important;
+    border-bottom: 1px solid #3c4b64 !important;
+}
+
+html[data-coreui-theme="dark"] table.dataTable tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.04) !important;
+}
+
+html[data-coreui-theme="dark"] table.dataTable tbody td {
+    color: #cbd5e1 !important;
+    border-bottom: 1px solid #3c4b64 !important;
+}
+
+/* Pagination Overrides in Dark Mode */
+html[data-coreui-theme="dark"] .dataTables_wrapper .dataTables_paginate .paginate_button {
+    background: #2a303d !important;
+    border-color: #3c4b64 !important;
+    color: #cbd5e1 !important;
+}
+html[data-coreui-theme="dark"] .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+    background: #3c4b64 !important;
+    color: #fff !important;
+}
+html[data-coreui-theme="dark"] .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    background: #f8fafc !important; /* Contrast white in dark mode */
+    color: #0f172a !important;
+    border-color: #f8fafc !important;
+}
+html[data-coreui-theme="dark"] .dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
+    background: #212631 !important;
+    color: #4f5d73 !important;
+    border-color: #3c4b64 !important;
+}
+
+/* Bulk Action Bar Dark Mode */
+html[data-coreui-theme="dark"] #bulkActionBar {
+    background-color: #2a303d !important;
+    border: 1px solid #3c4b64 !important;
+    color: #e2e8f0 !important;
+}
+
+html[data-coreui-theme="dark"] #bulkActionBar .bg-dark {
+    background-color: #1b2028 !important;
+}
+
+/* Select2 Dark Mode Overrides */
+html[data-coreui-theme="dark"] .select2-container--default .select2-selection--single {
+    background-color: #212631 !important;
+    border-color: #3c4b64 !important;
+}
+
+html[data-coreui-theme="dark"] .select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: #e2e8f0 !important;
+}
+
+html[data-coreui-theme="dark"] .select2-container--default .select2-selection--single .select2-selection__placeholder {
+    color: #8a99af !important;
+}
+
+html[data-coreui-theme="dark"] .select2-container--default .select2-selection--multiple {
+    background-color: #212631 !important;
+    border-color: #3c4b64 !important;
+}
+
+html[data-coreui-theme="dark"] .select2-container--default .select2-selection--multiple .select2-selection__choice {
+    background-color: #2a303d !important;
+    color: #e2e8f0 !important;
+    border-color: #3c4b64 !important;
+}
+
+html[data-coreui-theme="dark"] .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+    color: #8a99af !important;
+}
+
+html[data-coreui-theme="dark"] .select2-dropdown {
+    background-color: #2a303d !important;
+    border-color: #3c4b64 !important;
+}
+
+html[data-coreui-theme="dark"] .select2-search--dropdown .select2-search__field {
+    background-color: #212631 !important;
+    border-color: #3c4b64 !important;
+    color: #e2e8f0 !important;
+}
+
+html[data-coreui-theme="dark"] .select2-results__option {
+    color: #e2e8f0 !important;
+    background-color: transparent !important;
+}
+
+html[data-coreui-theme="dark"] .select2-container--default .select2-results__option--highlighted[aria-selected] {
+    background-color: #3c4b64 !important;
+    color: #ffffff !important;
+}
+
+html[data-coreui-theme="dark"] .select2-container--default .select2-results__option[aria-selected=true] {
+    background-color: #1b2028 !important;
+    color: #ffffff !important;
+}
+
+/* =========================
+   GLOBAL DARK MODE FIXES (Dashboard, Settings, etc.)
+========================= */
+html[data-coreui-theme="dark"] .bg-white {
+    background-color: #2a303d !important;
+}
+
+html[data-coreui-theme="dark"] .bg-light {
+    background-color: #212631 !important;
+}
+
+html[data-coreui-theme="dark"] .text-dark {
+    color: #f8fafc !important;
+}
+
+/* Override inline colors used on Dashboard and other views */
+html[data-coreui-theme="dark"] [style*="color: #0f172a"],
+html[data-coreui-theme="dark"] [style*="color: #1e293b"],
+html[data-coreui-theme="dark"] [style*="color: #000000"],
+html[data-coreui-theme="dark"] [style*="color: #000"] {
+    color: #f8fafc !important;
+}
+
+html[data-coreui-theme="dark"] [style*="color: #475569"],
+html[data-coreui-theme="dark"] [style*="color: #64748b"] {
+    color: #cbd5e1 !important;
+}
+
+/* Fix cards and headers with explicit light backgrounds */
+html[data-coreui-theme="dark"] .card-header.bg-white {
+    background-color: #2a303d !important;
+}
+
+html[data-coreui-theme="dark"] .table thead.bg-light,
+html[data-coreui-theme="dark"] .table thead.bg-light th {
+    background-color: #212631 !important;
+    color: #e2e8f0 !important;
+}
+
+/* Fix borders in dark mode */
+html[data-coreui-theme="dark"] .border,
+html[data-coreui-theme="dark"] .border-top,
+html[data-coreui-theme="dark"] .border-bottom,
+html[data-coreui-theme="dark"] .border-start,
+html[data-coreui-theme="dark"] .border-end,
+html[data-coreui-theme="dark"] .border-secondary-subtle,
+html[data-coreui-theme="dark"] .border-light {
+    border-color: #3c4b64 !important;
+}
+
+/* Form inputs & inputs group text in dark mode */
+html[data-coreui-theme="dark"] .input-group-text {
+    background-color: #2a303d !important;
+    color: #e2e8f0 !important;
+    border-color: #3c4b64 !important;
+}
+
+html[data-coreui-theme="dark"] .form-control,
+html[data-coreui-theme="dark"] .form-select {
+    background-color: #212631 !important;
+    color: #e2e8f0 !important;
+    border-color: #3c4b64 !important;
+}
+
+html[data-coreui-theme="dark"] .form-control:focus,
+html[data-coreui-theme="dark"] .form-select:focus {
+    background-color: #212631 !important;
+    color: #ffffff !important;
+    border-color: #5856d6 !important;
+}
+
+/* Table body items in standard Bootstrap tables (like Dashboard) */
+html[data-coreui-theme="dark"] .table tbody td,
+html[data-coreui-theme="dark"] .table tbody th {
+    color: #cbd5e1 !important;
+}
+
+html[data-coreui-theme="dark"] .table-hover tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.04) !important;
+}
+
+/* Fix lists (New Trainees, etc.) in dark mode */
+html[data-coreui-theme="dark"] .list-group-item {
+    background-color: transparent !important;
+    color: #cbd5e1 !important;
+}
+
+/* ==========================================================================
+   PREMIUM UI/UX EDITS (Preserving current SAMS color theme)
+   ========================================================================== */
+
+/* Global Typography */
+body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+}
+
+/* Cards Hover & Lift animations */
+.card {
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.04) !important;
+}
+html[data-coreui-theme="dark"] .card:hover {
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.16) !important;
+}
+
+/* Button micro-scale interactions */
+.btn {
+    transition: all 0.15s ease-in-out !important;
+}
+.btn:hover {
+    transform: translateY(-1px);
+}
+.btn:active {
+    transform: scale(0.98);
+}
+
+/* Datatable Cells Breathing Room */
+table.dataTable tbody td {
+    padding: 12px 14px !important;
+}
+table.dataTable thead th {
+    padding: 12px 14px !important;
+}
+
+/* Dashboard Premium Styling Elements */
+.card-accent-indigo {
+    border-left: 4px solid #4f46e5 !important;
+}
+.card-accent-indigo:hover {
+    box-shadow: 0 10px 25px rgba(79, 70, 229, 0.12) !important;
+    border-color: rgba(79, 70, 229, 0.2) !important;
+}
+.card-accent-success {
+    border-left: 4px solid #10b981 !important;
+}
+.card-accent-success:hover {
+    box-shadow: 0 10px 25px rgba(16, 185, 129, 0.12) !important;
+    border-color: rgba(16, 185, 129, 0.2) !important;
+}
+.card-accent-warning {
+    border-left: 4px solid #f59e0b !important;
+}
+.card-accent-warning:hover {
+    box-shadow: 0 10px 25px rgba(245, 158, 11, 0.12) !important;
+    border-color: rgba(245, 158, 11, 0.2) !important;
+}
+.card-accent-danger {
+    border-left: 4px solid #f43f5e !important;
+}
+.card-accent-danger:hover {
+    box-shadow: 0 10px 25px rgba(244, 63, 94, 0.12) !important;
+    border-color: rgba(244, 63, 94, 0.2) !important;
+}
+
+.trainee-avatar {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease-in-out;
+}
+html[data-coreui-theme="dark"] .trainee-avatar {
+    background-color: #3c4b64;
+    color: #e2e8f0;
+    border-color: #4f5d73;
+}
+
+/* Sidebar Minimized/Narrow Logo Toggles */
+.sidebar-narrow .sidebar-brand-full,
+.sidebar-narrow-unfoldable:not(:hover) .sidebar-brand-full {
+    display: none !important;
+}
+
+.sidebar-narrow .sidebar-brand-narrow,
+.sidebar-narrow-unfoldable:not(:hover) .sidebar-brand-narrow {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+.sidebar-narrow .sidebar-brand,
+.sidebar-narrow-unfoldable:not(:hover) .sidebar-brand {
+    margin: 0 auto !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+/* Premium Dashboard Summary Cards */
+.dashboard-stat-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(226, 232, 240, 0.8) !important;
+    background: #ffffff;
+    border-radius: 16px !important;
+    position: relative;
+    overflow: hidden;
+}
+.dashboard-stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    transition: all 0.3s ease;
+}
+.dashboard-stat-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 27px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Card Accent Gradients */
+.stat-card-indigo::before { background: linear-gradient(90deg, #4f46e5, #818cf8); }
+.stat-card-indigo:hover .icon-box { background-color: #4f46e5 !important; color: #ffffff !important; transform: rotate(10deg); }
+
+.stat-card-success::before { background: linear-gradient(90deg, #10b981, #34d399); }
+.stat-card-success:hover .icon-box { background-color: #10b981 !important; color: #ffffff !important; transform: rotate(10deg); }
+
+.stat-card-warning::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+.stat-card-warning:hover .icon-box { background-color: #f59e0b !important; color: #ffffff !important; transform: rotate(10deg); }
+
+.stat-card-danger::before { background: linear-gradient(90deg, #f43f5e, #fb7185); }
+.stat-card-danger:hover .icon-box { background-color: #f43f5e !important; color: #ffffff !important; transform: rotate(10deg); }
+
+.icon-box {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html[data-coreui-theme="dark"] .dashboard-stat-card {
+    background-color: #3c4b64 !important;
+    border-color: #4f5d73 !important;
+}
+html[data-coreui-theme="dark"] .dashboard-stat-card .text-dark {
+    color: #f1f5f9 !important;
+}
+
+/* =========================
+   Modern Offcanvas Loader
+========================= */
+.modern-loader-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 250px;
+}
+.modern-loader {
+    width: 50px;
+    height: 50px;
+    border: 3px solid rgba(79, 70, 229, 0.1);
+    border-radius: 50%;
+    border-top-color: #4f46e5;
+    animation: modern-spin 1s ease-in-out infinite;
+    position: relative;
+    box-shadow: 0 0 15px rgba(79, 70, 229, 0.15);
+}
+.modern-loader::before {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    right: 3px;
+    bottom: 3px;
+    border: 3px solid transparent;
+    border-radius: 50%;
+    border-top-color: #818cf8;
+    animation: modern-spin-reverse 1.5s linear infinite;
+}
+@keyframes modern-spin {
+    to { transform: rotate(360deg); }
+}
+@keyframes modern-spin-reverse {
+    to { transform: rotate(-360deg); }
+}
+.modern-loader-text {
+    margin-top: 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #4f46e5;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+@keyframes pulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
 }

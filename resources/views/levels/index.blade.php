@@ -5,11 +5,11 @@
 
         <x-navbar />
 
-        <div class="container-lg py-3">
+        <div class="container-fluid px-4 py-3">
 
             <x-table-crud-card heading="Levels Management" subheading="Manage all Levels" title="Add Levels"
                 :url="route('levels.create')" id="addLevelBtn" statusFilter="True" :bulkDeleteUrl="route('levels.bulkDelete')" :bulkUpdateUrl="route('levels.bulkUpdate')">
-                {{ $dataTable->table(['class' => 'table table-hover align-middle mb-0']) }}
+                {{ $dataTable->table(['class' => 'table table-sm table-hover align-middle mb-0']) }}
 
             </x-table-crud-card>
 

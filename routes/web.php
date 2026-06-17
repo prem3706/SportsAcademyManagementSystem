@@ -1,16 +1,21 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\BatchController;
-use App\Http\Controllers\FeesGenerateController;
 use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\LevelsController;
 use App\Http\Controllers\PlayerController;
 use App\Http\Controllers\PlayerFeesController;
+use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SportLevelController;
 use App\Http\Controllers\SportsController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\SettingController;
+use App\Models\Batch;
+use App\Models\PlayerFee;
+use App\Models\Sport;
+use App\Models\User;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -37,9 +42,7 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
-    Route::get('/', function () {
-        return view('dashboard');
-    });
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 
@@ -82,7 +85,10 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('batches', BatchController::class);
 
-    Route::resource('fees-generates', FeesGenerateController::class);
+    Route::get('player-fees/player-details/{id}', [PlayerFeesController::class, 'getPlayerDetails'])
+        ->name('player-fees.player-details');
+    Route::get('player-fees/check-overlap', [PlayerFeesController::class, 'checkOverlap'])
+        ->name('player-fees.check-overlap');
     Route::resource('player-fees', PlayerFeesController::class);
 
     Route::get('settings', [SettingController::class, 'index'])->name('settings.index');

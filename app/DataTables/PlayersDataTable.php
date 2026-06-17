@@ -132,7 +132,7 @@ class PlayersDataTable extends DataTable
         return $this->builder()
             ->setTableId('datatable')
             ->columns($this->getColumns())
-            ->minifiedAjax()
+            ->minifiedAjax('', 'data.status = $("#statusFilter").val(); data.sport = $("#sportFilter").val(); data.level = $("#levelFilter").val(); data.batch = $("#batchFilter").val();')
             ->orderBy(1)
             ->selectStyleSingle()
             ->buttons([

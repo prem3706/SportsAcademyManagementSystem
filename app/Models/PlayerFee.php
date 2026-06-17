@@ -7,60 +7,39 @@ use Illuminate\Database\Eloquent\Model;
 class PlayerFee extends Model
 {
     protected $fillable = [
-
-        'fees_generate_id',
-
-        'user_id',
-
-        'sport_id',
-
-        'level_id',
-
-        'month',
-
-        'year',
-
-        'amount',
-
+        'player_id',
+        'batch_id',
+        'sub_totalamount',
+        'discount_amount',
+        'penalty_amount',
+        'total_amt',
+        'start_date',
+        'end_date',
+        'payment_type',
+        'upi_id',
+        'img_upi',
         'status',
-
-        'generated_at',
-
-        'paid_at',
-
     ];
 
     protected $casts = [
-
-        'generated_at' => 'datetime',
-
-        'paid_at' => 'datetime',
-
+        'start_date' => 'date',
+        'end_date' => 'date',
     ];
 
     /*
     |--------------------------------------------------------------------------
     | Relationships
     |--------------------------------------------------------------------------
+    |
     */
 
-    public function user()
+    public function player()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'player_id');
     }
 
-    public function sport()
+    public function batch()
     {
-        return $this->belongsTo(Sport::class);
-    }
-
-    public function level()
-    {
-        return $this->belongsTo(Level::class);
-    }
-
-    public function feesGenerate()
-    {
-        return $this->belongsTo(FeesGenerate::class);
+        return $this->belongsTo(Batch::class, 'batch_id');
     }
 }

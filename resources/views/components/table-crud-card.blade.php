@@ -24,7 +24,8 @@
     <div class="card-header border-0 pt-4 pb-3 px-4">
 
         <!-- Row 1: Title and Add Button -->
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 {{ ($statusFilter === 'True' || $roleFilter === 'True' || count($filters) > 0) ? 'mb-3' : '' }}">
+        <div
+            class="d-flex justify-content-between align-items-center flex-wrap gap-3 {{ $statusFilter === 'True' || $roleFilter === 'True' || count($filters) > 0 ? 'mb-3' : '' }}">
 
             <!-- Title -->
             <div>
@@ -46,8 +47,8 @@
             <!-- Add Button -->
             @if ($url)
                 <button class="btn btn-dark rounded-3 shadow-sm px-4 fw-semibold text-nowrap"
-                    data-title="{{ $title }}" data-url="{{ $url }}" id="{{ $id }}"
-                    type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasScrolling">
+                    data-title="{{ $title }}" data-url="{{ $url }}" id="{{ $id }}" type="button"
+                    data-bs-toggle="offcanvas" data-bs-target="#offcanvasScrolling">
 
                     <i class="bi bi-plus-circle me-1"></i>
 
@@ -69,7 +70,7 @@
                     @if ($statusFilter === 'True')
                         <div style="min-width: 150px;">
 
-                            <select id="statusFilter" class="form-select rounded-3 shadow-sm border-0">
+                            <select id="statusFilter" class="form-select select2 select2-no-search rounded-3 shadow-sm border-0">
 
                                 <option value="">
                                     All Status
@@ -92,7 +93,7 @@
                     @if ($roleFilter === 'True')
                         <div style="min-width: 150px;">
 
-                            <select id="roleFilter" class="form-select rounded-3 shadow-sm border-0">
+                            <select id="roleFilter" class="form-select select2 select2-no-search rounded-3 shadow-sm border-0">
 
                                 <option value="">
                                     All Roles
@@ -119,7 +120,7 @@
                     @foreach ($filters as $filter)
                         <div style="min-width: 150px;">
 
-                            <select id="{{ $filter['id'] }}" class="form-select rounded-3 shadow-sm border-0">
+                            <select id="{{ $filter['id'] }}" class="form-select select2 {{ $filter['id'] !== 'playerFilter' ? 'select2-no-search' : '' }} rounded-3 shadow-sm border-0 {{ $filter['class'] ?? '' }}">
 
                                 <option value="">
                                     {{ $filter['placeholder'] }}
@@ -140,7 +141,6 @@
                     @endforeach
 
                 </div>
-
                 <!-- Refresh -->
                 <button type="button"
                     class="btn btn-light border shadow-sm rounded-3 px-3 d-flex align-items-center justify-content-center d-none"

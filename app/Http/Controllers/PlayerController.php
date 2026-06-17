@@ -8,6 +8,7 @@ use App\Models\Level;
 use App\Models\Sport;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class PlayerController extends Controller
 {
@@ -49,6 +50,7 @@ class PlayerController extends Controller
             'assignments.*.sport_id' => 'required|exists:sports,id',
             'assignments.*.level_id' => 'required|exists:levels,id',
             'assignments.*.batch_id' => 'required|exists:batches,id',
+            'assignments.*.joined_at' => 'required|date',
         ]);
 
         // Generate password: firstname@123 (lowercase)
@@ -71,7 +73,7 @@ class PlayerController extends Controller
         foreach ($request->assignments as $assignment) {
             $batch = Batch::findOrFail($assignment['batch_id']);
             $batch->players()->attach($player->id, [
-                'joined_at' => $request->joined_at,
+                'joined_at' => $assignment['joined_at'],
             ]);
         }
 
@@ -99,6 +101,7 @@ class PlayerController extends Controller
 
         // Load player's batches with sport and level
         $playerBatches = $player->playerBatches()->with(['sport.levels', 'level'])->get();
+        // Log::info($playerBatches);
 
         return view('players.editPlayerForm', compact('player', 'sports', 'playerBatches'));
     }
@@ -120,6 +123,7 @@ class PlayerController extends Controller
             'status' => 'required|in:active,inactive',
             'assignments' => 'required|array|min:1',
             'assignments.*.batch_id' => 'required|exists:batches,id',
+            'assignments.*.joined_at' => 'required|date',
         ]);
 
         $player->update([
@@ -136,7 +140,7 @@ class PlayerController extends Controller
         $syncBatches = [];
         foreach ($request->assignments as $assignment) {
             $syncBatches[$assignment['batch_id']] = [
-                'joined_at' => $request->joined_at,
+                'joined_at' => $assignment['joined_at'],
             ];
         }
         $player->playerBatches()->sync($syncBatches);
