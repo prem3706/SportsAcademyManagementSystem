@@ -111,7 +111,8 @@
                 <p class="text-danger small mb-0" id="sub_totalamountError"></p>
             </div>
             <div class="col-md-3">
-                <label class="form-label fw-semibold text-secondary small">Penalty Amount</label>
+                <label class="form-label fw-semibold text-secondary small">Penalty Amount <span class="text-danger"
+                        id="penalty_num"></span></label>
                 <div class="input-group">
                     <span class="input-group-text bg-white text-secondary border-end-0">₹</span>
                     <input type="number" step="0.01" name="penalty_amount" id="penalty_amount"

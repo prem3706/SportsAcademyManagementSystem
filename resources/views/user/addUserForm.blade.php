@@ -131,7 +131,6 @@
                     </option>
 
                     <option value="admin">Admin</option>
-                    <option value="player">Player</option>
                     <option value="coach">Coach</option>
                     <option value="manager">Manager</option>
 

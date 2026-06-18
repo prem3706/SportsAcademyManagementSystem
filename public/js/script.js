@@ -13,8 +13,8 @@ function openOffcanvasForm(url, title, onSuccess) {
     offcanvas.removeClass('offcanvas-wide offcanvas-medium');
 
     let isSmallUrl = url.includes('/sports') ||
-                     url.includes('/levels') ||
-                     url.includes('/expense-category');
+        url.includes('/levels') ||
+        url.includes('/expense-category');
 
     if (isSmallUrl) {
         offcanvas.addClass('offcanvas-medium');
@@ -1161,6 +1161,16 @@ $(document).ready(function () {
                 currentCursor.setMonth(currentCursor.getMonth() + 1);
             }
         }
+        if (totalPenalty > 0) {
+            if (discountSettings.penalty_type == 'fixed') {
+                $('#penalty_num').text('(' + discountSettings.penalty_amount + ' ₹ )');
+            } else {
+                $('#penalty_num').text('(' + discountSettings.penalty_amount + ' % )');
+            }
+        } else {
+            $('#penalty_num').text('');
+        }
+
 
         // Discount calculations (Only applicable if no overdue penalty is active)
         let discountAmt = 0;
@@ -1305,17 +1315,6 @@ $(document).ready(function () {
 
         submitFormAjax(this);
     });
-
-    // // Add Fees Generation Form Open
-    // $(document).on('click', '#addFeesGenerateBtn', function () {
-    //     openOffcanvasForm($(this).data('url'), $(this).data('title'));
-    // });
-
-    // // Add Fees Generation Form Submit
-    // $(document).on('submit', '#addFeesGenerateForm', function (e) {
-    //     e.preventDefault();
-    //     submitFormAjax(this);
-    // });
 
     // Unpaid Players Dashboard Filter Change Listeners
     $(document).on('change', '#unpaidMonthFilter, #unpaidYearFilter', function () {

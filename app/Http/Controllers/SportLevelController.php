@@ -6,6 +6,7 @@ use App\DataTables\SportsLevelsDataTable;
 use App\Models\Level;
 use App\Models\Sport;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class SportLevelController extends Controller
 {
@@ -14,6 +15,8 @@ class SportLevelController extends Controller
      */
     public function index(SportsLevelsDataTable $dataTable)
     {
+        abort_if(! Auth::user()->can('sports_level_view'), 403);
+
         return $dataTable->render('sportLevel.index');
 
     }
@@ -23,6 +26,8 @@ class SportLevelController extends Controller
      */
     public function create()
     {
+        abort_if(! Auth::user()->can('sports_level_create'), 403);
+
         $sports = Sport::where('status', 'active')
             ->orderBy('name')
             ->get();
@@ -39,6 +44,8 @@ class SportLevelController extends Controller
      */
     public function store(Request $request)
     {
+        abort_if(! Auth::user()->can('sports_level_create'), 403);
+
         $request->validate([
 
             'sport_id' => 'required|exists:sports,id',
@@ -102,6 +109,8 @@ class SportLevelController extends Controller
      */
     public function edit($id)
     {
+        abort_if(! Auth::user()->can('sports_level_edit'), 403);
+
         $sport = Sport::with('levels')->findOrFail($id);
 
         $sports = Sport::where('status', 'active')
@@ -120,6 +129,8 @@ class SportLevelController extends Controller
      */
     public function update(Request $request, $id)
     {
+        abort_if(! Auth::user()->can('sports_level_edit'), 403);
+
         $request->validate([
 
             'sport_id' => 'required|exists:sports,id',

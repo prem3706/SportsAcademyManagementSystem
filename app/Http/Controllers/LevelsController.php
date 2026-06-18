@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\DataTables\LevelsDataTable;
 use App\Models\Level;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 class LevelsController extends Controller
@@ -14,6 +15,8 @@ class LevelsController extends Controller
      */
     public function index(LevelsDataTable $dataTable)
     {
+        abort_if(! Auth::user()->can('level_view'), 403);
+
         return $dataTable->render('levels.index');
     }
 
@@ -22,6 +25,8 @@ class LevelsController extends Controller
      */
     public function create()
     {
+        abort_if(! Auth::user()->can('level_create'), 403);
+
         return view('levels.addLevelForm');
     }
 
@@ -30,6 +35,7 @@ class LevelsController extends Controller
      */
     public function store(Request $request)
     {
+        abort_if(! Auth::user()->can('level_create'), 403);
         $request->merge([
             'slug' => Str::slug($request->input('name')),
         ]);
@@ -47,9 +53,10 @@ class LevelsController extends Controller
             if ($errors->has('slug')) {
                 $errors->add('name', $errors->first('slug'));
             }
+
             return response()->json([
                 'message' => 'The given data was invalid.',
-                'errors' => $errors
+                'errors' => $errors,
             ], 422);
         }
 
@@ -74,6 +81,8 @@ class LevelsController extends Controller
      */
     public function edit(Level $level)
     {
+        abort_if(! Auth::user()->can('level_edit'), 403);
+
         return view('levels.editLevelForm', compact('level'));
     }
 
@@ -82,6 +91,7 @@ class LevelsController extends Controller
      */
     public function update(Request $request, Level $level)
     {
+        abort_if(! Auth::user()->can('level_edit'), 403);
         $request->merge([
             'slug' => Str::slug($request->input('name')),
         ]);
@@ -99,9 +109,10 @@ class LevelsController extends Controller
             if ($errors->has('slug')) {
                 $errors->add('name', $errors->first('slug'));
             }
+
             return response()->json([
                 'message' => 'The given data was invalid.',
-                'errors' => $errors
+                'errors' => $errors,
             ], 422);
         }
 
@@ -118,6 +129,7 @@ class LevelsController extends Controller
      */
     public function destroy(Level $level)
     {
+        abort_if(! Auth::user()->can('level_delete'), 403);
         $level->delete();
 
         return response()->json([
@@ -128,6 +140,7 @@ class LevelsController extends Controller
 
     public function bulkDelete(Request $request)
     {
+        abort_if(! Auth::user()->can('level_delete'), 403);
         $ids = $request->input('select', []);
 
         // Convert comma separated string into array
@@ -150,6 +163,7 @@ class LevelsController extends Controller
 
     public function bulkUpdate(Request $request)
     {
+        abort_if(! Auth::user()->can('level_edit'), 403);
         $validated = $request->validate([
             'select' => 'required',
             'status' => 'required|string|in:active,inactive',

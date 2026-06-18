@@ -77,7 +77,7 @@ class UsersDataTable extends DataTable
                 return $user->updated_at->format('Y-m-d');
             })
             ->editColumn('Name', function (User $user) {
-                $fullName = $user->firstname.' '.$user->lastname;
+                $fullName = $user->firstname.' '.'('.$user->getRoleNames()->first().')';
 
                 if (Auth::id() === $user->id) {
                     $fullName .= ' <span class="badge bg-secondary">You</span>';

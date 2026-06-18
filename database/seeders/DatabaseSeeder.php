@@ -11,6 +11,8 @@ use App\Models\SportsLevel;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Schema;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class DatabaseSeeder extends Seeder
 {
@@ -32,6 +34,11 @@ class DatabaseSeeder extends Seeder
         Setting::truncate();
         Schema::enableForeignKeyConstraints();
 
+        Role::firstOrCreate(['name' => 'admin']);
+        Role::firstOrCreate(['name' => 'manager']);
+        Role::firstOrCreate(['name' => 'coach']);
+        Role::firstOrCreate(['name' => 'player']);
+
         // 2. Seed Settings
         Setting::create([
             'id' => 1,
@@ -47,7 +54,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // 3. Seed Admin
-        User::create([
+        $admin = User::create([
             'firstname' => 'Academy',
             'lastname' => 'Admin',
             'email' => 'admin@sams.com',
@@ -58,6 +65,20 @@ class DatabaseSeeder extends Seeder
             'status' => 'active',
             'joined_at' => now(),
         ]);
+        $admin->assignRole('admin');
+        $manager = User::create([
+            'firstname' => 'Academy',
+            'lastname' => 'Manager',
+            'email' => 'manager@sams.com',
+            'password' => 'manager123',
+            'phone' => '9876543211',
+            'gender' => 'male',
+            'role' => 'manager',
+            'status' => 'active',
+            'joined_at' => now(),
+        ]);
+
+        $manager->assignRole('manager');
 
         // 4. Seed Sports
         $sportsData = [
@@ -123,6 +144,14 @@ class DatabaseSeeder extends Seeder
         // 7. Seed Coaches & Players
         $coaches = User::factory()->coach()->count(5)->create();
         $players = User::factory()->player()->count(15)->create();
+
+        foreach ($coaches as $coach) {
+            $coach->assignRole('coach');
+        }
+
+        foreach ($players as $player) {
+            $player->assignRole('player');
+        }
 
         // 8. Seed Batches
         $batchesData = [
@@ -233,5 +262,222 @@ class DatabaseSeeder extends Seeder
                 }
             }
         }
+
+        $permissions = [
+
+            'Dashboard' => [
+                'dashboard_view',
+            ],
+
+            'Player' => [
+                'player_view',
+                'player_create',
+                'player_edit',
+                'player_delete',
+            ],
+
+            'Expense Category' => [
+                'expense_category_view',
+                'expense_category_create',
+                'expense_category_edit',
+                'expense_category_delete',
+            ],
+
+            'Expense' => [
+                'expense_view',
+                'expense_create',
+                'expense_edit',
+                'expense_delete',
+            ],
+
+            'Sport' => [
+                'sport_view',
+                'sport_create',
+                'sport_edit',
+                'sport_delete',
+            ],
+
+            'Level' => [
+                'level_view',
+                'level_create',
+                'level_edit',
+                'level_delete',
+            ],
+
+            'Sports Level' => [
+                'sports_level_view',
+                'sports_level_create',
+                'sports_level_edit',
+                'sports_level_delete',
+            ],
+
+            'Batch' => [
+                'batch_view',
+                'batch_create',
+                'batch_edit',
+                'batch_delete',
+            ],
+
+            'Fee' => [
+                'fee_view',
+                'fee_create',
+                'fee_edit',
+                'fee_delete',
+            ],
+
+            'User' => [
+                'user_view',
+                'user_create',
+                'user_edit',
+                'user_delete',
+            ],
+
+            'Setting' => [
+                'setting_view',
+                'setting_create',
+                'setting_edit',
+                'setting_delete',
+            ],
+
+        ];
+
+        foreach ($permissions as $moduleName => $modulePermissions) {
+            foreach ($modulePermissions as $permission) {
+
+                Permission::updateOrCreate(
+                    ['name' => $permission],
+                    ['module_name' => $moduleName]
+                );
+            }
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Admin Permissions
+        |--------------------------------------------------------------------------
+        */
+
+        $adminRole = Role::findByName('admin');
+
+        $adminRole->syncPermissions(
+            Permission::pluck('name')->toArray()
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Manager Permissions
+        |--------------------------------------------------------------------------
+        */
+
+        $managerRole = Role::findByName('manager');
+
+        $managerRole->syncPermissions([
+
+            'dashboard_view',
+
+            // Players
+            'player_view',
+            'player_create',
+            'player_edit',
+            'player_delete',
+
+            // Expense Categories
+            'expense_category_view',
+            'expense_category_create',
+            'expense_category_edit',
+            'expense_category_delete',
+
+            // Expenses
+            'expense_view',
+            'expense_create',
+            'expense_edit',
+            'expense_delete',
+
+            // Sports
+            'sport_view',
+            'sport_create',
+            'sport_edit',
+
+            // Levels
+            'level_view',
+            'level_create',
+            'level_edit',
+
+            // Sports Levels
+            'sports_level_view',
+            'sports_level_create',
+            'sports_level_edit',
+
+            // Batches
+            'batch_view',
+            'batch_create',
+            'batch_edit',
+            'batch_delete',
+
+            // Fees
+            'fee_view',
+            'fee_create',
+            'fee_edit',
+
+            // Users
+            'user_view',
+
+            // Settings
+            'setting_view',
+            'setting_edit',
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Coach Permissions
+        |--------------------------------------------------------------------------
+        */
+
+        $coachRole = Role::findByName('coach');
+
+        $coachRole->syncPermissions([
+
+            'dashboard_view',
+
+            // Players
+            'player_view',
+            'player_edit',
+
+            // Sports
+            'sport_view',
+
+            // Levels
+            'level_view',
+
+            // Sports Levels
+            'sports_level_view',
+
+            // Batches
+            'batch_view',
+
+            // Fees
+            'fee_view',
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Player Permissions
+        |--------------------------------------------------------------------------
+        */
+
+        $playerRole = Role::findByName('player');
+
+        $playerRole->syncPermissions([
+
+            'dashboard_view',
+
+            'batch_view',
+
+            'sport_view',
+
+            'level_view',
+
+            'fee_view',
+        ]);
     }
 }

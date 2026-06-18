@@ -8,6 +8,7 @@ use App\Models\Level;
 use App\Models\Sport;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class PlayerController extends Controller
@@ -17,6 +18,8 @@ class PlayerController extends Controller
      */
     public function index(PlayersDataTable $dataTable)
     {
+        abort_if(! Auth::user()->can('player_view'), 403);
+
         $sports = Sport::where('status', 'active')->get();
         $levels = Level::where('status', 'active')->get();
         $batches = Batch::where('status', 'active')->get();
@@ -29,6 +32,8 @@ class PlayerController extends Controller
      */
     public function create()
     {
+        abort_if(! Auth::user()->can('player_create'), 403);
+
         $sports = Sport::where('status', 'active')->get();
 
         return view('players.addPlayerForm', compact('sports'));
@@ -39,6 +44,8 @@ class PlayerController extends Controller
      */
     public function store(Request $request)
     {
+        abort_if(! Auth::user()->can('player_create'), 403);
+
         $request->validate([
             'firstname' => 'required|string|max:255',
             'lastname' => 'required|string|max:255',
@@ -68,6 +75,7 @@ class PlayerController extends Controller
             'status' => 'active',
             'joined_at' => $request->joined_at,
         ]);
+        $player->assignRole('player');
 
         // Attach player to all selected batches
         foreach ($request->assignments as $assignment) {
@@ -96,6 +104,8 @@ class PlayerController extends Controller
      */
     public function edit(string $id)
     {
+        abort_if(! Auth::user()->can('player_edit'), 403);
+
         $player = User::findOrFail($id);
         $sports = Sport::where('status', 'active')->get();
 
@@ -111,6 +121,8 @@ class PlayerController extends Controller
      */
     public function update(Request $request, string $id)
     {
+        abort_if(! Auth::user()->can('player_edit'), 403);
+
         $player = User::findOrFail($id);
 
         $request->validate([
@@ -135,6 +147,7 @@ class PlayerController extends Controller
             'status' => $request->status,
             'joined_at' => $request->joined_at,
         ]);
+        $player->syncRoles(['player']);
 
         // Sync batches
         $syncBatches = [];
@@ -156,6 +169,8 @@ class PlayerController extends Controller
      */
     public function destroy(string $id)
     {
+        abort_if(! Auth::user()->can('player_delete'), 403);
+
         $player = User::findOrFail($id);
         $player->delete();
 
@@ -170,6 +185,8 @@ class PlayerController extends Controller
      */
     public function getBatches($sportId, $levelId)
     {
+        abort_if(! Auth::user()->can('player_create'), 403);
+
         $batches = Batch::where('sport_id', $sportId)
             ->where('level_id', $levelId)
             ->where('status', 'active')
@@ -183,6 +200,8 @@ class PlayerController extends Controller
      */
     public function bulkDelete(Request $request)
     {
+        abort_if(! Auth::user()->can('player_delete'), 403);
+
         $ids = $request->input('select', []);
 
         if (! is_array($ids)) {
@@ -209,6 +228,8 @@ class PlayerController extends Controller
      */
     public function bulkUpdate(Request $request)
     {
+        abort_if(! Auth::user()->can('player_edit'), 403);
+
         $validated = $request->validate([
             'select' => 'required',
             'status' => 'required|string|in:active,inactive',

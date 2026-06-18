@@ -134,7 +134,6 @@
                     </option>
 
                     <option value="admin" {{ $user->role == 'admin' ? 'selected' : '' }}>Admin</option>
-                    <option value="player" {{ $user->role == 'player' ? 'selected' : '' }}>Player</option>
                     <option value="coach" {{ $user->role == 'coach' ? 'selected' : '' }}>Coach</option>
                     <option value="manager" {{ $user->role == 'manager' ? 'selected' : '' }}>Manager</option>
 

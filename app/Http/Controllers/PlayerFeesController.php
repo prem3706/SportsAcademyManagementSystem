@@ -8,7 +8,9 @@ use App\Models\PlayerFee;
 use App\Models\Setting;
 use App\Models\SportsLevel;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
@@ -20,6 +22,7 @@ class PlayerFeesController extends Controller
      */
     public function index(PlayerFeesDataTable $dataTable)
     {
+        abort_if(! Auth::user()->can('fee_view'), 403);
         // Log::info('PLAYER FEES REQUEST: ' . json_encode(request()->all()));
         $players = User::where('role', 'player')
             ->where('status', 'active')
@@ -53,6 +56,7 @@ class PlayerFeesController extends Controller
      */
     public function create()
     {
+        abort_if(! Auth::user()->can('fee_create'), 403);
         $players = User::where('role', 'player')
             ->where('status', 'active')
             ->orderBy('firstname')
@@ -78,6 +82,7 @@ class PlayerFeesController extends Controller
      */
     public function getPlayerDetails($id)
     {
+        abort_if(! Auth::user()->can('fee_view'), 403);
         $player = User::findOrFail($id);
 
         $batches = $player->playerBatches()->with(['sport', 'level'])->get();
@@ -98,7 +103,7 @@ class PlayerFeesController extends Controller
                 'sport' => $batch->sport?->name ?? 'Unknown',
                 'level' => $batch->level?->name ?? 'Unknown',
                 'fees' => $feeAmount,
-                'joined_at' => $batch->pivot->joined_at ? \Carbon\Carbon::parse($batch->pivot->joined_at)->toDateString() : null,
+                'joined_at' => $batch->pivot->joined_at ? Carbon::parse($batch->pivot->joined_at)->toDateString() : null,
             ];
         });
 
@@ -123,6 +128,8 @@ class PlayerFeesController extends Controller
      */
     public function store(Request $request)
     {
+        abort_if(! Auth::user()->can('fee_create'), 403);
+
         $rules = [
             'player_id' => 'required|exists:users,id',
             'batch_id' => 'required|exists:batches,id',
@@ -201,6 +208,8 @@ class PlayerFeesController extends Controller
      */
     public function edit(PlayerFee $playerFee)
     {
+        abort_if(! Auth::user()->can('fee_edit'), 403);
+
         $players = User::where('role', 'player')
             ->where('status', 'active')
             ->orderBy('firstname')
@@ -223,6 +232,8 @@ class PlayerFeesController extends Controller
      */
     public function update(Request $request, PlayerFee $playerFee)
     {
+        abort_if(! Auth::user()->can('fee_edit'), 403);
+
         $rules = [
             'player_id' => 'required|exists:users,id',
             'batch_id' => 'required|exists:batches,id',
@@ -304,6 +315,8 @@ class PlayerFeesController extends Controller
      */
     public function destroy(PlayerFee $playerFee)
     {
+        abort_if(! Auth::user()->can('fee_delete'), 403);
+
         if ($playerFee->img_upi) {
             $oldPath = str_replace('storage/', '', $playerFee->img_upi);
             Storage::disk('public')->delete($oldPath);
@@ -322,6 +335,8 @@ class PlayerFeesController extends Controller
      */
     public function checkOverlap(Request $request)
     {
+        abort_if(! Auth::user()->can('fee_create'), 403);
+
         $request->validate([
             'player_id' => 'required|exists:users,id',
             'batch_id' => 'required|exists:batches,id',

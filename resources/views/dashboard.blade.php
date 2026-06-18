@@ -164,13 +164,14 @@
                 </div>
 
                 <!-- Card 9: Outstanding Fees (Warning Accent) -->
-                {{-- <div class="col-sm-6 col-md-4 col-xl">
+                <div class="col-sm-6 col-md-4 col-xl">
                     <div class="card dashboard-stat-card stat-card-warning border-0 h-100">
                         <div class="card-body p-3 d-flex justify-content-between align-items-center">
                             <div>
                                 <div class="small fw-semibold text-secondary text-uppercase mb-1"
                                     style="font-size: 10.5px; letter-spacing: 0.5px;">Outstanding Fees</div>
-                                <div class="fs-3 fw-bold mb-0 text-dark">₹{{ number_format($total_fees_pending, 0) }}</div>
+                                <div class="fs-3 fw-bold mb-0 text-dark">₹{{ number_format($total_fees_pending, 0) }}
+                                </div>
                             </div>
                             <div class="icon-box" style="background-color: #fef3c7; color: #d97706;">
                                 <i class="bi bi-exclamation-triangle-fill fs-5"></i>
@@ -183,15 +184,17 @@
                         <div class="card-body p-3 d-flex justify-content-between align-items-center">
                             <div>
                                 <div class="small fw-semibold text-secondary text-uppercase mb-1"
-                                    style="font-size: 10.5px; letter-spacing: 0.5px;">Outstanding This Monthly Fees</div>
-                                <div class="fs-3 fw-bold mb-0 text-dark">₹{{ number_format($total_monthly_fees_pending, 0) }}</div>
+                                    style="font-size: 10.5px; letter-spacing: 0.5px;">Outstanding This Monthly Fees
+                                </div>
+                                <div class="fs-3 fw-bold mb-0 text-dark">
+                                    ₹{{ number_format($total_monthly_fees_pending, 0) }}</div>
                             </div>
                             <div class="icon-box" style="background-color: #fef3c7; color: #d97706;">
                                 <i class="bi bi-exclamation-triangle-fill fs-5"></i>
                             </div>
                         </div>
                     </div>
-                </div> --}}
+                </div>
 
             </div>
 

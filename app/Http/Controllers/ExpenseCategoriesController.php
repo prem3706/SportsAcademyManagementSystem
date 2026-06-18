@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\DataTables\ExpenseCategoriesDataTable;
 use App\Models\ExpenseCategory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 class ExpenseCategoriesController extends Controller
@@ -14,6 +15,8 @@ class ExpenseCategoriesController extends Controller
      */
     public function index(ExpenseCategoriesDataTable $dataTable)
     {
+        abort_if(! Auth::user()->can('expense_category_view'), 403);
+
         return $dataTable->render('expenseCategories.index');
     }
 
@@ -22,6 +25,8 @@ class ExpenseCategoriesController extends Controller
      */
     public function create()
     {
+        abort_if(! Auth::user()->can('expense_category_create'), 403);
+
         return view('expenseCategories.addExpenseCategoryForm');
     }
 
@@ -30,6 +35,8 @@ class ExpenseCategoriesController extends Controller
      */
     public function store(Request $request)
     {
+        abort_if(! Auth::user()->can('expense_category_create'), 403);
+
         $request->merge([
             'slug' => Str::slug($request->input('name')),
         ]);
@@ -45,12 +52,14 @@ class ExpenseCategoriesController extends Controller
 
         if ($validator->fails()) {
             $errors = $validator->errors();
+
             if ($errors->has('slug')) {
                 $errors->add('name', $errors->first('slug'));
             }
+
             return response()->json([
                 'message' => 'The given data was invalid.',
-                'errors' => $errors
+                'errors' => $errors,
             ], 422);
         }
 
@@ -67,7 +76,7 @@ class ExpenseCategoriesController extends Controller
      */
     public function show(string $id)
     {
-        //
+        abort_if(! Auth::user()->can('expense_category_view'), 403);
     }
 
     /**
@@ -75,6 +84,8 @@ class ExpenseCategoriesController extends Controller
      */
     public function edit(ExpenseCategory $expenseCategory)
     {
+        abort_if(! Auth::user()->can('expense_category_edit'), 403);
+
         return view('expenseCategories.editExpenseCategoryForm', compact('expenseCategory'));
     }
 
@@ -83,13 +94,15 @@ class ExpenseCategoriesController extends Controller
      */
     public function update(Request $request, ExpenseCategory $expenseCategory)
     {
+        abort_if(! Auth::user()->can('expense_category_edit'), 403);
+
         $request->merge([
             'slug' => Str::slug($request->input('name')),
         ]);
 
         $validator = validator($request->all(), [
             'name' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:expense_categories,slug,'.$expenseCategory->id,
+            'slug' => 'required|string|max:255|unique:expense_categories,slug,' . $expenseCategory->id,
             'description' => 'nullable|string|max:1000',
             'status' => 'required|in:1,0',
         ], [
@@ -98,12 +111,14 @@ class ExpenseCategoriesController extends Controller
 
         if ($validator->fails()) {
             $errors = $validator->errors();
+
             if ($errors->has('slug')) {
                 $errors->add('name', $errors->first('slug'));
             }
+
             return response()->json([
                 'message' => 'The given data was invalid.',
-                'errors' => $errors
+                'errors' => $errors,
             ], 422);
         }
 
@@ -120,6 +135,8 @@ class ExpenseCategoriesController extends Controller
      */
     public function destroy(ExpenseCategory $expenseCategory)
     {
+        abort_if(! Auth::user()->can('expense_category_delete'), 403);
+
         $expenseCategory->delete();
 
         return response()->json([
@@ -133,6 +150,8 @@ class ExpenseCategoriesController extends Controller
      */
     public function bulkDelete(Request $request)
     {
+        abort_if(! Auth::user()->can('expense_category_delete'), 403);
+
         $ids = $request->input('select', []);
 
         if (! is_array($ids)) {
@@ -144,7 +163,7 @@ class ExpenseCategoriesController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => $deletedCount.' Expense Categories deleted successfully.',
+                'message' => $deletedCount . ' Expense Categories deleted successfully.',
             ]);
         }
 
@@ -159,13 +178,15 @@ class ExpenseCategoriesController extends Controller
      */
     public function bulkUpdate(Request $request)
     {
+        abort_if(! Auth::user()->can('expense_category_edit'), 403);
+
         $validated = $request->validate([
             'select' => 'required',
             'status' => 'required|in:active,inactive',
         ]);
 
         $ids = $request->input('select', []);
-        // Map active/inactive back to 1/0
+
         $status = $request->input('status') === 'active' ? 1 : 0;
 
         if (! is_array($ids)) {
@@ -173,11 +194,12 @@ class ExpenseCategoriesController extends Controller
         }
 
         if (count($ids) > 0) {
-            $updatedCount = ExpenseCategory::whereIn('id', $ids)->update(['status' => $status]);
+            $updatedCount = ExpenseCategory::whereIn('id', $ids)
+                ->update(['status' => $status]);
 
             return response()->json([
                 'success' => true,
-                'message' => $updatedCount.' Expense Categories updated successfully.',
+                'message' => $updatedCount . ' Expense Categories updated successfully.',
             ]);
         }
 

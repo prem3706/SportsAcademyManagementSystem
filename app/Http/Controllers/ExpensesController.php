@@ -6,6 +6,7 @@ use App\DataTables\ExpensesDataTable;
 use App\Models\Expense;
 use App\Models\ExpenseCategory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class ExpensesController extends Controller
@@ -15,6 +16,8 @@ class ExpensesController extends Controller
      */
     public function index(ExpensesDataTable $dataTable)
     {
+        abort_if(! Auth::user()->can('expense_view'), 403);
+
         return $dataTable->render('expenses.index');
     }
 
@@ -23,7 +26,9 @@ class ExpensesController extends Controller
      */
     public function create()
     {
+        abort_if(! Auth::user()->can('expense_create'), 403);
         $categories = ExpenseCategory::where('status', 1)->get();
+
         return view('expenses.addExpenseForm', compact('categories'));
     }
 
@@ -32,6 +37,7 @@ class ExpensesController extends Controller
      */
     public function store(Request $request)
     {
+        abort_if(! Auth::user()->can('expense_create'), 403);
         $validatedData = $request->validate([
             'expense_category_id' => 'required|exists:expense_categories,id',
             'expense_date' => 'required|date',
@@ -44,7 +50,7 @@ class ExpensesController extends Controller
 
         if ($request->hasFile('receipt')) {
             $path = $request->file('receipt')->store('expense_receipts', 'public');
-            $validatedData['receipt'] = 'storage/' . $path;
+            $validatedData['receipt'] = 'storage/'.$path;
         }
 
         Expense::create($validatedData);
@@ -68,7 +74,10 @@ class ExpensesController extends Controller
      */
     public function edit(Expense $expense)
     {
+        abort_if(! Auth::user()->can('expense_edit'), 403);
+
         $categories = ExpenseCategory::where('status', 1)->get();
+
         return view('expenses.editExpenseForm', compact('expense', 'categories'));
     }
 
@@ -77,6 +86,8 @@ class ExpensesController extends Controller
      */
     public function update(Request $request, Expense $expense)
     {
+        abort_if(! Auth::user()->can('expense_edit'), 403);
+
         $validatedData = $request->validate([
             'expense_category_id' => 'required|exists:expense_categories,id',
             'expense_date' => 'required|date',
@@ -95,7 +106,7 @@ class ExpensesController extends Controller
             }
 
             $path = $request->file('receipt')->store('expense_receipts', 'public');
-            $validatedData['receipt'] = 'storage/' . $path;
+            $validatedData['receipt'] = 'storage/'.$path;
         }
 
         $expense->update($validatedData);
@@ -111,6 +122,7 @@ class ExpensesController extends Controller
      */
     public function destroy(Expense $expense)
     {
+        abort_if(! Auth::user()->can('expense_delete'), 403);
         // Delete receipt file if exists
         if ($expense->receipt) {
             $oldPath = str_replace('storage/', '', $expense->receipt);
@@ -130,6 +142,7 @@ class ExpensesController extends Controller
      */
     public function bulkDelete(Request $request)
     {
+        abort_if(! Auth::user()->can('expense_delete'), 403);
         $ids = $request->input('select', []);
 
         if (! is_array($ids)) {
@@ -149,7 +162,7 @@ class ExpensesController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => count($ids) . ' Expenses deleted successfully.',
+                'message' => count($ids).' Expenses deleted successfully.',
             ]);
         }
 

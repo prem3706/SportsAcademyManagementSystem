@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\DataTables\SportsDataTable;
 use App\Models\Sport;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 class SportsController extends Controller
@@ -14,6 +15,8 @@ class SportsController extends Controller
      */
     public function index(SportsDataTable $dataTable)
     {
+        abort_if(! Auth::user()->can('sport_view'), 403);
+
         return $dataTable->render('sports.index');
     }
 
@@ -22,6 +25,8 @@ class SportsController extends Controller
      */
     public function create()
     {
+        abort_if(! Auth::user()->can('sport_create'), 403);
+
         return view('sports.addSportForm');
 
     }
@@ -31,6 +36,8 @@ class SportsController extends Controller
      */
     public function store(Request $request)
     {
+        abort_if(! Auth::user()->can('sport_create'), 403);
+
         $request->merge([
             'slug' => Str::slug($request->input('name')),
         ]);
@@ -49,9 +56,10 @@ class SportsController extends Controller
             if ($errors->has('slug')) {
                 $errors->add('name', $errors->first('slug'));
             }
+
             return response()->json([
                 'message' => 'The given data was invalid.',
-                'errors' => $errors
+                'errors' => $errors,
             ], 422);
         }
 
@@ -76,6 +84,8 @@ class SportsController extends Controller
      */
     public function edit(Sport $sport)
     {
+        abort_if(! Auth::user()->can('sport_edit'), 403);
+
         return view('sports.editSportForm', compact('sport'));
     }
 
@@ -84,6 +94,8 @@ class SportsController extends Controller
      */
     public function update(Request $request, Sport $sport)
     {
+        abort_if(! Auth::user()->can('sport_edit'), 403);
+
         $request->merge([
             'slug' => Str::slug($request->input('name')),
         ]);
@@ -102,9 +114,10 @@ class SportsController extends Controller
             if ($errors->has('slug')) {
                 $errors->add('name', $errors->first('slug'));
             }
+
             return response()->json([
                 'message' => 'The given data was invalid.',
-                'errors' => $errors
+                'errors' => $errors,
             ], 422);
         }
 
@@ -121,6 +134,7 @@ class SportsController extends Controller
      */
     public function destroy(Sport $sport)
     {
+        abort_if(! Auth::user()->can('sport_delete'), 403);
 
         $sport->delete();
 
@@ -132,6 +146,8 @@ class SportsController extends Controller
 
     public function bulkDelete(Request $request)
     {
+        abort_if(! Auth::user()->can('sport_delete'), 403);
+
         $ids = $request->input('select', []);
 
         // Convert comma separated string into array
@@ -154,6 +170,8 @@ class SportsController extends Controller
 
     public function bulkUpdate(Request $request)
     {
+        abort_if(! Auth::user()->can('sport_edit'), 403);
+
         $validated = $request->validate([
             'select' => 'required',
             'status' => 'required|string|in:active,inactive',
