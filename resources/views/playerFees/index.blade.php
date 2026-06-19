@@ -9,7 +9,7 @@
         <div class="container-fluid px-4 py-3">
 
             <x-table-crud-card heading="Player Fees Management" subheading="Manage Player Fees" title="Record Player Fee"
-                url="{{ route('player-fees.create') }}" id="addPlayerFeeBtn" :filters="[
+                url="{{ route('player-fees.create') }}" id="addPlayerFeeBtn" permission="fee" :filters="[
                     [
                         'id' => 'playerFilter',
                         'placeholder' => 'All Players',

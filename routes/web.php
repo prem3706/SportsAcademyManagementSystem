@@ -91,7 +91,8 @@ Route::middleware('auth')->group(function () {
     Route::get('settings', [SettingController::class, 'index'])->name('settings.index');
     Route::post('settings/penalty', [SettingController::class, 'updatePenalty'])->name('settings.updatePenalty');
     Route::post('settings/discount', [SettingController::class, 'updateDiscount'])->name('settings.updateDiscount');
-
+    Route::get('settings/role-permission',[SettingController::class,'rolePermission'])->name('role.permission.index');
+    
     Route::get('get-batches/{sport_id}/{level_id}', [PlayerController::class, 'getBatches'])->name('players.getBatches');
     Route::delete('/players/bulk-delete', [PlayerController::class, 'bulkDelete'])->name('players.bulkDelete');
     Route::patch('/players/bulk-update', [PlayerController::class, 'bulkUpdate'])->name('players.bulkUpdate');

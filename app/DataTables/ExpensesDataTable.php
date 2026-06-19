@@ -44,9 +44,11 @@ class ExpensesDataTable extends DataTable
                 return '<span class="text-secondary small">No File</span>';
             })
             ->addColumn('action', function (Expense $expense) {
-                return '
-<div class="d-flex justify-content-center gap-2">
+                $editBtn = '';
+                $deleteBtn = '';
 
+                if (auth()->user()->can('expense_edit')) {
+                    $editBtn = '
     <!-- Edit Button -->
     <button type="button"
         class="btn btn-light btn-action text-primary shadow-sm"
@@ -55,23 +57,23 @@ class ExpensesDataTable extends DataTable
         data-url="'.route('expenses.edit', $expense->id).'"
         data-bs-toggle="offcanvas"
         data-bs-target="#offcanvasScrolling">
-
         <i class="bi bi-pencil-square"></i>
+    </button>';
+                }
 
-    </button>
-
+                if (auth()->user()->can('expense_delete')) {
+                    $deleteBtn = '
     <!-- Delete Button -->
     <button type="button"
         class="btn btn-light btn-action text-danger shadow-sm"
         id="deleteExpenseBtn"
         data-id="'.$expense->id.'"
         data-url="'.route('expenses.destroy', $expense->id).'">
-
         <i class="bi bi-trash"></i>
+    </button>';
+                }
 
-    </button>
-
-</div>';
+                return '<div class="d-flex justify-content-center gap-2">' . $editBtn . $deleteBtn . '</div>';
             })
             ->rawColumns(['action', 'select', 'receipt']) // Required to render HTML
             ->setRowId('id');
@@ -114,14 +116,19 @@ class ExpensesDataTable extends DataTable
      */
     public function getColumns(): array
     {
-        return [
-            Column::make('select')
+        $columns = [];
+
+        if (auth()->user()->can('expense_delete')) {
+            $columns[] = Column::make('select')
                 ->title('<input type="checkbox" id="select-all">')
                 ->titleAttr('Select All')
                 ->orderable(false)
                 ->searchable(false)
                 ->exportable(false)
-                ->printable(false),
+                ->printable(false);
+        }
+
+        $columns = array_merge($columns, [
             Column::make('id'),
             Column::make('category')->title('Category')->orderable(false),
             Column::make('expense_date')->title('Date'),
@@ -129,12 +136,17 @@ class ExpensesDataTable extends DataTable
             Column::make('payment_mode')->title('Payment Mode'),
             Column::make('reference_no')->title('Ref No'),
             Column::make('receipt')->title('Receipt'),
-            Column::make('action')
+        ]);
+
+        if (auth()->user()->can('expense_edit') || auth()->user()->can('expense_delete')) {
+            $columns[] = Column::make('action')
                 ->orderable(false)
                 ->searchable(false)
                 ->exportable(false)
-                ->printable(false),
-        ];
+                ->printable(false);
+        }
+
+        return $columns;
     }
 
     /**

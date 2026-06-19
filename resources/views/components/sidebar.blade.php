@@ -125,7 +125,7 @@
             </li>
         @endcan
 
-        @if (auth()->user()->can('expense_category_view') || auth()->user()->can('expense_view'))
+        @canany(['expense_category_view', 'expense_view'])
             <li class="nav-group {{ request()->is('expense-category*') || request()->is('expenses*') ? 'show' : '' }}">
                 <a class="nav-link nav-group-toggle" href="#">
                     <i class="bi bi-cash-stack nav-icon"></i>
@@ -160,14 +160,42 @@
 
                 </ul>
             </li>
-        @endif
+        @endcanany
 
         @can('setting_view')
-            <li class="nav-item">
-                <a class="nav-link {{ request()->is('settings*') ? 'active' : '' }}" href="{{ route('settings.index') }}">
+            <li class="nav-group {{ request()->is('settings*') ? 'show' : '' }}">
+                <a class="nav-link nav-group-toggle" href="#">
                     <i class="bi bi-gear nav-icon"></i>
                     Settings
                 </a>
+
+                <ul class="nav-group-items">
+
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->is('settings') ? 'active' : '' }}"
+                            href="{{ route('settings.index') }}">
+                            <span class="nav-icon">
+                                <i class="bi bi-percent"></i>
+
+                            </span>
+                            Discount & Penalty
+
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->is('role-permission') ? 'active' : '' }}"
+                            href="{{ route('role.permission.index') }}">
+                            <span class="nav-icon">
+                                <i class="bi bi-shield-lock"></i>
+
+                            </span>
+                            Roles & Permissions
+
+                        </a>
+                    </li>
+
+                </ul>
             </li>
         @endcan
 

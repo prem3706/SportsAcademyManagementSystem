@@ -36,35 +36,36 @@ class SportsDataTable extends DataTable
                 return '<span class="badge bg-danger">Inactive</span>';
             })
             ->addColumn('action', function (Sport $Sport) {
-                return '
-<div class="d-flex justify-content-center gap-2">
+                $editBtn = '';
+                $deleteBtn = '';
 
+                if (auth()->user()->can('sport_edit')) {
+                    $editBtn = '
     <!-- Edit Button -->
     <button type="button"
-        class="btn btn-light btn-action text-primary shadow-sm "
+        class="btn btn-light btn-action text-primary shadow-sm"
         id="editSportBtn"
         data-title="Edit Sport"
         data-url="'.route('sports.edit', $Sport->id).'"
         data-bs-toggle="offcanvas"
         data-bs-target="#offcanvasScrolling">
-
         <i class="bi bi-pencil-square"></i>
+    </button>';
+                }
 
-    </button>
-
+                if (auth()->user()->can('sport_delete')) {
+                    $deleteBtn = '
     <!-- Delete Button -->
     <button type="button"
         class="btn btn-light btn-action text-danger shadow-sm"
         id="deleteSportBtn"
         data-id="'.$Sport->id.'"
         data-url="'.route('sports.destroy', $Sport->id).'">
-
         <i class="bi bi-trash"></i>
+    </button>';
+                }
 
-    </button>
-
-</div>';
-
+                return '<div class="d-flex justify-content-center gap-2">' . $editBtn . $deleteBtn . '</div>';
             })
             ->rawColumns(['action', 'select', 'status']) // Required to render HTML
             ->setRowId('id');
@@ -113,25 +114,35 @@ class SportsDataTable extends DataTable
      */
     public function getColumns(): array
     {
-        return [
-            Column::make('select')
+        $columns = [];
+
+        if (auth()->user()->can('sport_delete')) {
+            $columns[] = Column::make('select')
                 ->title('<input type="checkbox" id="select-all">')
                 ->titleAttr('Select All')
                 ->orderable(false)
                 ->searchable(false)
                 ->exportable(false)
-                ->printable(false),
+                ->printable(false);
+        }
+
+        $columns = array_merge($columns, [
             Column::make('id'),
             Column::make('name'),
             Column::make('slug'),
             Column::make('description'),
             Column::make('status')->title('Status'),
-            Column::make('action')
+        ]);
+
+        if (auth()->user()->can('sport_edit') || auth()->user()->can('sport_delete')) {
+            $columns[] = Column::make('action')
                 ->orderable(false)
                 ->searchable(false)
                 ->exportable(false)
-                ->printable(false),
-        ];
+                ->printable(false);
+        }
+
+        return $columns;
     }
 
     /**

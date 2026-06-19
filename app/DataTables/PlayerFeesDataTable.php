@@ -77,8 +77,11 @@ class PlayerFeesDataTable extends DataTable
                 return '<span class="badge bg-warning text-dark px-2 py-1" style="border-radius:12px;">Pending</span>';
             })
             ->addColumn('action', function ($fee) {
-                return '
-                <div class="d-flex justify-content-center gap-2">
+                $editBtn = '';
+                $deleteBtn = '';
+
+                if (auth()->user()->can('fee_edit')) {
+                    $editBtn = '
                     <button type="button"
                         class="btn btn-light btn-action text-primary shadow-sm edit-fee-btn"
                         data-title="Edit Player Fee"
@@ -86,15 +89,20 @@ class PlayerFeesDataTable extends DataTable
                         data-bs-toggle="offcanvas"
                         data-bs-target="#offcanvasScrolling">
                         <i class="bi bi-pencil-square"></i>
-                    </button>
+                    </button>';
+                }
+
+                if (auth()->user()->can('fee_delete')) {
+                    $deleteBtn = '
                     <button type="button"
                         class="btn btn-light btn-action text-danger shadow-sm delete-fee-btn"
                         data-id="'.$fee->id.'"
                         data-url="'.route('player-fees.destroy', $fee->id).'">
                         <i class="bi bi-trash"></i>
-                    </button>
-                </div>
-                ';
+                    </button>';
+                }
+
+                return '<div class="d-flex justify-content-center gap-2">' . $editBtn . $deleteBtn . '</div>';
             })
             ->rawColumns([
                 'payment_type',
@@ -196,7 +204,7 @@ class PlayerFeesDataTable extends DataTable
      */
     public function getColumns(): array
     {
-        return [
+        $columns = [
             Column::make('id')
                 ->title('ID'),
             Column::make('player')
@@ -227,13 +235,18 @@ class PlayerFeesDataTable extends DataTable
             Column::make('status')
                 ->title('Status')
                 ->addClass('text-nowrap'),
-            Column::computed('action')
+        ];
+
+        if (auth()->user()->can('fee_edit') || auth()->user()->can('fee_delete')) {
+            $columns[] = Column::computed('action')
                 ->exportable(false)
                 ->printable(false)
                 ->width(80)
                 ->addClass('text-center')
-                ->title('Action'),
-        ];
+                ->title('Action');
+        }
+
+        return $columns;
     }
 
     /**

@@ -16,6 +16,9 @@
     'roleFilter' => 'False',
 
     'filters' => [],
+
+    // Permission Prefix
+    'permission' => null,
 ])
 
 <div class="card border-0 shadow-sm rounded-4">
@@ -45,7 +48,20 @@
             </div>
 
             <!-- Add Button -->
+            @php
+                $canCreate = false;
+            @endphp
             @if ($url)
+                @if (!$permission)
+                    @php $canCreate = true; @endphp
+                @else
+                    @can($permission . '_create')
+                        @php $canCreate = true; @endphp
+                    @endcan
+                @endif
+            @endif
+
+            @if ($canCreate)
                 <button class="btn btn-dark rounded-3 shadow-sm px-4 fw-semibold text-nowrap"
                     data-title="{{ $title }}" data-url="{{ $url }}" id="{{ $id }}" type="button"
                     data-bs-toggle="offcanvas" data-bs-target="#offcanvasScrolling">
@@ -70,7 +86,8 @@
                     @if ($statusFilter === 'True')
                         <div style="min-width: 150px;">
 
-                            <select id="statusFilter" class="form-select select2 select2-no-search rounded-3 shadow-sm border-0">
+                            <select id="statusFilter"
+                                class="form-select select2 select2-no-search rounded-3 shadow-sm border-0">
 
                                 <option value="">
                                     All Status
@@ -93,7 +110,8 @@
                     @if ($roleFilter === 'True')
                         <div style="min-width: 150px;">
 
-                            <select id="roleFilter" class="form-select select2 select2-no-search rounded-3 shadow-sm border-0">
+                            <select id="roleFilter"
+                                class="form-select select2 select2-no-search rounded-3 shadow-sm border-0">
 
                                 <option value="">
                                     All Roles
@@ -124,7 +142,8 @@
                     @foreach ($filters as $filter)
                         <div style="min-width: 150px;">
 
-                            <select id="{{ $filter['id'] }}" class="form-select select2 {{ $filter['id'] !== 'playerFilter' ? 'select2-no-search' : '' }} rounded-3 shadow-sm border-0 {{ $filter['class'] ?? '' }}">
+                            <select id="{{ $filter['id'] }}"
+                                class="form-select select2 {{ $filter['id'] !== 'playerFilter' ? 'select2-no-search' : '' }} rounded-3 shadow-sm border-0 {{ $filter['class'] ?? '' }}">
 
                                 <option value="">
                                     {{ $filter['placeholder'] }}
@@ -179,7 +198,13 @@
 </div>
 
 <!-- Bulk Action Bar -->
-@if ($bulkDeleteUrl || $bulkUpdateUrl)
+@if (
+    ($bulkDeleteUrl &&
+        (!$permission ||
+            auth()->user()->can($permission . '_delete'))) ||
+        ($bulkUpdateUrl &&
+            (!$permission ||
+                auth()->user()->can($permission . '_edit'))))
 
     <div id="bulkActionBar"
         class="position-fixed bottom-0 start-50 translate-middle-x mb-4 bg-white border-0 shadow-lg rounded-4 px-4 py-3 d-none">
@@ -204,7 +229,10 @@
                 </div>
 
                 <!-- Status Update -->
-                @if ($bulkUpdateUrl)
+                @if (
+                    $bulkUpdateUrl &&
+                        (!$permission ||
+                            auth()->user()->can($permission . '_edit')))
                     <div style="min-width: 180px;">
 
                         <select id="statusUpdate" class="form-select rounded-3 border-0 shadow-sm">
@@ -232,7 +260,10 @@
             <div class="d-flex align-items-center gap-2">
 
                 <!-- Update Button -->
-                @if ($bulkUpdateUrl)
+                @if (
+                    $bulkUpdateUrl &&
+                        (!$permission ||
+                            auth()->user()->can($permission . '_edit')))
                     <button type="button" id="bulkUpdateBtn" data-url="{{ $bulkUpdateUrl }}"
                         class="btn btn-success rounded-3 px-4 fw-semibold d-flex align-items-center gap-2">
 
@@ -244,7 +275,10 @@
                 @endif
 
                 <!-- Delete Button -->
-                @if ($bulkDeleteUrl)
+                @if (
+                    $bulkDeleteUrl &&
+                        (!$permission ||
+                            auth()->user()->can($permission . '_delete')))
                     <button type="button" id="bulkDeleteBtn" data-url="{{ $bulkDeleteUrl }}"
                         class="btn btn-danger rounded-3 px-4 fw-semibold d-flex align-items-center gap-2">
 

@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-
 use App\Models\Setting;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class SettingController extends Controller
@@ -14,7 +13,7 @@ class SettingController extends Controller
      */
     public function index()
     {
-         abort_if(! Auth::user()->can('setting_view'), 403);
+        abort_if(! Auth::user()->can('setting_view'), 403);
 
         $settings = Setting::firstOrCreate(
             ['id' => 1],
@@ -39,7 +38,7 @@ class SettingController extends Controller
      */
     public function updatePenalty(Request $request)
     {
-         abort_if(! Auth::user()->can('setting_edit'), 403);
+        abort_if(! Auth::user()->can('setting_edit'), 403);
 
         $settings = Setting::firstOrCreate(['id' => 1]);
 
@@ -78,7 +77,7 @@ class SettingController extends Controller
      */
     public function updateDiscount(Request $request)
     {
-         abort_if(! Auth::user()->can('setting_edit'), 403);
+        abort_if(! Auth::user()->can('setting_edit'), 403);
 
         $settings = Setting::firstOrCreate(['id' => 1]);
 
@@ -111,5 +110,11 @@ class SettingController extends Controller
             'success' => true,
             'message' => 'Discount settings updated successfully.',
         ]);
+    }
+
+    public function rolePermission()
+    {
+        return view('settings.roles-permissions');
+
     }
 }

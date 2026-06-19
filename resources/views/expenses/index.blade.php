@@ -9,7 +9,8 @@
 
             <x-table-crud-card heading="Expense Management" subheading="Manage all Expenses"
                 title="Add Expense" :url="route('expenses.create')" id="addExpenseBtn" statusFilter="False"
-                :bulkDeleteUrl="route('expenses.bulkDelete')">
+                :bulkDeleteUrl="route('expenses.bulkDelete')"
+                permission="expense">
                 {{ $dataTable->table(['class' => 'table table-sm table-hover align-middle mb-0']) }}
 
             </x-table-crud-card>

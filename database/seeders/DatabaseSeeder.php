@@ -3,6 +3,8 @@
 namespace Database\Seeders;
 
 use App\Models\Batch;
+use App\Models\Expense;
+use App\Models\ExpenseCategory;
 use App\Models\Level;
 use App\Models\PlayerFee;
 use App\Models\Setting;
@@ -23,6 +25,8 @@ class DatabaseSeeder extends Seeder
     {
         // 1. Truncate existing data to avoid conflicts
         Schema::disableForeignKeyConstraints();
+        Expense::truncate();
+        ExpenseCategory::truncate();
         PlayerFee::truncate();
         \DB::table('batch_player')->truncate();
         \DB::table('batch_coach')->truncate();
@@ -79,6 +83,116 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $manager->assignRole('manager');
+
+        // Seed Expense Categories
+        $expenseCategoriesData = [
+            ['name' => 'Rent', 'slug' => 'rent', 'description' => 'Monthly facility rent', 'status' => true],
+            ['name' => 'Equipment', 'slug' => 'equipment', 'description' => 'Sports equipment like balls, bats, nets, etc.', 'status' => true],
+            ['name' => 'Utilities', 'slug' => 'utilities', 'description' => 'Electricity, water, and internet bills', 'status' => true],
+            ['name' => 'Salaries', 'slug' => 'salaries', 'description' => 'Coaches and staff monthly salaries', 'status' => true],
+            ['name' => 'Marketing', 'slug' => 'marketing', 'description' => 'Promotional events and advertisements', 'status' => true],
+        ];
+
+        $expenseCategories = [];
+        foreach ($expenseCategoriesData as $cat) {
+            $expenseCategories[$cat['name']] = ExpenseCategory::create($cat);
+        }
+
+        // Seed Expenses
+        $expensesData = [
+            [
+                'category' => 'Rent',
+                'amount' => 5000.00,
+                'payment_mode' => 'card',
+                'reference_no' => 'TXN998877',
+                'description' => 'Monthly rent for the sports ground',
+                'expense_date' => now()->startOfMonth()->format('Y-m-d'),
+            ],
+            [
+                'category' => 'Rent',
+                'amount' => 5000.00,
+                'payment_mode' => 'card',
+                'reference_no' => 'TXN998855',
+                'description' => 'Monthly rent for the sports ground',
+                'expense_date' => now()->subMonth()->startOfMonth()->format('Y-m-d'),
+            ],
+            [
+                'category' => 'Rent',
+                'amount' => 5000.00,
+                'payment_mode' => 'card',
+                'reference_no' => 'TXN998833',
+                'description' => 'Monthly rent for the sports ground',
+                'expense_date' => now()->subMonths(2)->startOfMonth()->format('Y-m-d'),
+            ],
+            [
+                'category' => 'Utilities',
+                'amount' => 450.00,
+                'payment_mode' => 'upi',
+                'reference_no' => 'UPI88776611',
+                'description' => 'Electricity Bill',
+                'expense_date' => now()->subDays(5)->format('Y-m-d'),
+            ],
+            [
+                'category' => 'Utilities',
+                'amount' => 520.00,
+                'payment_mode' => 'upi',
+                'reference_no' => 'UPI88776600',
+                'description' => 'Electricity Bill',
+                'expense_date' => now()->subMonth()->subDays(5)->format('Y-m-d'),
+            ],
+            [
+                'category' => 'Utilities',
+                'amount' => 120.00,
+                'payment_mode' => 'cash',
+                'reference_no' => null,
+                'description' => 'Water Bill',
+                'expense_date' => now()->subDays(10)->format('Y-m-d'),
+            ],
+            [
+                'category' => 'Equipment',
+                'amount' => 1200.00,
+                'payment_mode' => 'upi',
+                'reference_no' => 'UPI55443322',
+                'description' => 'Purchased footballs and cones',
+                'expense_date' => now()->subWeeks(2)->format('Y-m-d'),
+            ],
+            [
+                'category' => 'Equipment',
+                'amount' => 2500.00,
+                'payment_mode' => 'card',
+                'reference_no' => 'TXN332211',
+                'description' => 'Purchased cricket training gear',
+                'expense_date' => now()->subMonth()->subWeeks(1)->format('Y-m-d'),
+            ],
+            [
+                'category' => 'Salaries',
+                'amount' => 3000.00,
+                'payment_mode' => 'upi',
+                'reference_no' => 'UPI11223344',
+                'description' => 'Monthly coach salary - Part-time staff',
+                'expense_date' => now()->subMonth()->endOfMonth()->format('Y-m-d'),
+            ],
+            [
+                'category' => 'Marketing',
+                'amount' => 600.00,
+                'payment_mode' => 'upi',
+                'reference_no' => 'UPI44556677',
+                'description' => 'Facebook and Instagram local ads',
+                'expense_date' => now()->subDays(12)->format('Y-m-d'),
+            ],
+        ];
+
+        foreach ($expensesData as $exp) {
+            Expense::create([
+                'expense_category_id' => $expenseCategories[$exp['category']]->id,
+                'amount' => $exp['amount'],
+                'payment_mode' => $exp['payment_mode'],
+                'reference_no' => $exp['reference_no'],
+                'description' => $exp['description'],
+                'expense_date' => $exp['expense_date'],
+                'created_by' => $manager->id,
+            ]);
+        }
 
         // 4. Seed Sports
         $sportsData = [
@@ -476,8 +590,6 @@ class DatabaseSeeder extends Seeder
             'sport_view',
 
             'level_view',
-
-            'fee_view',
         ]);
     }
 }

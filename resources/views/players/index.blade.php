@@ -30,7 +30,8 @@
             <x-table-crud-card heading="Players Management" subheading="Manage all Players" title="Add Player"
                 :url="route('players.create')" id="addPlayerBtn" statusFilter="True"
                 :filters="$playerFilters"
-                :bulkDeleteUrl="route('players.bulkDelete')" :bulkUpdateUrl="route('players.bulkUpdate')">
+                :bulkDeleteUrl="route('players.bulkDelete')" :bulkUpdateUrl="route('players.bulkUpdate')"
+                permission="player">
                 {{ $dataTable->table(['class' => 'table table-sm table-hover align-middle mb-0']) }}
 
                 
