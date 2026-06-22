@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Role;
 use App\Models\Setting;
+use App\Models\Permission;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class SettingController extends Controller
 {
@@ -114,7 +117,8 @@ class SettingController extends Controller
 
     public function rolePermission()
     {
-        return view('settings.roles-permissions');
-
+        $roles = Role::where('name', '!=', 'admin')->withCount('users')->get();
+        
+        return view('settings.roles-permissions', compact('roles'));
     }
 }

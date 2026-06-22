@@ -13,6 +13,7 @@ use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SportLevelController;
 use App\Http\Controllers\SportsController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\RoleController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -92,6 +93,7 @@ Route::middleware('auth')->group(function () {
     Route::post('settings/penalty', [SettingController::class, 'updatePenalty'])->name('settings.updatePenalty');
     Route::post('settings/discount', [SettingController::class, 'updateDiscount'])->name('settings.updateDiscount');
     Route::get('settings/role-permission',[SettingController::class,'rolePermission'])->name('role.permission.index');
+    Route::resource('roles', RoleController::class);
     
     Route::get('get-batches/{sport_id}/{level_id}', [PlayerController::class, 'getBatches'])->name('players.getBatches');
     Route::delete('/players/bulk-delete', [PlayerController::class, 'bulkDelete'])->name('players.bulkDelete');

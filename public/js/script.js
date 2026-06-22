@@ -14,7 +14,8 @@ function openOffcanvasForm(url, title, onSuccess) {
 
     let isSmallUrl = url.includes('/sports') ||
         url.includes('/levels') ||
-        url.includes('/expense-category');
+        url.includes('/expense-category') ||
+        url.includes('/roles');
 
     if (isSmallUrl) {
         offcanvas.addClass('offcanvas-medium');
@@ -1511,4 +1512,132 @@ $(document).ready(function () {
 
     Bulkdelete('expenses', '.user-checkbox');
 
+    /* -------------------- ROLE MANAGEMENT -------------------- */
+
+    // Add Role Form Open
+    $(document).on('click', '#addRoleBtn', function (e) {
+        e.preventDefault();
+        openOffcanvasForm($(this).data('url'), $(this).data('title'));
+    });
+
+    // Helper to refresh only the roles grid using AJAX to prevent whole window reloads
+    function refreshRolesGrid() {
+        $.ajax({
+            url: window.location.href,
+            type: 'GET',
+            success: function (data) {
+                let newGridHtml = $(data).find('#rolesGrid').html();
+                $('#rolesGrid').html(newGridHtml);
+            },
+            error: function () {
+                toastr.error('Failed to refresh roles grid.');
+            }
+        });
+    }
+
+    // Add Role Form Submit
+    $(document).on('submit', '#addRoleForm', function (e) {
+        e.preventDefault();
+        submitFormAjax(this, function () {
+            refreshRolesGrid();
+        });
+    });
+
+    // Edit Role Form Open
+    $(document).on('click', '#editRoleBtn', function (e) {
+        e.preventDefault();
+        openOffcanvasForm($(this).data('url'), $(this).data('title'));
+    });
+
+    // Edit Role Form Submit
+    $(document).on('submit', '#editRoleForm', function (e) {
+        e.preventDefault();
+        submitFormAjax(this, function () {
+            refreshRolesGrid();
+        });
+    });
+
+    // Delete Role
+    $(document).on('click', '#deleteRoleBtn', function (e) {
+        e.preventDefault();
+        deleteResourceAjax($(this).data('url'), 'This Role will be deleted permanently!', function () {
+            refreshRolesGrid();
+        });
+    });
+
+    /* ------------------ ROLE PERMISSIONS AJAX ------------------ */
+
+
+    // Handle View Permission Click
+    $(document).on('click', '.view-permissions-btn', function (e) {
+        e.preventDefault();
+
+        let btn = $(this);
+        let url = btn.data('url');
+        let roleId = btn.data('role-id');
+
+
+
+        // Remove selection highlight from all cards, add to selected card
+        $('.role-card').css('border', 'none');
+        $('#roleCard_' + roleId).css('border', '2px solid #7c5cff');
+
+
+        // Show loading placeholder inside permissions container
+        $('#permissionsContainer').html(`
+            <div class="card border-0 shadow-sm rounded-4 mt-4">
+                <div class="card-body p-5 text-center">
+                    <div class="spinner-border text-primary" role="status" style="color: #7c5cff !important;">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="text-secondary mt-2 mb-0">Loading permissions...</p>
+                </div>
+            </div>
+        `);
+
+        // Fetch permissions via AJAX
+        $.ajax({
+            url: url,
+            type: 'GET',
+            success: function (response) {
+                $('#permissionsContainer').html(response);
+            },
+            error: function (xhr) {
+                toastr.error('Failed to load permissions.');
+                $('#permissionsContainer').html('');
+            }
+        });
+    });
+
+    // Handle Permissions Form Submission via AJAX
+    $(document).on('submit', '#savePermissionsForm', function (e) {
+        e.preventDefault();
+
+        let form = $(this);
+        let url = form.attr('action');
+        let data = form.serialize();
+        let submitBtn = form.find('button[type="submit"]');
+        let originalBtnHtml = submitBtn.html();
+
+        // Disable button and show spinner
+        submitBtn.prop('disabled', true).html(
+            '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Saving...'
+        );
+
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data: data,
+            success: function (response) {
+                toastr.success('Permissions updated successfully.');
+                submitBtn.prop('disabled', false).html(originalBtnHtml);
+            },
+            error: function (xhr) {
+                toastr.error('Failed to update permissions.');
+                submitBtn.prop('disabled', false).html(originalBtnHtml);
+            }
+        });
+    });
+
 });
+
