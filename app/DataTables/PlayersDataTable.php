@@ -25,9 +25,11 @@ class PlayersDataTable extends DataTable
                 return '<input type="checkbox" class="user-checkbox" name="select[]" value="'.$user->id.'">';
             })
             ->addColumn('action', function (User $user) {
-                $actions = '
-<div class="d-flex justify-content-center gap-2">
+                $editBtn = '';
+                $deleteBtn = '';
 
+                if (auth()->user()->can('player_edit')) {
+                    $editBtn = '
     <!-- Edit Button -->
     <button type="button"
         class="btn btn-light btn-action text-primary shadow-sm"
@@ -36,30 +38,23 @@ class PlayersDataTable extends DataTable
         data-url="'.route('players.edit', $user->id).'"
         data-bs-toggle="offcanvas"
         data-bs-target="#offcanvasScrolling">
-
         <i class="bi bi-pencil-square"></i>
-
     </button>';
+                }
 
-                if (Auth::id() !== $user->id) {
-                    $actions .= '
-
+                if (auth()->user()->can('player_delete') && auth()->id() !== $user->id) {
+                    $deleteBtn = '
     <!-- Delete Button -->
     <button type="button"
         class="btn btn-light btn-action text-danger shadow-sm"
         id="deleteUserBtn"
         data-id="'.$user->id.'"
         data-url="'.route('players.destroy', $user->id).'">
-
         <i class="bi bi-trash"></i>
-
     </button>';
                 }
 
-                $actions .= '
-</div>';
-
-                return $actions;
+                return '<div class="d-flex justify-content-center gap-2">' . $editBtn . $deleteBtn . '</div>';
             })
             ->editColumn('status', function (User $user) {
                 if ($user->status == 'active') {
@@ -150,14 +145,19 @@ class PlayersDataTable extends DataTable
      */
     public function getColumns(): array
     {
-        return [
-            Column::make('select')
+        $columns = [];
+
+        if (auth()->user()->can('player_delete')) {
+            $columns[] = Column::make('select')
                 ->title('<input type="checkbox" id="select-all">')
                 ->titleAttr('Select All')
                 ->orderable(false)
                 ->searchable(false)
                 ->exportable(false)
-                ->printable(false),
+                ->printable(false);
+        }
+
+        $columns = array_merge($columns, [
             Column::make('id'),
             Column::make('Name')->data('Name')->name('firstname'),
             Column::make('email'),
@@ -166,12 +166,17 @@ class PlayersDataTable extends DataTable
             Column::make('level')->title('Level')->orderable(false)->searchable(false),
             Column::make('batch')->title('Batch')->orderable(false)->searchable(false),
             Column::make('status')->title('Status'),
-            Column::make('action')
+        ]);
+
+        if (auth()->user()->can('player_edit') || auth()->user()->can('player_delete')) {
+            $columns[] = Column::make('action')
                 ->orderable(false)
                 ->searchable(false)
                 ->exportable(false)
-                ->printable(false),
-        ];
+                ->printable(false);
+        }
+
+        return $columns;
     }
 
     /**

@@ -148,7 +148,7 @@
             <div class="mb-3">
                 <label for="img_upi_edit" class="form-label fw-semibold text-dark small">Upload New Transaction Slip /
                     Screenshot</label>
-                <input type="file" name="img_upi" id="img_upi_edit" class="form-control" accept="image/*">
+                <input type="file" name="img_upi" id="img_upi_edit" class="form-control" accept="image/*" @if ($playerFee->img_upi) data-default-file="{{ asset($playerFee->img_upi) }}" @endif>
                 <p class="text-danger small mb-0" id="img_upiError"></p>
             </div>
             @if ($playerFee->img_upi)

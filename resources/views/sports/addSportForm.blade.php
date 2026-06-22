@@ -1,6 +1,6 @@
 <div class="d-flex justify-content-center">
 
-    <form method="POST" id="addSportForm" style="max-width: 950px; width:100%;">
+    <form method="POST" id="addSportForm" data-width="medium" style="max-width: 950px; width:100%;">
 
         @csrf
 
@@ -9,10 +9,10 @@
         <div class="row g-3">
 
             <!-- Sport Name -->
-            <div class="col-md-6">
+            <div class="col-12">
 
                 <label for="name" class="form-label fw-semibold small text-dark mb-2">
-                    Sport Name
+                    Sport Name <span class="text-danger">*</span>
                 </label>
 
                 <div class="input-group">
@@ -35,38 +35,11 @@
 
             </div>
 
-            <!-- Slug -->
-            <div class="col-md-6">
-
-                <label for="slug" class="form-label fw-semibold small text-dark mb-2">
-                    Slug
-                </label>
-
-                <div class="input-group">
-
-                    <span class="input-group-text bg-white px-3">
-                        <i class="bi bi-link-45deg text-secondary"></i>
-                    </span>
-
-                    <input type="text"
-                        class="form-control py-2"
-                        id="slug"
-                        name="slug"
-                        placeholder="Enter slug">
-
-                </div>
-
-                <div style="height:10px;">
-                    <p class="text-danger small mb-0" id="slugError"></p>
-                </div>
-
-            </div>
-
             <!-- Status -->
             <div class="col-md-12">
 
                 <label for="status" class="form-label fw-semibold small text-dark mb-2">
-                    Status
+                    Status <span class="text-danger">*</span>
                 </label>
 
                 <select class="form-select py-2" id="status" name="status">

@@ -25,10 +25,10 @@ class StoreUserRequest extends FormRequest
         return [
             'firstname' => 'required|string|max:255',
             'lastname' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
+            'email' => 'nullable|email|unique:users,email',
             'phone' => 'required|string|max:20|unique:users,phone',
             'password' => 'required|string|min:8',
-            'role' => 'required|in:admin,player,coach',
+            'role' => 'required|in:admin,player,coach,manager',
             'gender' => 'required|in:male,female,other',
             'status' => 'required|in:active,inactive',
             'joined_at' => 'nullable|date',

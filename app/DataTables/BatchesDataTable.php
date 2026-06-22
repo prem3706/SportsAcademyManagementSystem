@@ -76,10 +76,11 @@ class BatchesDataTable extends DataTable
 
             // Action Buttons
             ->addColumn('action', function ($batch) {
+                $editBtn = '';
+                $deleteBtn = '';
 
-                return '
-                        <div class="d-flex justify-content-center gap-2">
-
+                if (auth()->user()->can('batch_edit')) {
+                    $editBtn = '
                             <button type="button"
                                 class="btn btn-light btn-action text-primary shadow-sm"
                                 id="editBatchBtn"
@@ -87,21 +88,21 @@ class BatchesDataTable extends DataTable
                                 data-url="'.route('batches.edit', $batch->id).'"
                                 data-bs-toggle="offcanvas"
                                 data-bs-target="#offcanvasScrolling">
-
                                 <i class="bi bi-pencil-square"></i>
+                            </button>';
+                }
 
-                            </button>
-
+                if (auth()->user()->can('batch_delete')) {
+                    $deleteBtn = '
                             <button type="button"
                                 class="btn btn-light btn-action text-danger shadow-sm"
                                 id="deleteBatchBtn"
                                 data-url="'.route('batches.destroy', $batch->id).'">
-
                                 <i class="bi bi-trash"></i>
+                            </button>';
+                }
 
-                            </button>
-
-                        </div>';
+                return '<div class="d-flex justify-content-center gap-2">' . $editBtn . $deleteBtn . '</div>';
             })
 
             ->rawColumns(['status', 'action', 'select']) // Required to render HTML
@@ -169,15 +170,19 @@ class BatchesDataTable extends DataTable
      */
     public function getColumns(): array
     {
-        return [
-            Column::make('select')
+        $columns = [];
+
+        if (auth()->user()->can('batch_delete')) {
+            $columns[] = Column::make('select')
                 ->title('<input type="checkbox" id="select-all">')
                 ->titleAttr('Select All')
                 ->orderable(false)
                 ->searchable(false)
                 ->exportable(false)
-                ->printable(false),
+                ->printable(false);
+        }
 
+        $columns = array_merge($columns, [
             Column::make('id')
                 ->title('ID'),
 
@@ -204,20 +209,18 @@ class BatchesDataTable extends DataTable
 
             Column::make('status')
                 ->title('Status'),
+        ]);
 
-            Column::computed('action')
-
+        if (auth()->user()->can('batch_edit') || auth()->user()->can('batch_delete')) {
+            $columns[] = Column::computed('action')
                 ->exportable(false)
-
                 ->printable(false)
-
                 ->width(100)
-
                 ->addClass('text-center')
+                ->title('Action');
+        }
 
-                ->title('Action'),
-
-        ];
+        return $columns;
     }
 
     /**

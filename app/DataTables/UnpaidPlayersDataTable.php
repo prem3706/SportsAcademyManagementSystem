@@ -29,26 +29,29 @@ class UnpaidPlayersDataTable extends DataTable
                 return '₹'.number_format($row->fees, 0);
             })
             ->addColumn('action', function ($row) {
-                $collectUrl = route('player-fees.create', [
-                    'player_id' => $row->player_id,
-                    'batch_id' => $row->batch_id,
-                    'month' => request('unpaid_month', now()->month),
-                    'year' => request('unpaid_year', now()->year),
-                ]);
+                if (auth()->user()->can('fee_create')) {
+                    $collectUrl = route('player-fees.create', [
+                        'player_id' => $row->player_id,
+                        'batch_id' => $row->batch_id,
+                        'month' => request('unpaid_month', now()->month),
+                        'year' => request('unpaid_year', now()->year),
+                    ]);
 
-                return '
-                <div class="text-center">
-                    <button type="button" class="btn btn-outline-danger btn-sm fw-bold collect-fee-btn py-0.5 px-2"
-                            style="font-size: 10.5px; border-radius: 6px;"
-                            data-url="'.$collectUrl.'"
-                            data-title="Collect Player Fee"
-                            data-bs-toggle="offcanvas"
-                            data-bs-target="#offcanvasScrolling"
-                            aria-controls="offcanvasScrolling">
-                        Collect Fee
-                    </button>
-                </div>
-                ';
+                    return '
+                    <div class="text-center">
+                        <button type="button" class="btn btn-outline-danger btn-sm fw-bold collect-fee-btn py-0.5 px-2"
+                                style="font-size: 10.5px; border-radius: 6px;"
+                                data-url="'.$collectUrl.'"
+                                data-title="Collect Player Fee"
+                                data-bs-toggle="offcanvas"
+                                data-bs-target="#offcanvasScrolling"
+                                aria-controls="offcanvasScrolling">
+                            Collect Fee
+                        </button>
+                    </div>
+                    ';
+                }
+                return '-';
             })
             ->rawColumns(['player', 'batch_sport', 'action']);
     }
@@ -131,15 +134,20 @@ class UnpaidPlayersDataTable extends DataTable
      */
     public function getColumns(): array
     {
-        return [
+        $columns = [
             Column::make('player')->title('Player')->name('users.firstname')->addClass('align-middle'),
             Column::make('batch_sport')->title('Batch / Sport')->name('batches.name')->addClass('align-middle'),
             Column::make('fees')->title('Monthly Fee')->name('sports_levels.fees')->addClass('align-middle'),
-            Column::computed('action')
+        ];
+
+        if (auth()->user()->can('fee_create')) {
+            $columns[] = Column::computed('action')
                 ->title('Action')
                 ->orderable(false)
                 ->searchable(false)
-                ->addClass('text-center align-middle'),
-        ];
+                ->addClass('text-center align-middle');
+        }
+
+        return $columns;
     }
 }

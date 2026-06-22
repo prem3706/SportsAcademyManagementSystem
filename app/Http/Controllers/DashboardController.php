@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\DataTables\UnpaidPlayersDataTable;
 use App\Models\Batch;
+use App\Models\Expense;
 use App\Models\PlayerFee;
 use App\Models\Sport;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-
-use App\DataTables\UnpaidPlayersDataTable;
 
 class DashboardController extends Controller
 {
@@ -57,22 +57,38 @@ class DashboardController extends Controller
 
             return [
                 'month' => $monthName,
+                'month_date' => $startOfMonth->format('Y-m'),
                 'paid' => $paid,
                 'pending' => $pending,
             ];
         })->values()->toArray();
-        // Log::info($monthly_earnings);                                                         
+        // Log::info($monthly_earnings);
 
         // Calculate total pending outstanding collections for last 6 months
         $total_fees_pending = collect($monthly_earnings)->sum('pending');
+        $currentMonth = now()->format('Y-m');
+
+        $total_monthly_fees_pending = collect($monthly_earnings)
+            ->firstWhere('month_date', $currentMonth)['pending'] ?? 0;
+
+        // Log::info($total_monthly_fees_pending);
+
+        $month_fees_collected = PlayerFee::where('status', 'paid')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->sum('total_amt');
+        $month_expenses = Expense::whereMonth('expense_date', now()->month)->whereYear('expense_date', now()->year)->sum('amount');
+        $net_monthly_balance = $month_fees_collected - $month_expenses;
+        $total_expenses = Expense::sum('amount');
 
         $stats = [
             'total_players' => User::where('role', 'player')->count(),
             'total_coaches' => User::where('role', 'coach')->count(),
             'total_sports' => Sport::count(),
             'total_batches' => Batch::count(),
-            'month_fees_collected' => PlayerFee::where('status', 'paid')->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->sum('total_amt'),
+            'month_fees_collected' => $month_fees_collected,
+            'month_expenses' => $month_expenses,
+            'net_monthly_balance' => $net_monthly_balance,
+            'total_expenses' => $total_expenses,
             'total_fees_pending' => $total_fees_pending,
+            'total_monthly_fees_pending' => $total_monthly_fees_pending,
             'recent_fees' => PlayerFee::with('player')->latest()->take(5)->get(),
             'recent_players' => User::where('role', 'player')->latest()->take(5)->get(),
             'recent_batches' => Batch::with(['sport', 'level', 'coaches'])->latest()->take(5)->get(),

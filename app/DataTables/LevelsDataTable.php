@@ -24,35 +24,36 @@ class LevelsDataTable extends DataTable
                 return '<input type="checkbox" class="user-checkbox" name="select[]" value="'.$level->id.'">';
             })
             ->addColumn('action', function (Level $level) {
+                $editBtn = '';
+                $deleteBtn = '';
 
-                return '
-<div class="d-flex justify-content-center gap-2">
-
+                if (auth()->user()->can('level_edit')) {
+                    $editBtn = '
     <!-- Edit Button -->
     <button type="button"
-        class="btn btn-light btn-action text-primary shadow-sm "
+        class="btn btn-light btn-action text-primary shadow-sm"
         id="editLevelBtn"
         data-title="Edit Level"
         data-url="'.route('levels.edit', $level->id).'"
         data-bs-toggle="offcanvas"
         data-bs-target="#offcanvasScrolling">
-
         <i class="bi bi-pencil-square"></i>
+    </button>';
+                }
 
-    </button>
-
+                if (auth()->user()->can('level_delete')) {
+                    $deleteBtn = '
     <!-- Delete Button -->
     <button type="button"
         class="btn btn-light btn-action text-danger shadow-sm"
         id="deleteLevelBtn"
         data-id="'.$level->id.'"
         data-url="'.route('levels.destroy', $level->id).'">
-
         <i class="bi bi-trash"></i>
+    </button>';
+                }
 
-    </button>
-
-</div>';
+                return '<div class="d-flex justify-content-center gap-2">' . $editBtn . $deleteBtn . '</div>';
             })
             // Status Badge
             ->editColumn('status', function ($level) {
@@ -115,24 +116,34 @@ class LevelsDataTable extends DataTable
      */
     public function getColumns(): array
     {
-        return [
-            Column::make('select')
+        $columns = [];
+
+        if (auth()->user()->can('level_delete')) {
+            $columns[] = Column::make('select')
                 ->title('<input type="checkbox" id="select-all">')
                 ->titleAttr('Select All')
                 ->orderable(false)
                 ->searchable(false)
                 ->exportable(false)
-                ->printable(false),
+                ->printable(false);
+        }
+
+        $columns = array_merge($columns, [
             Column::make('id'),
             Column::make('name'),
             Column::make('slug'),
             Column::make('status')->title('Status'),
-            Column::make('action')
+        ]);
+
+        if (auth()->user()->can('level_edit') || auth()->user()->can('level_delete')) {
+            $columns[] = Column::make('action')
                 ->orderable(false)
                 ->searchable(false)
                 ->exportable(false)
-                ->printable(false),
-        ];
+                ->printable(false);
+        }
+
+        return $columns;
     }
 
     /**

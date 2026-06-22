@@ -40,34 +40,36 @@ class SportsLevelsDataTable extends DataTable
                 return $html;
             })
             ->addColumn('action', function ($sport) {
-                return '
-<div class="d-flex justify-content-center gap-2">
+                $editBtn = '';
+                $deleteBtn = '';
 
+                if (auth()->user()->can('sports_level_edit')) {
+                    $editBtn = '
     <!-- Edit Button -->
     <button type="button"
-        class="btn btn-light btn-action text-primary shadow-sm "
+        class="btn btn-light btn-action text-primary shadow-sm"
         id="editSportsLevelsBtn"
         data-title="Edit Sports Levels"
         data-url="'.route('sport-levels.edit', $sport->id).'"
         data-bs-toggle="offcanvas"
         data-bs-target="#offcanvasScrolling">
-
         <i class="bi bi-pencil-square"></i>
+    </button>';
+                }
 
-    </button>
-
+                if (auth()->user()->can('sports_level_delete')) {
+                    $deleteBtn = '
     <!-- Delete Button -->
     <button type="button"
         class="btn btn-light btn-action text-danger shadow-sm"
         id="deleteSportBtn"
         data-id="'.$sport->id.'"
         data-url="'.route('sports.destroy', $sport->id).'">
-
         <i class="bi bi-trash"></i>
+    </button>';
+                }
 
-    </button>
-
-</div>';
+                return '<div class="d-flex justify-content-center gap-2">' . $editBtn . $deleteBtn . '</div>';
             })->rawColumns(['levels_fees', 'action']);
     }
 
@@ -90,20 +92,25 @@ class SportsLevelsDataTable extends DataTable
     /** * Get columns. */
     protected function getColumns()
     {
-        return [
+        $columns = [
             Column::make('id')->title('ID')->width(60),
             Column::make('name')->title('Sport'),
             Column::computed('levels_fees')
                 ->title('Levels & Fees')
                 ->searchable(false)
                 ->orderable(false),
-            Column::computed('action')
+        ];
+
+        if (auth()->user()->can('sports_level_edit') || auth()->user()->can('sports_level_delete')) {
+            $columns[] = Column::computed('action')
                 ->title('Action')
                 ->exportable(false)
                 ->printable(false)
                 ->width(140)
-                ->addClass('text-center'),
-        ];
+                ->addClass('text-center');
+        }
+
+        return $columns;
     }
 
     /** * Filename for export. */

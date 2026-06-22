@@ -8,7 +8,7 @@
         <div class="row g-3">
             <!-- First Name -->
             <div class="col-md-6">
-                <label for="firstname" class="form-label fw-semibold small text-dark mb-2">First Name</label>
+                <label for="firstname" class="form-label fw-semibold small text-dark mb-2">First Name <span class="text-danger">*</span></label>
                 <div class="input-group">
                     <span class="input-group-text bg-white px-3">
                         <i class="bi bi-person text-secondary"></i>
@@ -22,7 +22,7 @@
 
             <!-- Last Name -->
             <div class="col-md-6">
-                <label for="lastname" class="form-label fw-semibold small text-dark mb-2">Last Name</label>
+                <label for="lastname" class="form-label fw-semibold small text-dark mb-2">Last Name <span class="text-danger">*</span></label>
                 <div class="input-group">
                     <span class="input-group-text bg-white px-3">
                         <i class="bi bi-person text-secondary"></i>
@@ -50,7 +50,7 @@
 
             <!-- Phone -->
             <div class="col-md-6">
-                <label for="phone" class="form-label fw-semibold small text-dark mb-2">Phone Number</label>
+                <label for="phone" class="form-label fw-semibold small text-dark mb-2">Phone Number <span class="text-danger">*</span></label>
                 <div class="input-group">
                     <span class="input-group-text bg-white px-3">
                         <i class="bi bi-telephone text-secondary"></i>
@@ -78,7 +78,7 @@
 
             <!-- Joining Date -->
             <div class="col-md-6">
-                <label for="joined_at" class="form-label fw-semibold small text-dark mb-2">Joining Date</label>
+                <label for="joined_at" class="form-label fw-semibold small text-dark mb-2">Joining Date <span class="text-danger">*</span></label>
                 <input type="text" class="form-control py-2 datepicker-input" id="joined_at" name="joined_at" value="{{ $player->joined_at ? \Carbon\Carbon::parse($player->joined_at)->toDateString() : now()->toDateString() }}">
                 <div style="height:10px;">
                     <p class="text-danger small mb-0" id="joined_atError"></p>
@@ -87,7 +87,7 @@
 
             <!-- Status selection -->
             <div class="col-12">
-                <label for="status" class="form-label fw-semibold small text-dark mb-2">Status</label>
+                <label for="status" class="form-label fw-semibold small text-dark mb-2">Status <span class="text-danger">*</span></label>
                 <select class="form-select py-2" id="status" name="status">
                     <option value="active" {{ $player->status == 'active' ? 'selected' : '' }}>Active</option>
                     <option value="inactive" {{ $player->status == 'inactive' ? 'selected' : '' }}>Inactive</option>
@@ -117,7 +117,7 @@
                             </div>
                             <div class="row g-2">
                                 <div class="col-md-3">
-                                    <label class="form-label small fw-semibold text-dark mb-1">Sport</label>
+                                    <label class="form-label small fw-semibold text-dark mb-1">Sport <span class="text-danger">*</span></label>
                                     <select class="form-select form-select-sm sport-select" name="assignments[{{ $idx }}][sport_id]" required>
                                         <option value="" disabled>Select sport</option>
                                         @foreach ($sports as $sport)
@@ -126,7 +126,7 @@
                                     </select>
                                 </div>
                                 <div class="col-md-3">
-                                    <label class="form-label small fw-semibold text-dark mb-1">Level</label>
+                                    <label class="form-label small fw-semibold text-dark mb-1">Level <span class="text-danger">*</span></label>
                                     <select class="form-select form-select-sm level-select" name="assignments[{{ $idx }}][level_id]" required>
                                         <option value="" disabled>Select level</option>
                                         @foreach ($currentBatch->sport->levels as $level)
@@ -138,7 +138,7 @@
                                     </select>
                                 </div>
                                 <div class="col-md-3">
-                                    <label class="form-label small fw-semibold text-dark mb-1">Batch</label>
+                                    <label class="form-label small fw-semibold text-dark mb-1">Batch <span class="text-danger">*</span></label>
                                     <select class="form-select form-select-sm batch-select" name="assignments[{{ $idx }}][batch_id]" required>
                                         <option value="" disabled>Select batch</option>
                                         @php
@@ -153,7 +153,7 @@
                                     </select>
                                 </div>
                                 <div class="col-md-3">
-                                    <label class="form-label small fw-semibold text-dark mb-1">Joined Date</label>
+                                    <label class="form-label small fw-semibold text-dark mb-1">Joined Date <span class="text-danger">*</span></label>
                                     <input type="text" class="form-control form-control-sm datepicker-input joined-date-input" name="assignments[{{ $idx }}][joined_at]" value="{{ $currentBatch->pivot->joined_at ? \Carbon\Carbon::parse($currentBatch->pivot->joined_at)->toDateString() : now()->toDateString() }}" required>
                                 </div>
                             </div>
@@ -169,7 +169,7 @@
                             </div>
                             <div class="row g-2">
                                 <div class="col-md-3">
-                                    <label class="form-label small fw-semibold text-dark mb-1">Sport</label>
+                                    <label class="form-label small fw-semibold text-dark mb-1">Sport <span class="text-danger">*</span></label>
                                     <select class="form-select form-select-sm sport-select" name="assignments[0][sport_id]" required>
                                         <option value="" disabled selected>Select sport</option>
                                         @foreach ($sports as $sport)
@@ -178,19 +178,19 @@
                                     </select>
                                 </div>
                                 <div class="col-md-3">
-                                    <label class="form-label small fw-semibold text-dark mb-1">Level</label>
+                                    <label class="form-label small fw-semibold text-dark mb-1">Level <span class="text-danger">*</span></label>
                                     <select class="form-select form-select-sm level-select" name="assignments[0][level_id]" required disabled>
                                         <option value="" disabled selected>Select sport first</option>
                                     </select>
                                 </div>
                                 <div class="col-md-3">
-                                    <label class="form-label small fw-semibold text-dark mb-1">Batch</label>
+                                    <label class="form-label small fw-semibold text-dark mb-1">Batch <span class="text-danger">*</span></label>
                                     <select class="form-select form-select-sm batch-select" name="assignments[0][batch_id]" required disabled>
                                         <option value="" disabled selected>Select level first</option>
                                     </select>
                                 </div>
                                 <div class="col-md-3">
-                                    <label class="form-label small fw-semibold text-dark mb-1">Joined Date</label>
+                                    <label class="form-label small fw-semibold text-dark mb-1">Joined Date <span class="text-danger">*</span></label>
                                     <input type="text" class="form-control form-control-sm datepicker-input joined-date-input" name="assignments[0][joined_at]" value="{{ now()->toDateString() }}" required>
                                 </div>
                             </div>

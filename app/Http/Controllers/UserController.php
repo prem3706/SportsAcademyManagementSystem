@@ -7,6 +7,7 @@ use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
@@ -15,6 +16,8 @@ class UserController extends Controller
      **/
     public function index(UsersDataTable $dataTable)
     {
+        abort_if(! Auth::user()->can('user_view'), 403);
+
         return $dataTable->render('user.index');
     }
 
@@ -23,6 +26,8 @@ class UserController extends Controller
      */
     public function create()
     {
+        abort_if(! Auth::user()->can('user_create'), 403);
+
         return view('user.addUserForm');
     }
 
@@ -31,10 +36,12 @@ class UserController extends Controller
      */
     public function store(StoreUserRequest $request)
     {
-        // dd($request);
+        abort_if(! Auth::user()->can('user_create'), 403);
         $validatedData = $request->validated();
 
-        User::create($validatedData);
+        $user = User::create($validatedData);
+
+        $user->assignRole($validatedData['role']);
 
         return response()->json([
             'success' => true,
@@ -55,6 +62,8 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
+        abort_if(! Auth::user()->can('user_edit'), 403);
+
         return view('user.editUserForm', compact('user'));
     }
 
@@ -63,6 +72,8 @@ class UserController extends Controller
      */
     public function update(UpdateUserRequest $request, User $user)
     {
+        abort_if(! Auth::user()->can('user_edit'), 403);
+
         $validatedData = $request->validated();
 
         if (empty($validatedData['password'])) {
@@ -70,6 +81,7 @@ class UserController extends Controller
         }
 
         $user->update($validatedData);
+        $user->syncRoles([$validatedData['role']]);
 
         return response()->json([
             'success' => true,
@@ -82,6 +94,8 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
+        abort_if(! Auth::user()->can('user_delete'), 403);
+
         $user->delete();
 
         return response()->json([
@@ -95,6 +109,8 @@ class UserController extends Controller
      */
     public function bulkDelete(Request $request)
     {
+        abort_if(! Auth::user()->can('user_delete'), 403);
+
         $ids = $request->input('select', []);
 
         // Convert comma separated string into array
@@ -122,6 +138,8 @@ class UserController extends Controller
 
     public function bulkUpdate(Request $request)
     {
+        abort_if(! Auth::user()->can('user_edit'), 403);
+
         $validated = $request->validate([
             'select' => 'required',
             'status' => 'required|string|in:active,inactive',

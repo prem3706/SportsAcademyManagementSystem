@@ -13,7 +13,7 @@
             <div class="col-md-6">
 
                 <label class="form-label fw-semibold">
-                    Batch Name
+                    Batch Name <span class="text-danger">*</span>
                 </label>
 
                 <input type="text" name="name" class="form-control" value="{{ $batch->name }}"
@@ -27,7 +27,7 @@
             <div class="col-md-6">
 
                 <label class="form-label fw-semibold">
-                    Capacity
+                    Capacity <span class="text-danger">*</span>
                 </label>
 
                 <input type="number" name="capacity" class="form-control" value="{{ $batch->capacity }}"
@@ -41,7 +41,7 @@
             <div class="col-md-6">
 
                 <label class="form-label fw-semibold">
-                    Start Time
+                    Start Time <span class="text-danger">*</span>
                 </label>
 
                 <input type="text" name="start_time" id="editStartTime" class="form-control"
@@ -56,7 +56,7 @@
             <div class="col-md-6">
 
                 <label class="form-label fw-semibold">
-                    End Time
+                    End Time <span class="text-danger">*</span>
                 </label>
 
                 <input type="text" name="end_time" id="editEndTime" class="form-control"
@@ -71,7 +71,7 @@
             <div class="col-md-6">
 
                 <label class="form-label fw-semibold">
-                    Select Sport
+                    Select Sport <span class="text-danger">*</span>
                 </label>
 
                 <select name="sport_id" id="editSportDropdown" class="form-select">
@@ -98,7 +98,7 @@
             <div class="col-md-6">
 
                 <label class="form-label fw-semibold">
-                    Select Level
+                    Select Level <span class="text-danger">*</span>
                 </label>
 
                 <select name="level_id" id="editLevelDropdown" class="form-select">
@@ -173,7 +173,7 @@
             <div class="col-md-6">
 
                 <label class="form-label fw-semibold">
-                    Status
+                    Status <span class="text-danger">*</span>
                 </label>
 
                 <select name="status" class="form-select">

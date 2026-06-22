@@ -9,6 +9,7 @@ use App\Models\Sport;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class BatchController extends Controller
 {
@@ -17,6 +18,8 @@ class BatchController extends Controller
      */
     public function index(BatchesDataTable $dataTable)
     {
+        abort_if(! Auth::user()->can('batch_view'), 403);
+
         return $dataTable->render('batches.index');
     }
 
@@ -25,6 +28,7 @@ class BatchController extends Controller
      */
     public function create()
     {
+        abort_if(! Auth::user()->can('batch_create'), 403);
         // Sports
         $sports = Sport::where('status', 'active')->get();
 
@@ -61,6 +65,8 @@ class BatchController extends Controller
      */
     public function store(Request $request)
     {
+        abort_if(! Auth::user()->can('batch_create'), 403);
+
         $validated = $request->validate([
 
             'name' => 'required|string|max:255',
@@ -144,6 +150,7 @@ class BatchController extends Controller
      */
     public function edit(Batch $batch)
     {
+        abort_if(! Auth::user()->can('batch_edit'), 403);
         // Sports
         $sports = Sport::where('status', 'active')->get();
 
@@ -168,6 +175,7 @@ class BatchController extends Controller
      */
     public function update(Request $request, Batch $batch)
     {
+        abort_if(! Auth::user()->can('batch_edit'), 403);
         $validated = $request->validate([
 
             'name' => 'required|string|max:255',
@@ -273,6 +281,7 @@ class BatchController extends Controller
      */
     public function destroy(Batch $batch)
     {
+        abort_if(! Auth::user()->can('batch_delete'), 403);
         $batch->delete();
 
         return response()->json([
@@ -283,6 +292,7 @@ class BatchController extends Controller
 
     public function getSportLevels($id)
     {
+        abort_if(! Auth::user()->can('batch_view'), 403);
         $sport = Sport::with('levels')->findOrFail($id);
 
         return response()->json($sport->levels);
@@ -290,6 +300,7 @@ class BatchController extends Controller
 
     public function bulkDelete(Request $request)
     {
+        abort_if(! Auth::user()->can('batch_delete'), 403);
         $ids = $request->input('select', []);
 
         // Convert comma separated string into array
@@ -312,6 +323,7 @@ class BatchController extends Controller
 
     public function bulkUpdate(Request $request)
     {
+        abort_if(! Auth::user()->can('batch_edit'), 403);
         $validated = $request->validate([
             'select' => 'required',
             'status' => 'required|string|in:active,inactive',

@@ -1,8 +1,10 @@
 <?php
 
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\BatchController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ExpenseCategoriesController;
+use App\Http\Controllers\ExpensesController;
 use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\LevelsController;
 use App\Http\Controllers\PlayerController;
@@ -11,11 +13,7 @@ use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SportLevelController;
 use App\Http\Controllers\SportsController;
 use App\Http\Controllers\UserController;
-use App\Models\Batch;
-use App\Models\PlayerFee;
-use App\Models\Sport;
-use App\Models\User;
-use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\RoleController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -94,10 +92,28 @@ Route::middleware('auth')->group(function () {
     Route::get('settings', [SettingController::class, 'index'])->name('settings.index');
     Route::post('settings/penalty', [SettingController::class, 'updatePenalty'])->name('settings.updatePenalty');
     Route::post('settings/discount', [SettingController::class, 'updateDiscount'])->name('settings.updateDiscount');
-
+    Route::get('settings/role-permission',[SettingController::class,'rolePermission'])->name('role.permission.index');
+    Route::resource('roles', RoleController::class);
+    
     Route::get('get-batches/{sport_id}/{level_id}', [PlayerController::class, 'getBatches'])->name('players.getBatches');
     Route::delete('/players/bulk-delete', [PlayerController::class, 'bulkDelete'])->name('players.bulkDelete');
     Route::patch('/players/bulk-update', [PlayerController::class, 'bulkUpdate'])->name('players.bulkUpdate');
     Route::resource('players', PlayerController::class);
+
+    Route::delete('/expense-category/bulk-delete', [ExpenseCategoriesController::class, 'bulkDelete'])
+        ->name('expense-category.bulkDelete');
+
+    Route::patch('/expense-category/bulk-update', [ExpenseCategoriesController::class, 'bulkUpdate'])
+        ->name('expense-category.bulkUpdate');
+
+    Route::resource('expense-category', ExpenseCategoriesController::class);
+
+    Route::delete('/expenses/bulk-delete', [ExpensesController::class, 'bulkDelete'])
+        ->name('expenses.bulkDelete');
+
+    Route::patch('/expenses/bulk-update', [ExpensesController::class, 'bulkUpdate'])
+        ->name('expenses.bulkUpdate');
+
+    Route::resource('expenses', ExpensesController::class);
 
 });

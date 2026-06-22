@@ -11,7 +11,7 @@
             <div class="col-md-6">
 
                 <label for="firstname" class="form-label fw-semibold small text-dark mb-2">
-                    First Name
+                    First Name <span class="text-danger">*</span>
                 </label>
 
                 <div class="input-group">
@@ -33,7 +33,7 @@
             <div class="col-md-6">
 
                 <label for="lastname" class="form-label fw-semibold small text-dark mb-2">
-                    Last Name
+                    Last Name <span class="text-danger">*</span>
                 </label>
 
                 <div class="input-group">
@@ -77,7 +77,7 @@
             <div class="col-md-6">
 
                 <label for="phone" class="form-label fw-semibold small text-dark mb-2">
-                    Phone Number
+                    Phone Number <span class="text-danger">*</span>
                 </label>
 
                 <div class="input-group">
@@ -99,7 +99,7 @@
             <div class="col-md-6">
 
                 <label for="password" class="form-label fw-semibold small text-dark mb-2">
-                    Password
+                    Password <span class="text-danger">*</span>
                 </label>
 
                 <div class="input-group">
@@ -121,7 +121,7 @@
             <div class="col-md-6">
 
                 <label for="role" class="form-label fw-semibold small text-dark mb-2">
-                    Role
+                    Role <span class="text-danger">*</span>
                 </label>
 
                 <select class="form-select py-2" id="role" name="role">
@@ -131,8 +131,8 @@
                     </option>
 
                     <option value="admin">Admin</option>
-                    <option value="player">Player</option>
                     <option value="coach">Coach</option>
+                    <option value="manager">Manager</option>
 
                 </select>
 
@@ -146,7 +146,7 @@
             <div class="col-md-6">
 
                 <label for="gender" class="form-label fw-semibold small text-dark mb-2">
-                    Gender
+                    Gender <span class="text-danger">*</span>
                 </label>
 
                 <select class="form-select py-2" id="gender" name="gender">
@@ -187,7 +187,7 @@
             <div class="col-12">
 
                 <label for="status" class="form-label fw-semibold small text-dark mb-2">
-                    Status
+                    Status <span class="text-danger">*</span>
                 </label>
 
                 <select class="form-select py-2" id="status" name="status">

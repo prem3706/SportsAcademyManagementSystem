@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\DataTables\LevelsDataTable;
 use App\Models\Level;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 class LevelsController extends Controller
@@ -14,6 +15,8 @@ class LevelsController extends Controller
      */
     public function index(LevelsDataTable $dataTable)
     {
+        abort_if(! Auth::user()->can('level_view'), 403);
+
         return $dataTable->render('levels.index');
     }
 
@@ -22,6 +25,8 @@ class LevelsController extends Controller
      */
     public function create()
     {
+        abort_if(! Auth::user()->can('level_create'), 403);
+
         return view('levels.addLevelForm');
     }
 
@@ -30,17 +35,32 @@ class LevelsController extends Controller
      */
     public function store(Request $request)
     {
+        abort_if(! Auth::user()->can('level_create'), 403);
         $request->merge([
-            'slug' => Str::lower($request->input('slug')),
+            'slug' => Str::slug($request->input('name')),
         ]);
 
-        $validatedData = $request->validate([
+        $validator = validator($request->all(), [
             'name' => 'required|string|max:255',
             'slug' => 'required|string|max:255|unique:levels,slug',
             'status' => 'required|in:active,inactive',
+        ], [
+            'slug.unique' => 'This level name has already been taken.',
         ]);
 
-        Level::create($validatedData);
+        if ($validator->fails()) {
+            $errors = $validator->errors();
+            if ($errors->has('slug')) {
+                $errors->add('name', $errors->first('slug'));
+            }
+
+            return response()->json([
+                'message' => 'The given data was invalid.',
+                'errors' => $errors,
+            ], 422);
+        }
+
+        Level::create($validator->validated());
 
         return response()->json([
             'success' => true,
@@ -61,6 +81,8 @@ class LevelsController extends Controller
      */
     public function edit(Level $level)
     {
+        abort_if(! Auth::user()->can('level_edit'), 403);
+
         return view('levels.editLevelForm', compact('level'));
     }
 
@@ -69,16 +91,32 @@ class LevelsController extends Controller
      */
     public function update(Request $request, Level $level)
     {
-        $validatedData = $request->validate([
-
-            'name' => 'required|string|max:255',
-
-            'slug' => 'required|string|max:255|unique:levels,slug,'.$level->id,
-
-            'status' => 'required|in:active,inactive',
-
+        abort_if(! Auth::user()->can('level_edit'), 403);
+        $request->merge([
+            'slug' => Str::slug($request->input('name')),
         ]);
-        $level->update($validatedData);
+
+        $validator = validator($request->all(), [
+            'name' => 'required|string|max:255',
+            'slug' => 'required|string|max:255|unique:levels,slug,'.$level->id,
+            'status' => 'required|in:active,inactive',
+        ], [
+            'slug.unique' => 'This level name has already been taken.',
+        ]);
+
+        if ($validator->fails()) {
+            $errors = $validator->errors();
+            if ($errors->has('slug')) {
+                $errors->add('name', $errors->first('slug'));
+            }
+
+            return response()->json([
+                'message' => 'The given data was invalid.',
+                'errors' => $errors,
+            ], 422);
+        }
+
+        $level->update($validator->validated());
 
         return response()->json([
             'success' => true,
@@ -91,6 +129,7 @@ class LevelsController extends Controller
      */
     public function destroy(Level $level)
     {
+        abort_if(! Auth::user()->can('level_delete'), 403);
         $level->delete();
 
         return response()->json([
@@ -101,6 +140,7 @@ class LevelsController extends Controller
 
     public function bulkDelete(Request $request)
     {
+        abort_if(! Auth::user()->can('level_delete'), 403);
         $ids = $request->input('select', []);
 
         // Convert comma separated string into array
@@ -123,6 +163,7 @@ class LevelsController extends Controller
 
     public function bulkUpdate(Request $request)
     {
+        abort_if(! Auth::user()->can('level_edit'), 403);
         $validated = $request->validate([
             'select' => 'required',
             'status' => 'required|string|in:active,inactive',

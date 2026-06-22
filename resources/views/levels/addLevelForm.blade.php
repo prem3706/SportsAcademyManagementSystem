@@ -1,6 +1,6 @@
 <div class="d-flex justify-content-center">
 
-    <form method="POST" id="addLevelForm">
+    <form method="POST" id="addLevelForm" data-width="medium">
 
         @csrf
         <input type="hidden" name="url" id="url" value="{{ route('levels.store') }}">
@@ -12,7 +12,7 @@
             <div class="col-12">
 
                 <label class="form-label fw-semibold small text-dark mb-2">
-                    Level Name
+                    Level Name <span class="text-danger">*</span>
                 </label>
 
                 <div class="input-group">
@@ -27,29 +27,12 @@
 
             </div>
 
-            <!-- Slug -->
-            <div class="col-12">
 
-                <label class="form-label fw-semibold small text-dark mb-2">
-                    Slug
-                </label>
-
-                <div class="input-group">
-
-                    <span class="input-group-text bg-white px-3">
-                        <i class="bi bi-link-45deg text-secondary"></i>
-                    </span>
-
-                    <input type="text" class="form-control py-2" name="slug" placeholder="Enter slug">
-
-                </div>
-
-            </div>
             <!-- Status -->
             <div class="col-md-12">
 
                 <label for="status" class="form-label fw-semibold small text-dark mb-2">
-                    Status
+                    Status <span class="text-danger">*</span>
                 </label>
 
                 <select class="form-select py-2" id="status" name="status">
