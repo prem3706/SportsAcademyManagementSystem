@@ -1,4 +1,13 @@
-<x-layout>
+<?php if (isset($component)) { $__componentOriginal1f9e5f64f242295036c059d9dc1c375c = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginal1f9e5f64f242295036c059d9dc1c375c = $attributes; } ?>
+<?php $component = App\View\Components\Layout::resolve([] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('layout'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\App\View\Components\Layout::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes([]); ?>
     <div class="bg-body-tertiary vh-100 d-flex align-items-center overflow-hidden">
 
         <div class="container" style="max-width: 30rem;">
@@ -28,9 +37,9 @@
                     </div>
 
                     <!-- Form -->
-                    <form class="row g-3" action="{{ route('login') }}" method="POST" autocomplete="off">
+                    <form class="row g-3" action="<?php echo e(route('login')); ?>" method="POST" autocomplete="off">
 
-                        @csrf
+                        <?php echo csrf_field(); ?>
 
                         <!-- Email -->
                         <div class="col-12">
@@ -45,17 +54,32 @@
                                     <i class="bi bi-envelope text-secondary"></i>
                                 </span>
 
-                                <input class="form-control border-0 py-2 @error('email') is-invalid @enderror"
-                                    id="email" name="email" type="email" value="{{ old('email') }}"
+                                <input class="form-control border-0 py-2 <?php $__errorArgs = ['email'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>"
+                                    id="email" name="email" type="email" value="<?php echo e(old('email')); ?>"
                                     placeholder="your@email.com" autocomplete="off">
 
                             </div>
 
-                            @error('email')
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['email'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
                                 <div class="invalid-feedback d-block">
-                                    {{ $message }}
+                                    <?php echo e($message); ?>
+
                                 </div>
-                            @enderror
+                            <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
                         </div>
 
@@ -68,7 +92,7 @@
                                     Password
                                 </label>
 
-                                <a href="{{ route('forget.password.get') }}" class="small fw-semibold">
+                                <a href="<?php echo e(route('forget.password.get')); ?>" class="small fw-semibold">
 
                                     Forgot Password?
 
@@ -82,7 +106,14 @@
                                     <i class="bi bi-lock text-secondary"></i>
                                 </span>
 
-                                <input class="form-control border-0 py-2 @error('password') is-invalid @enderror"
+                                <input class="form-control border-0 py-2 <?php $__errorArgs = ['password'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>"
                                     id="password" name="password" type="password" placeholder="Enter password"
                                     autocomplete="off">
 
@@ -95,11 +126,19 @@
 
                             </div>
 
-                            @error('password')
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php $__errorArgs = ['password'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
                                 <div class="invalid-feedback d-block">
-                                    {{ $message }}
+                                    <?php echo e($message); ?>
+
                                 </div>
-                            @enderror
+                            <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
                         </div>
 
@@ -136,17 +175,7 @@
                     </form>
 
                     <!-- Register -->
-                    {{-- <div class="text-center mt-4 small text-secondary">
-
-                        Need an account?
-
-                        <a href="{{ route('register') }}" class="text-decoration-none fw-semibold text-dark">
-
-                            Sign Up
-
-                        </a>
-
-                    </div> --}}
+                    
 
                 </div>
 
@@ -157,4 +186,14 @@
     </div>
 
 
-</x-layout>
+ <?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginal1f9e5f64f242295036c059d9dc1c375c)): ?>
+<?php $attributes = $__attributesOriginal1f9e5f64f242295036c059d9dc1c375c; ?>
+<?php unset($__attributesOriginal1f9e5f64f242295036c059d9dc1c375c); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginal1f9e5f64f242295036c059d9dc1c375c)): ?>
+<?php $component = $__componentOriginal1f9e5f64f242295036c059d9dc1c375c; ?>
+<?php unset($__componentOriginal1f9e5f64f242295036c059d9dc1c375c); ?>
+<?php endif; ?>
+<?php /**PATH C:\laragon\www\sams\resources\views/authentication/login.blade.php ENDPATH**/ ?>

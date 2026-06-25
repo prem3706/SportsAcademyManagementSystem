@@ -7,6 +7,7 @@ use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Exception;
 
 class RoleController extends Controller
 {
@@ -22,7 +23,12 @@ class RoleController extends Controller
     {
         abort_if(! Auth::user()->can('setting_create'), 403);
 
-        return view('settings.addroleform');
+        try {
+            return view('settings.addroleform');
+        } catch (Exception $e) {
+            Log::error('Role Create Form Error: ' . $e->getMessage());
+            return abort(500);
+        }
     }
 
     /**
@@ -32,25 +38,33 @@ class RoleController extends Controller
     {
         abort_if(! Auth::user()->can('setting_create'), 403);
 
-        $request->merge([
-            'name' => strtolower(trim($request->input('name'))),
-        ]);
+        try {
+            $request->merge([
+                'name' => strtolower(trim($request->input('name'))),
+            ]);
 
-        $request->validate([
-            'name' => 'required|string|max:255|unique:roles,name',
-        ], [
-            'name.unique' => 'This role name has already been taken.',
-        ]);
+            $request->validate([
+                'name' => 'required|string|max:255|unique:roles,name',
+            ], [
+                'name.unique' => 'This role name has already been taken.',
+            ]);
 
-        Role::create([
-            'name' => $request->input('name'),
-            'guard_name' => 'web',
-        ]);
+            Role::create([
+                'name' => $request->input('name'),
+                'guard_name' => 'web',
+            ]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Role created successfully.',
-        ]);
+            return response()->json([
+                'success' => true,
+                'message' => 'Role created successfully.',
+            ]);
+        } catch (Exception $e) {
+            Log::error('Role Store Error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage() ?: 'Something went wrong.',
+            ], 500);
+        }
     }
 
     /**
@@ -60,14 +74,19 @@ class RoleController extends Controller
     {
         abort_if(! Auth::user()->can('setting_edit'), 403);
 
-        $role = Role::findOrFail($id);
+        try {
+            $role = Role::findOrFail($id);
 
-        // Prevent editing default roles
-        if (in_array(strtolower($role->name), $this->defaultRoles)) {
-            abort(403, 'Default roles cannot be modified.');
+            // Prevent editing default roles
+            if (in_array(strtolower($role->name), $this->defaultRoles)) {
+                abort(403, 'Default roles cannot be modified.');
+            }
+
+            return view('settings.editroleform', compact('role'));
+        } catch (Exception $e) {
+            Log::error('Role Edit Form Error: ' . $e->getMessage());
+            return abort(500);
         }
-
-        return view('settings.editroleform', compact('role'));
     }
 
     /**
@@ -77,18 +96,21 @@ class RoleController extends Controller
     {
         abort_if(! Auth::user()->can('setting_edit'), 403);
 
-        $role = Role::findOrFail($id);
+        try {
+            $role = Role::findOrFail($id);
 
-        // Eager load or fetch permissions grouped by module_name
-        $permissionsByModule = Permission::all()->groupBy('module_name');
-        Log::info($permissionsByModule);
+            // Eager load or fetch permissions grouped by module_name
+            $permissionsByModule = Permission::all()->groupBy('module_name');
+            Log::info($permissionsByModule);
 
-        return view('settings.permissions-table', [
-            'selectedRole' => $role,
-            'permissionsByModule' => $permissionsByModule,
-        ]);
-
-        // return view('roles.show', compact('role', 'permissionsByModule'));
+            return view('settings.permissions-table', [
+                'selectedRole' => $role,
+                'permissionsByModule' => $permissionsByModule,
+            ]);
+        } catch (Exception $e) {
+            Log::error('Role Show Permissions Error: ' . $e->getMessage());
+            return abort(500);
+        }
     }
 
     /**
@@ -98,46 +120,57 @@ class RoleController extends Controller
     {
         abort_if(! Auth::user()->can('setting_edit'), 403);
 
-        $role = Role::findOrFail($id);
+        try {
+            $role = Role::findOrFail($id);
 
-        // Check if this is a permission sync request
-        if ($request->has('permissions_update')) {
-            if ($role->name === 'admin') {
-                return redirect()->back()->with('error', 'The admin role permissions are protected and cannot be modified.');
+            // Check if this is a permission sync request
+            if ($request->has('permissions_update')) {
+                if ($role->name === 'admin') {
+                    return redirect()->back()->with('error', 'The admin role permissions are protected and cannot be modified.');
+                }
+
+                $role->syncPermissions($request->input('permissions', []));
+
+                return redirect()->back()->with('success', 'Permissions updated successfully.');
             }
 
-            $role->syncPermissions($request->input('permissions', []));
+            // Otherwise it is a role name update request (AJAX)
+            // Prevent editing default roles
+            if (in_array(strtolower($role->name), $this->defaultRoles)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Default roles cannot be modified.',
+                ], 403);
+            }
 
-            return redirect()->back()->with('success', 'Permissions updated successfully.');
-        }
+            $request->merge([
+                'name' => strtolower(trim($request->input('name'))),
+            ]);
 
-        // Otherwise it is a role name update request (AJAX)
-        // Prevent editing default roles
-        if (in_array(strtolower($role->name), $this->defaultRoles)) {
+            $request->validate([
+                'name' => 'required|string|max:255|unique:roles,name,'.$id,
+            ], [
+                'name.unique' => 'This role name has already been taken.',
+            ]);
+
+            $role->update([
+                'name' => $request->input('name'),
+            ]);
+
             return response()->json([
-                'success' => false,
-                'message' => 'Default roles cannot be modified.',
-            ], 403);
+                'success' => true,
+                'message' => 'Role updated successfully.',
+            ]);
+        } catch (Exception $e) {
+            Log::error('Role Update Error: ' . $e->getMessage());
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage() ?: 'Something went wrong.',
+                ], 500);
+            }
+            return redirect()->back()->with('error', 'Something went wrong during update.');
         }
-
-        $request->merge([
-            'name' => strtolower(trim($request->input('name'))),
-        ]);
-
-        $request->validate([
-            'name' => 'required|string|max:255|unique:roles,name,'.$id,
-        ], [
-            'name.unique' => 'This role name has already been taken.',
-        ]);
-
-        $role->update([
-            'name' => $request->input('name'),
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Role updated successfully.',
-        ]);
     }
 
     /**
@@ -147,21 +180,29 @@ class RoleController extends Controller
     {
         abort_if(! Auth::user()->can('setting_delete'), 403);
 
-        $role = Role::findOrFail($id);
+        try {
+            $role = Role::findOrFail($id);
 
-        // Prevent deleting default roles
-        if (in_array(strtolower($role->name), $this->defaultRoles)) {
+            // Prevent deleting default roles
+            if (in_array(strtolower($role->name), $this->defaultRoles)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Default roles cannot be deleted.',
+                ], 403);
+            }
+
+            $role->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Role deleted successfully.',
+            ]);
+        } catch (Exception $e) {
+            Log::error('Role Delete Error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Default roles cannot be deleted.',
-            ], 403);
+                'message' => 'Something went wrong.',
+            ], 500);
         }
-
-        $role->delete();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Role deleted successfully.',
-        ]);
     }
 }

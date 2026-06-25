@@ -27,6 +27,7 @@ class PlayersExport implements FromCollection, WithHeadings
 
                 if (in_array('firstname', $this->columns)) {
                     $data['FirstName'] = $user->firstname;
+                    
                 }
                 if (in_array('lastname', $this->columns)) {
                     $data['LastName'] = $user->lastname;

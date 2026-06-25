@@ -7,6 +7,8 @@ use App\Models\Level;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
+use Exception;
 
 class LevelsController extends Controller
 {
@@ -17,7 +19,12 @@ class LevelsController extends Controller
     {
         abort_if(! Auth::user()->can('level_view'), 403);
 
-        return $dataTable->render('levels.index');
+        try {
+            return $dataTable->render('levels.index');
+        } catch (Exception $e) {
+            Log::error('Level Index Error: ' . $e->getMessage());
+            return back()->with('error', 'Something went wrong.');
+        }
     }
 
     /**
@@ -27,7 +34,12 @@ class LevelsController extends Controller
     {
         abort_if(! Auth::user()->can('level_create'), 403);
 
-        return view('levels.addLevelForm');
+        try {
+            return view('levels.addLevelForm');
+        } catch (Exception $e) {
+            Log::error('Level Create Form Error: ' . $e->getMessage());
+            return abort(500);
+        }
     }
 
     /**
@@ -36,36 +48,45 @@ class LevelsController extends Controller
     public function store(Request $request)
     {
         abort_if(! Auth::user()->can('level_create'), 403);
-        $request->merge([
-            'slug' => Str::slug($request->input('name')),
-        ]);
 
-        $validator = validator($request->all(), [
-            'name' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:levels,slug',
-            'status' => 'required|in:active,inactive',
-        ], [
-            'slug.unique' => 'This level name has already been taken.',
-        ]);
+        try {
+            $request->merge([
+                'slug' => Str::slug($request->input('name')),
+            ]);
 
-        if ($validator->fails()) {
-            $errors = $validator->errors();
-            if ($errors->has('slug')) {
-                $errors->add('name', $errors->first('slug'));
+            $validator = validator($request->all(), [
+                'name' => 'required|string|max:255',
+                'slug' => 'required|string|max:255|unique:levels,slug',
+                'status' => 'required|in:active,inactive',
+            ], [
+                'slug.unique' => 'This level name has already been taken.',
+            ]);
+
+            if ($validator->fails()) {
+                $errors = $validator->errors();
+                if ($errors->has('slug')) {
+                    $errors->add('name', $errors->first('slug'));
+                }
+
+                return response()->json([
+                    'message' => 'The given data was invalid.',
+                    'errors' => $errors,
+                ], 422);
             }
 
+            Level::create($validator->validated());
+
             return response()->json([
-                'message' => 'The given data was invalid.',
-                'errors' => $errors,
-            ], 422);
+                'success' => true,
+                'message' => 'Level created successfully.',
+            ]);
+        } catch (Exception $e) {
+            Log::error('Level Store Error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong.',
+            ], 500);
         }
-
-        Level::create($validator->validated());
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Level created successfully.',
-        ]);
     }
 
     /**
@@ -83,7 +104,12 @@ class LevelsController extends Controller
     {
         abort_if(! Auth::user()->can('level_edit'), 403);
 
-        return view('levels.editLevelForm', compact('level'));
+        try {
+            return view('levels.editLevelForm', compact('level'));
+        } catch (Exception $e) {
+            Log::error('Level Edit Form Error: ' . $e->getMessage());
+            return abort(500);
+        }
     }
 
     /**
@@ -92,36 +118,45 @@ class LevelsController extends Controller
     public function update(Request $request, Level $level)
     {
         abort_if(! Auth::user()->can('level_edit'), 403);
-        $request->merge([
-            'slug' => Str::slug($request->input('name')),
-        ]);
 
-        $validator = validator($request->all(), [
-            'name' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:levels,slug,'.$level->id,
-            'status' => 'required|in:active,inactive',
-        ], [
-            'slug.unique' => 'This level name has already been taken.',
-        ]);
+        try {
+            $request->merge([
+                'slug' => Str::slug($request->input('name')),
+            ]);
 
-        if ($validator->fails()) {
-            $errors = $validator->errors();
-            if ($errors->has('slug')) {
-                $errors->add('name', $errors->first('slug'));
+            $validator = validator($request->all(), [
+                'name' => 'required|string|max:255',
+                'slug' => 'required|string|max:255|unique:levels,slug,'.$level->id,
+                'status' => 'required|in:active,inactive',
+            ], [
+                'slug.unique' => 'This level name has already been taken.',
+            ]);
+
+            if ($validator->fails()) {
+                $errors = $validator->errors();
+                if ($errors->has('slug')) {
+                    $errors->add('name', $errors->first('slug'));
+                }
+
+                return response()->json([
+                    'message' => 'The given data was invalid.',
+                    'errors' => $errors,
+                ], 422);
             }
 
+            $level->update($validator->validated());
+
             return response()->json([
-                'message' => 'The given data was invalid.',
-                'errors' => $errors,
-            ], 422);
+                'success' => true,
+                'message' => 'Level updated successfully.',
+            ]);
+        } catch (Exception $e) {
+            Log::error('Level Update Error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong.',
+            ], 500);
         }
-
-        $level->update($validator->validated());
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Level updated successfully.',
-        ]);
     }
 
     /**
@@ -130,64 +165,92 @@ class LevelsController extends Controller
     public function destroy(Level $level)
     {
         abort_if(! Auth::user()->can('level_delete'), 403);
-        $level->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Level deleted successfully.',
-        ]);
+        try {
+            $level->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Level deleted successfully.',
+            ]);
+        } catch (Exception $e) {
+            Log::error('Level Delete Error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong.',
+            ], 500);
+        }
     }
 
     public function bulkDelete(Request $request)
     {
         abort_if(! Auth::user()->can('level_delete'), 403);
-        $ids = $request->input('select', []);
 
-        // Convert comma separated string into array
-        if (! is_array($ids)) {
+        try {
+            $ids = $request->input('select', []);
 
-            $ids = array_filter(explode(',', $ids));
-        }
+            if (! is_array($ids)) {
+                $ids = array_filter(explode(',', $ids));
+            }
 
-        // Check selected users
-        if (count($ids) > 0) {
+            if (count($ids) > 0) {
+                $deletedCount = Level::destroy($ids);
 
-            $deletedCount = Level::destroy($ids);
+                return response()->json([
+                    'success' => true,
+                    'message' => $deletedCount.' Levels deleted successfully.',
+                ]);
+            }
 
             return response()->json([
-                'success' => true,
-                'message' => $deletedCount.' Sports deleted successfully.',
-            ]);
+                'success' => false,
+                'message' => 'No levels selected.',
+            ], 422);
+        } catch (Exception $e) {
+            Log::error('Level Bulk Delete Error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong.',
+            ], 500);
         }
     }
 
     public function bulkUpdate(Request $request)
     {
         abort_if(! Auth::user()->can('level_edit'), 403);
-        $validated = $request->validate([
-            'select' => 'required',
-            'status' => 'required|string|in:active,inactive',
-        ]);
 
-        $ids = $request->input('select', []);
-        $status = $request->input('status');
+        try {
+            $validated = $request->validate([
+                'select' => 'required',
+                'status' => 'required|string|in:active,inactive',
+            ]);
 
-        if (! is_array($ids)) {
-            $ids = array_filter(explode(',', $ids));
-        }
+            $ids = $request->input('select', []);
+            $status = $request->input('status');
 
-        if (count($ids) > 0) {
-            $updatedCount = Level::whereIn('id', $ids)->update(['status' => $status]);
+            if (! is_array($ids)) {
+                $ids = array_filter(explode(',', $ids));
+            }
+
+            if (count($ids) > 0) {
+                $updatedCount = Level::whereIn('id', $ids)->update(['status' => $status]);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => $updatedCount.' Levels updated successfully.',
+                ]);
+            }
 
             return response()->json([
-                'success' => true,
-                'message' => $updatedCount.' Levels updated successfully.',
-            ]);
+                'success' => false,
+                'message' => 'No valid Levels selected for update.',
+            ], 422);
+        } catch (Exception $e) {
+            Log::error('Level Bulk Update Error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong.',
+            ], 500);
         }
-
-        return response()->json([
-            'success' => false,
-            'message' => 'No valid Levels selected for update.',
-        ], 422);
     }
 }

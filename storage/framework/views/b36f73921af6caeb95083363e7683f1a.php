@@ -7,7 +7,7 @@
 
 <head>
 
-    <base href="{{ url('/') }}/">
+    <base href="<?php echo e(url('/')); ?>/">
 
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -18,7 +18,7 @@
 
     <meta name="author" content="Prem">
 
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
 
     <title>Sports Academy Management System</title>
 
@@ -52,16 +52,36 @@
     <!-- Dropify CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Dropify/0.2.2/css/dropify.min.css">
 
-    <link rel="stylesheet" href="css/app.css?v={{ file_exists(public_path('css/app.css')) ? filemtime(public_path('css/app.css')) : time() }}">
+    <link rel="stylesheet" href="css/app.css?v=<?php echo e(file_exists(public_path('css/app.css')) ? filemtime(public_path('css/app.css')) : time()); ?>">
 
 
 </head>
 
 <body>
 
-    {{ $slot }}
+    <?php echo e($slot); ?>
 
-    <x-off-canvas />
+
+    <?php if (isset($component)) { $__componentOriginalb71f9cd201c48bf347e3a4c28270ad31 = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginalb71f9cd201c48bf347e3a4c28270ad31 = $attributes; } ?>
+<?php $component = App\View\Components\OffCanvas::resolve([] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('off-canvas'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\App\View\Components\OffCanvas::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes([]); ?>
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginalb71f9cd201c48bf347e3a4c28270ad31)): ?>
+<?php $attributes = $__attributesOriginalb71f9cd201c48bf347e3a4c28270ad31; ?>
+<?php unset($__attributesOriginalb71f9cd201c48bf347e3a4c28270ad31); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginalb71f9cd201c48bf347e3a4c28270ad31)): ?>
+<?php $component = $__componentOriginalb71f9cd201c48bf347e3a4c28270ad31; ?>
+<?php unset($__componentOriginalb71f9cd201c48bf347e3a4c28270ad31); ?>
+<?php endif; ?>
 
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
@@ -99,7 +119,7 @@
 
     <script src="js/color-modes.js"></script>
 
-    <script src="js/script.js?v={{ file_exists(public_path('js/script.js')) ? filemtime(public_path('js/script.js')) : time() }}"></script>
+    <script src="js/script.js?v=<?php echo e(file_exists(public_path('js/script.js')) ? filemtime(public_path('js/script.js')) : time()); ?>"></script>
 
 
     <!-- Header Shadow -->
@@ -141,38 +161,39 @@
 
 
         // 1. Success Message or Password Status Link
-        @if (session('success'))
-            toastr.success("{{ session('success') }}");
-        @endif
+        <?php if(session('success')): ?>
+            toastr.success("<?php echo e(session('success')); ?>");
+        <?php endif; ?>
 
-        @if (session('status'))
-            toastr.success("{{ session('status') }}");
-        @endif
+        <?php if(session('status')): ?>
+            toastr.success("<?php echo e(session('status')); ?>");
+        <?php endif; ?>
 
         // 2. Explicit Error Message
-        @if (session('error'))
-            toastr.error("{{ session('error') }}");
-        @endif
+        <?php if(session('error')): ?>
+            toastr.error("<?php echo e(session('error')); ?>");
+        <?php endif; ?>
 
         // 3. Form Validation Errors (like the 'email' error)
-        @if ($errors->any())
-            @foreach ($errors->all() as $error)
-                toastr.error("{{ $error }}");
-            @endforeach
-        @endif
+        <?php if($errors->any()): ?>
+            <?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                toastr.error("<?php echo e($error); ?>");
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+        <?php endif; ?>
 
         // 4. Other Statuses
-        @if (session('warning'))
-            toastr.warning("{{ session('warning') }}");
-        @endif
+        <?php if(session('warning')): ?>
+            toastr.warning("<?php echo e(session('warning')); ?>");
+        <?php endif; ?>
 
-        @if (session('info'))
-            toastr.info("{{ session('info') }}");
-        @endif
+        <?php if(session('info')): ?>
+            toastr.info("<?php echo e(session('info')); ?>");
+        <?php endif; ?>
     </script>
 
-    @stack('scripts')
+    <?php echo $__env->yieldPushContent('scripts'); ?>
 
 </body>
 
 </html>
+<?php /**PATH C:\laragon\www\sams\resources\views/components/layout.blade.php ENDPATH**/ ?>

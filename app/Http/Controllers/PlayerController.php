@@ -29,8 +29,8 @@ class PlayerController extends Controller
 
             return $dataTable->render('players.index', compact('sports', 'levels', 'batches'));
         } catch (\Exception $e) {
-            Log::error('PlayerController index error: ' . $e->getMessage());
-            abort(500, 'Something went wrong: ' . $e->getMessage());
+            Log::error('PlayerController index error: '.$e->getMessage());
+            abort(500, 'Something went wrong: '.$e->getMessage());
         }
     }
 
@@ -45,8 +45,8 @@ class PlayerController extends Controller
 
             return view('players.addPlayerForm', compact('sports'));
         } catch (\Exception $e) {
-            Log::error('PlayerController create error: ' . $e->getMessage());
-            abort(500, 'Something went wrong: ' . $e->getMessage());
+            Log::error('PlayerController create error: '.$e->getMessage());
+            abort(500, 'Something went wrong: '.$e->getMessage());
         }
     }
 
@@ -101,10 +101,11 @@ class PlayerController extends Controller
                 'message' => 'Player created successfully.',
             ]);
         } catch (\Exception $e) {
-            Log::error('PlayerController store error: ' . $e->getMessage());
+            Log::error('PlayerController store error: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Error creating player: ' . $e->getMessage(),
+                'message' => 'Error creating player: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -132,8 +133,8 @@ class PlayerController extends Controller
 
             return view('players.editPlayerForm', compact('player', 'sports', 'playerBatches'));
         } catch (\Exception $e) {
-            Log::error('PlayerController edit error: ' . $e->getMessage());
-            abort(500, 'Something went wrong: ' . $e->getMessage());
+            Log::error('PlayerController edit error: '.$e->getMessage());
+            abort(500, 'Something went wrong: '.$e->getMessage());
         }
     }
 
@@ -184,10 +185,11 @@ class PlayerController extends Controller
                 'message' => 'Player updated successfully.',
             ]);
         } catch (\Exception $e) {
-            Log::error('PlayerController update error: ' . $e->getMessage());
+            Log::error('PlayerController update error: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Error updating player: ' . $e->getMessage(),
+                'message' => 'Error updating player: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -207,10 +209,11 @@ class PlayerController extends Controller
                 'message' => 'Player deleted successfully.',
             ]);
         } catch (\Exception $e) {
-            Log::error('PlayerController destroy error: ' . $e->getMessage());
+            Log::error('PlayerController destroy error: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Error deleting player: ' . $e->getMessage(),
+                'message' => 'Error deleting player: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -229,10 +232,11 @@ class PlayerController extends Controller
 
             return response()->json($batches);
         } catch (\Exception $e) {
-            Log::error('PlayerController getBatches error: ' . $e->getMessage());
+            Log::error('PlayerController getBatches error: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Error fetching batches: ' . $e->getMessage(),
+                'message' => 'Error fetching batches: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -264,10 +268,11 @@ class PlayerController extends Controller
                 'message' => 'No players selected.',
             ], 400);
         } catch (\Exception $e) {
-            Log::error('PlayerController bulkDelete error: ' . $e->getMessage());
+            Log::error('PlayerController bulkDelete error: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Error performing bulk delete: ' . $e->getMessage(),
+                'message' => 'Error performing bulk delete: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -305,10 +310,11 @@ class PlayerController extends Controller
                 'message' => 'No valid players selected for update.',
             ], 422);
         } catch (\Exception $e) {
-            Log::error('PlayerController bulkUpdate error: ' . $e->getMessage());
+            Log::error('PlayerController bulkUpdate error: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
-                'message' => 'Error performing bulk update: ' . $e->getMessage(),
+                'message' => 'Error performing bulk update: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -319,22 +325,15 @@ class PlayerController extends Controller
     public function export(Request $request)
     {
         abort_if(! Auth::user()->can('player_view'), 403);
-        try {
-            Log::info('Export Request Data:', $request->all());
 
-            $columns = $request->columns ?? [];
+        Log::info('Export Request Data:', $request->all());
 
-            return Excel::download(
-                new PlayersExport($columns),
-                'Players_'.now()->format('YmdHis').'.xlsx'
-            );
-        } catch (\Exception $e) {
-            Log::error('PlayerController export error: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Error exporting players: ' . $e->getMessage(),
-            ], 500);
-        }
+        $columns = $request->columns ?? [];
+
+        return Excel::download(
+            new PlayersExport($columns),
+            'Players_'.now()->format('YmdHis').'.xlsx'
+        );
     }
 
     /**
@@ -343,12 +342,8 @@ class PlayerController extends Controller
     public function importForm()
     {
         abort_if(! Auth::user()->can('player_create'), 403);
-        try {
-            return view('players.importForm');
-        } catch (\Exception $e) {
-            Log::error('PlayerController importForm error: ' . $e->getMessage());
-            abort(500, 'Something went wrong: ' . $e->getMessage());
-        }
+
+        return view('players.importForm');
     }
 
     /**
@@ -357,11 +352,12 @@ class PlayerController extends Controller
     public function import(Request $request)
     {
         abort_if(! Auth::user()->can('player_create'), 403);
-        try {
-            $request->validate([
-                'players' => 'required|array',
-            ]);
 
+        $request->validate([
+            'players' => 'required|array',
+        ]);
+
+        try {
             $players = $request->input('players');
             $importer = new PlayersImport;
 
@@ -397,22 +393,18 @@ class PlayerController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error importing file: '.$e->getMessage(),
-            ], 500);
+            ], 422);
         }
     }
 
-    /**
-     * Read Excel File for preview
-     */
     public function readExcel(Request $request)
     {
-        abort_if(! Auth::user()->can('player_create'), 403);
-        try {
-            // Validate the uploaded file
-            $request->validate([
-                'file' => 'required|file|mimes:xlsx,xls,csv|max:10240',
-            ]);
+        // Validate the uploaded file
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls,csv|max:10240',
+        ]);
 
+        try {
             // Read data into a plain PHP array directly from the uploaded file
             $dataArray = Excel::toArray([], $request->file('file'));
             $sheetData = $dataArray[0] ?? [];
@@ -478,11 +470,12 @@ class PlayerController extends Controller
                 'rows' => $rows,
             ]);
         } catch (\Exception $e) {
-            Log::error('PlayerController readExcel error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Error reading Excel file: '.$e->getMessage(),
-            ], 500);
+            ], 422);
         }
     }
 }
+
+

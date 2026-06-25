@@ -199,14 +199,14 @@ $(document).ready(function () {
 
     // Time Picker Initialization (Flatpickr)
     function initTimePicker() {
-        flatpickr("#startTime", {
+        flatpickr("#startTime, #editStartTime", {
             enableTime: true,
             noCalendar: true,
             dateFormat: "h:i K",
             time_24hr: false
         });
 
-        flatpickr("#endTime", {
+        flatpickr("#endTime, #editEndTime", {
             enableTime: true,
             noCalendar: true,
             dateFormat: "h:i K",
@@ -979,6 +979,8 @@ $(document).ready(function () {
         e.preventDefault();
         submitFormAjax(this);
     });
+
+
 
     // Render Excel column mapping selectors and preview rows
     function renderExcelMapping(headers, rows) {

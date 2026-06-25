@@ -8,6 +8,7 @@ use App\Models\Level;
 use App\Models\Batch;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Illuminate\Support\Facades\Hash;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 
 class PlayersImport implements ToModel, WithHeadingRow

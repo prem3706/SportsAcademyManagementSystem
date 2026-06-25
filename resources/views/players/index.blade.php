@@ -32,9 +32,10 @@
                 :filters="$playerFilters"
                 :bulkDeleteUrl="route('players.bulkDelete')" :bulkUpdateUrl="route('players.bulkUpdate')"
                 permission="player">
+                
                 {{ $dataTable->table(['class' => 'table table-sm table-hover align-middle mb-0']) }}
 
-                
+
             </x-table-crud-card>
 
 
