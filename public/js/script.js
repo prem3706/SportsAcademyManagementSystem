@@ -262,12 +262,17 @@ $(document).ready(function () {
     function initFlatpickrDate(container) {
         let target = container ? $(container).find('.datepicker-input') : $('.datepicker-input');
         target.each(function () {
-            if (!this._flatpickr) {
+            if (!this._flatpickr && !$(this).hasClass('flatpickr-input')) {
                 flatpickr(this, {
                     dateFormat: "Y-m-d",
                     altInput: true,
                     altFormat: "d M Y",
-                    allowInput: true
+                    allowInput: true,
+                    onReady: function (selectedDates, dateStr, instance) {
+                        if (instance.altInput) {
+                            $(instance.altInput).removeClass('datepicker-input joined-date-input');
+                        }
+                    }
                 });
             }
         });
@@ -847,7 +852,7 @@ $(document).ready(function () {
                 </div>
                 <div class="col-md-3">
                     <label class="form-label small fw-semibold text-dark mb-1">Joined Date <span class="text-danger">*</span></label>
-                    <input type="date" class="form-control form-control-sm joined-date-input" name="assignments[${index}][joined_at]" value="${today}" required>
+                    <input type="text" class="form-control form-control-sm datepicker-input joined-date-input" name="assignments[${index}][joined_at]" value="${today}" required>
                 </div>
             </div>
         </div>`;
@@ -962,6 +967,318 @@ $(document).ready(function () {
     $(document).on('submit', '#addPlayerForm', function (e) {
         e.preventDefault();
         submitFormAjax(this);
+    });
+
+    // Import Player Form Open
+    $(document).on('click', '#importPlayerBtn', function () {
+        openOffcanvasForm($(this).data('url'), $(this).data('title'));
+    });
+
+    // Import Players Form Submit
+    $(document).on('submit', '#importPlayersForm', function (e) {
+        e.preventDefault();
+        submitFormAjax(this);
+    });
+
+    // Render Excel column mapping selectors and preview rows
+    function renderExcelMapping(headers, rows) {
+        let $container = $('#excelMappingContainer');
+        $container.removeClass('d-none');
+
+        let $headerRow = $('#mappingHeaderRow');
+        let $tableBody = $('#previewTableBody');
+        $headerRow.empty();
+        $tableBody.empty();
+
+        // 1. Row Index Column
+        $headerRow.append('<th class="text-secondary fw-bold text-center bg-light" style="width: 50px; border-bottom: 2px solid #e2e8f0;">#</th>');
+
+        // 2. Map selectors for each header
+        headers.forEach(function (headerText, index) {
+            let colIndex = index;
+            let selectedVal = ''; // Default to Select Field
+            let isSkipped = false;
+
+            let thHtml = `
+                <th class="col-header-container p-3 ${isSkipped ? 'column-skipped' : ''}" data-col-index="${colIndex}" data-html-col-index="${index}" data-header-text="${headerText || ''}" style="min-width: 170px; vertical-align: top; background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;">
+                    <div class="d-flex flex-column align-items-center">
+                        <span class="fw-semibold text-secondary mb-2 small text-truncate" style="max-width: 150px; font-size: 0.75rem; letter-spacing: 0.5px;" title="${headerText || ''}">${headerText || ''}</span>
+                        <select class="form-select form-select-sm mapping-select shadow-sm" data-col-index="${colIndex}" style="font-size: 0.8rem; border-color: #cbd5e1; border-radius: 6px;">
+                            <option value="">Select Field</option>
+                            <option value="skip" ${selectedVal === 'skip' ? 'selected' : ''}>skip</option>
+                            <option value="firstname" ${selectedVal === 'firstname' ? 'selected' : ''}>First Name</option>
+                            <option value="lastname" ${selectedVal === 'lastname' ? 'selected' : ''}>Last Name</option>
+                            <option value="email" ${selectedVal === 'email' ? 'selected' : ''}>Email</option>
+                            <option value="phone" ${selectedVal === 'phone' ? 'selected' : ''}>Phone</option>
+                            <option value="gender" ${selectedVal === 'gender' ? 'selected' : ''}>Gender</option>
+                            <option value="joined_at" ${selectedVal === 'joined_at' ? 'selected' : ''}>Joined At</option>
+                            <option value="sport" ${selectedVal === 'sport' ? 'selected' : ''}>Sport</option>
+                            <option value="level" ${selectedVal === 'level' ? 'selected' : ''}>Level</option>
+                            <option value="batch" ${selectedVal === 'batch' ? 'selected' : ''}>Batch</option>
+                            <option value="status" ${selectedVal === 'status' ? 'selected' : ''}>Status</option>
+                        </select>
+                        <a href="javascript:void(0)" class="${isSkipped ? 'text-success' : 'text-danger'} skip-column-btn small fw-semibold text-decoration-none mt-2" data-col-index="${colIndex}">${isSkipped ? 'unskip' : 'skip'}</a>
+                    </div>
+                </th>
+            `;
+            $headerRow.append(thHtml);
+        });
+
+        // 3. Render preview data rows
+        rows.forEach(function (row, rowIndex) {
+            let trHtml = `<tr><td class="text-muted text-center fw-semibold small bg-light" style="width: 50px; border-bottom: 1px solid #f1f5f9;">${rowIndex + 1}</td>`;
+            headers.forEach(function (header, index) {
+                let cellValue = row[index] !== undefined && row[index] !== null ? row[index] : '';
+                trHtml += `<td class="small px-3 py-2.5 text-secondary" style="border-bottom: 1px solid #f1f5f9;">${cellValue}</td>`;
+            });
+            trHtml += '</tr>';
+            $tableBody.append(trHtml);
+        });
+    }
+
+    // Toggle column skip status visually and functionally
+    function toggleColumnSkip(colIndex, isSkipped) {
+        let $header = $(`.col-header-container[data-col-index="${colIndex}"]`);
+        let $select = $header.find('.mapping-select');
+
+        if (isSkipped) {
+            $select.val('skip').trigger('change');
+        } else {
+            $select.val('').trigger('change');
+        }
+    }
+
+    // Intercept and handle Read Import Players Form Submit (Step 1)
+    $(document).on('submit', '#readImportPlayersForm', function (e) {
+        e.preventDefault();
+
+        let $form = $(this);
+        let formEl = $form[0];
+        let formData = new FormData(formEl);
+        let url = $form.attr('action');
+        let submitBtn = $form.find('#submitImportBtn');
+        let originalHtml = submitBtn.html();
+
+        submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Reading Excel...');
+        $form.find('#fileError').text('');
+
+        $.ajax({
+            url: url,
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                submitBtn.prop('disabled', false).html(originalHtml);
+
+                if (response.success) {
+                    // Store import token
+                    // $('#importToken').val(response.import_token);
+
+                    // Render Excel Mapping directly below the button
+                    renderExcelMapping(response.headers, response.rows);
+                } else {
+                    toastr.error(response.message || 'Failed to read Excel file.');
+                }
+            },
+            error: function (xhr) {
+                submitBtn.prop('disabled', false).html(originalHtml);
+                let msg = xhr.responseJSON?.message || 'Error reading Excel file.';
+                toastr.error(msg);
+                $('#fileError').text(msg);
+            }
+        });
+    });
+
+    // Skip column button click handler
+    $(document).on('click', '.skip-column-btn', function () {
+        let colIndex = $(this).data('col-index');
+        let $header = $(`.col-header-container[data-col-index="${colIndex}"]`);
+        let $select = $header.find('.mapping-select');
+        let isSkipped = $select.val() === 'skip';
+
+        if (isSkipped) {
+            $select.val('').trigger('change');
+        } else {
+            $select.val('skip').trigger('change');
+        }
+    });
+
+    // Sync dropdown changes to styling and buttons
+    $(document).on('change', '.mapping-select', function () {
+        let colIndex = $(this).data('col-index');
+        let val = $(this).val();
+        let $header = $(`.col-header-container[data-col-index="${colIndex}"]`);
+        let htmlColIndex = $header.data('html-col-index');
+        let $btn = $header.find('.skip-column-btn');
+
+        if (val === 'skip') {
+            $btn.text('unskip').removeClass('text-danger').addClass('text-success');
+            $header.addClass('column-skipped');
+            $(`#excelPreviewTable tbody tr`).each(function () {
+                $(this).find(`td:eq(${htmlColIndex + 1})`).addClass('column-skipped');
+            });
+        } else {
+            $btn.text('skip').removeClass('text-success').addClass('text-danger');
+            $header.removeClass('column-skipped');
+            $(`#excelPreviewTable tbody tr`).each(function () {
+                $(this).find(`td:eq(${htmlColIndex + 1})`).removeClass('column-skipped');
+            });
+        }
+    });
+
+    // Clear preview button click handler
+    $(document).on('click', '#clearPreviewBtn', function () {
+        $('#importToken').val('');
+        $('#excelMappingContainer').addClass('d-none');
+        let dropifyEl = $('#importFile').data('dropify');
+        if (dropifyEl) {
+            dropifyEl.clearElement();
+        }
+    });
+
+    function getFieldLabel(field) {
+        let labels = {
+            'firstname': 'First Name',
+            'lastname': 'Last Name',
+            'email': 'Email',
+            'phone': 'Phone',
+            'gender': 'Gender',
+            'joined_at': 'Joined At',
+            'sport': 'Sport',
+            'level': 'Level',
+            'batch': 'Batch',
+            'status': 'Status'
+        };
+        return labels[field] || field;
+    }
+
+    // Save dynamic mapping import (Step 2)
+    $(document).on('click', '#saveImportBtn', function () {
+        let mappings = {};
+        let mappedFields = new Set();
+        let hasDuplicates = false;
+        let duplicateField = '';
+        let hasUnmapped = false;
+
+        $('.mapping-select').each(function () {
+            let colIndex = $(this).data('col-index');
+            let val = $(this).val();
+
+            if (!val) {
+                hasUnmapped = true;
+            } else {
+                if (val !== 'skip') {
+                    if (mappedFields.has(val)) {
+                        hasDuplicates = true;
+                        duplicateField = val;
+                    }
+                    mappedFields.add(val);
+                }
+                mappings[colIndex] = val;
+            }
+        });
+
+        // 1. Give error if user didn't select mapping/skip for any column
+        if (hasUnmapped) {
+            toastr.error('Please map every column to a database field or select "skip".');
+            return;
+        }
+
+        // 2. Give error if duplicate field mappings are found
+        if (hasDuplicates) {
+            toastr.error('Field "' + getFieldLabel(duplicateField) + '" is mapped multiple times. Each field can only be mapped to one column.');
+            return;
+        }
+
+        // 3. Validate required fields mapping
+        let required = ['firstname', 'lastname', 'phone', 'joined_at'];
+        let missing = [];
+        required.forEach(function (req) {
+            if (!mappedFields.has(req)) {
+                missing.push(getFieldLabel(req));
+            }
+        });
+
+        if (missing.length > 0) {
+            toastr.error('The following required fields must be mapped: ' + missing.join(', ') + '.');
+            return;
+        }
+
+        // 4. Construct table-wise player data (skipping columns mapped to 'skip')
+        let playersData = [];
+        $('#previewTableBody tr').each(function () {
+            let $row = $(this);
+            let playerObj = {};
+            let hasAnyValue = false;
+
+            $('.mapping-select').each(function (index) {
+                let val = $(this).val(); // e.g. "firstname", "lastname", "skip"
+                if (val && val !== 'skip') {
+                    // Cell index in row is index + 1 (since index 0 is '#' column)
+                    let cellVal = $row.find(`td:eq(${index + 1})`).text().trim();
+                    if (cellVal !== '') {
+                        hasAnyValue = true;
+                    }
+
+                    let key = val;
+                    if (val === 'firstname') key = 'first_name';
+                    if (val === 'lastname') key = 'last_name';
+
+                    playerObj[key] = cellVal;
+                }
+            });
+
+            if (hasAnyValue) {
+                playersData.push(playerObj);
+            }
+        });
+
+        let importUrl = $('#importUrl').val();
+        let token = $('input[name="_token"]').val();
+
+        let saveBtn = $(this);
+        let originalText = saveBtn.html();
+        saveBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Saving...');
+
+        $.ajax({
+            url: importUrl,
+            method: 'POST',
+            data: {
+                _token: token,
+                players: playersData
+            },
+            success: function (response) {
+                toastr.success(response.message || 'Import process completed.');
+                closeOffcanvasForm();
+                if ($('#datatable').length) {
+                    $('#datatable').DataTable().ajax.reload();
+                }
+
+                // Show detailed modal results
+                $('#importSuccessCount').text(response.summary.imported);
+                $('#importSkippedCount').text(response.summary.skipped);
+                $('#importTotalCount').text(response.summary.total);
+
+                let $errList = $('#importErrorsList');
+                $errList.empty();
+                if (response.errors && response.errors.length > 0) {
+                    response.errors.forEach(function (err) {
+                        $errList.append(`<li><i class="bi bi-dot"></i> ${err}</li>`);
+                    });
+                    $('#importErrorsContainer').removeClass('d-none');
+                } else {
+                    $('#importErrorsContainer').addClass('d-none');
+                }
+
+                let myModal = new bootstrap.Modal(document.getElementById('importResultsModal'));
+                myModal.show();
+            },
+            error: function (xhr) {
+                saveBtn.prop('disabled', false).html(originalText);
+                toastr.error(xhr.responseJSON?.message || 'Failed to import players.');
+            }
+        });
     });
 
     // Edit Player Form Open
@@ -1637,6 +1954,35 @@ $(document).ready(function () {
                 submitBtn.prop('disabled', false).html(originalBtnHtml);
             }
         });
+    });
+
+    // Select All Fields handler inside any export modal
+    $(document).on('change', '.select-all-fields', function () {
+        const modal = $(this).closest('.modal');
+        modal.find('.field-checkbox').prop('checked', this.checked);
+    });
+
+    $(document).on('change', '.field-checkbox', function () {
+        const modal = $(this).closest('.modal');
+        const total = modal.find('.field-checkbox').length;
+        const checked = modal.find('.field-checkbox:checked').length;
+        modal.find('.select-all-fields').prop('checked', total === checked);
+    });
+
+    // Form submit for export modals (direct submit without AJAX)
+    $(document).on('submit', '.export-modal-form', function (e) {
+        const form = $(this);
+        const modal = form.closest('.modal');
+
+        if (form.find('.field-checkbox:checked').length === 0) {
+            e.preventDefault();
+            toastr.error('Please select at least one field to export.');
+            return;
+        }
+
+        setTimeout(() => {
+            modal.modal('hide');
+        }, 300);
     });
 
 });

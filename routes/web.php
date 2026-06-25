@@ -98,6 +98,10 @@ Route::middleware('auth')->group(function () {
     Route::get('get-batches/{sport_id}/{level_id}', [PlayerController::class, 'getBatches'])->name('players.getBatches');
     Route::delete('/players/bulk-delete', [PlayerController::class, 'bulkDelete'])->name('players.bulkDelete');
     Route::patch('/players/bulk-update', [PlayerController::class, 'bulkUpdate'])->name('players.bulkUpdate');
+    Route::get('/players/import-form', [PlayerController::class, 'importForm'])->name('players.importForm');
+    Route::post('/players/import', [PlayerController::class, 'import'])->name('players.import');
+    Route::post('/players/export', [PlayerController::class, 'export'])->name('players.export');
+    Route::post('/players/readExcel', [PlayerController::class, 'readExcel'])->name('players.readExcel');
     Route::resource('players', PlayerController::class);
 
     Route::delete('/expense-category/bulk-delete', [ExpenseCategoriesController::class, 'bulkDelete'])
