@@ -18,6 +18,24 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasFactory, HasRoles, Notifiable;
 
+    protected $fillable = [
+        'firstname',
+        'lastname',
+        'email',
+        'password',
+        'phone',
+        'profile_picture',
+        'gender',
+        'role',
+        'status',
+        'joined_at',
+    ];
+
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
     /**
      * Get the attributes that should be cast.
      *

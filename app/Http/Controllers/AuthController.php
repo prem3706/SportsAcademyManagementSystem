@@ -15,7 +15,7 @@ class AuthController extends Controller
             'firstname' => 'required|string|max:255',
             'lastname' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
-            'phone' => 'required|string|max:20|unique:users,phone',
+            'phone' => 'required|string|max:10|unique:users,phone',
             'profile_picture' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'password' => 'required|string|min:8',
             'gender' => 'required|in:male,female,other',

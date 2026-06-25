@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\DataTables\PlayersDataTable;
+use App\Exports\PlayerSampleExport;
+use App\Exports\PlayersExport;
+use App\Imports\PlayersImport;
 use App\Models\Batch;
 use App\Models\Level;
 use App\Models\Sport;
@@ -10,6 +13,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Maatwebsite\Excel\Facades\Excel;
 
 class PlayerController extends Controller
 {
@@ -50,7 +54,7 @@ class PlayerController extends Controller
             'firstname' => 'required|string|max:255',
             'lastname' => 'required|string|max:255',
             'email' => 'nullable|email|unique:users,email',
-            'phone' => 'required|string|max:20|unique:users,phone',
+            'phone' => 'required|string|max:10|unique:users,phone',
             'joined_at' => 'required|date',
             'gender' => 'nullable|in:male,female,other',
             'assignments' => 'required|array|min:1',
@@ -129,7 +133,7 @@ class PlayerController extends Controller
             'firstname' => 'required|string|max:255',
             'lastname' => 'required|string|max:255',
             'email' => 'nullable|email|unique:users,email,'.$player->id,
-            'phone' => 'required|string|max:20|unique:users,phone,'.$player->id,
+            'phone' => 'required|string|max:10|unique:users,phone,'.$player->id,
             'joined_at' => 'required|date',
             'gender' => 'nullable|in:male,female,other',
             'status' => 'required|in:active,inactive',
@@ -255,5 +259,165 @@ class PlayerController extends Controller
             'success' => false,
             'message' => 'No valid players selected for update.',
         ], 422);
+    }
+
+    /**
+     * Export players to Excel
+     */
+    public function export(Request $request)
+    {
+        abort_if(! Auth::user()->can('player_view'), 403);
+
+        Log::info('Export Request Data:', $request->all());
+
+        $columns = $request->columns ?? [];
+
+        return Excel::download(
+            new PlayersExport($columns),
+            'Players_'.now()->format('YmdHis').'.xlsx'
+        );
+    }
+
+    /**
+     * Show Player Import Form
+     */
+    public function importForm()
+    {
+        abort_if(! Auth::user()->can('player_create'), 403);
+
+        return view('players.importForm');
+    }
+
+
+
+    /**
+     * Import Players from Excel
+     */
+    public function import(Request $request)
+    {
+        abort_if(! Auth::user()->can('player_create'), 403);
+
+        $request->validate([
+            'players' => 'required|array',
+        ]);
+
+        try {
+            $players = $request->input('players');
+            $importer = new PlayersImport;
+
+            foreach ($players as $player) {
+                // Ensure row has data before processing
+                if (empty(array_filter($player))) {
+                    continue;
+                }
+                $importer->model($player);
+            }
+
+            $importedCount = $importer->getImportedCount();
+            $skippedCount = $importer->getSkippedCount();
+            $errors = $importer->getErrors();
+            $totalCount = $importedCount + $skippedCount;
+
+            $message = "Import process completed. Imported: {$importedCount}, Skipped/Errors: {$skippedCount}";
+
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'summary' => [
+                    'imported' => $importedCount,
+                    'skipped' => $skippedCount,
+                    'total' => $totalCount,
+                ],
+                'errors' => $errors,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Player Import Error: '.$e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error importing file: '.$e->getMessage(),
+            ], 422);
+        }
+    }
+
+    public function readExcel(Request $request)
+    {
+        // Validate the uploaded file
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls,csv|max:10240',
+        ]);
+
+        try {
+            // Read data into a plain PHP array directly from the uploaded file
+            $dataArray = Excel::toArray([], $request->file('file'));
+            $sheetData = $dataArray[0] ?? [];
+
+            if (empty($sheetData)) {
+                throw new \Exception('The Excel file is empty.');
+            }
+
+            // Find all columns that are not entirely empty (has data)
+            $maxCols = 0;
+            foreach ($sheetData as $row) {
+                $maxCols = max($maxCols, count($row));
+            }
+
+            $rawHeaders = $sheetData[0] ?? [];
+            $nonEmptyColIndices = [];
+            for ($colIdx = 0; $colIdx < $maxCols; $colIdx++) {
+                $hasData = false;
+                foreach ($sheetData as $row) {
+                    $val = $row[$colIdx] ?? null;
+                    if ($val !== null && trim((string) $val) !== '') {
+                        $hasData = true;
+                        break;
+                    }
+                }
+                if ($hasData) {
+                    $nonEmptyColIndices[] = $colIdx;
+                }
+            }
+
+            if (empty($nonEmptyColIndices)) {
+                throw new \Exception('No columns with data found in the Excel file.');
+            }
+
+            // Extract headers from the first row of the sheet
+            $headers = [];
+            foreach ($nonEmptyColIndices as $colIdx) {
+                $headers[] = isset($rawHeaders[$colIdx]) && trim((string) $rawHeaders[$colIdx]) !== ''
+                    ? trim((string) $rawHeaders[$colIdx])
+                    : 'Column '.($colIdx + 1);
+            }
+
+            // Extract filtered preview rows starting from index 1 (skipping header)
+            $rawRows = array_slice($sheetData, 1);
+            $rows = [];
+            foreach ($rawRows as $row) {
+                // Check if row has any non-empty cells
+                if (empty(array_filter($row, function ($v) {
+                    return $v !== null && trim((string) $v) !== '';
+                }))) {
+                    continue;
+                }
+                $filteredRow = [];
+                foreach ($nonEmptyColIndices as $colIdx) {
+                    $filteredRow[] = $row[$colIdx] ?? '';
+                }
+                $rows[] = $filteredRow;
+            }
+
+            return response()->json([
+                'success' => true,
+                'headers' => $headers,
+                'rows' => $rows,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error reading Excel file: '.$e->getMessage(),
+            ], 422);
+        }
     }
 }

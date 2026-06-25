@@ -7,6 +7,12 @@
     'title' => '',
     'url' => '',
 
+    // Export Button
+    'exportUrl' => '',
+
+    // Import Button
+    'importUrl' => '',
+
     // Bulk Actions
     'bulkDeleteUrl' => '',
     'bulkUpdateUrl' => '',
@@ -61,17 +67,40 @@
                 @endif
             @endif
 
-            @if ($canCreate)
-                <button class="btn btn-dark rounded-3 shadow-sm px-4 fw-semibold text-nowrap"
-                    data-title="{{ $title }}" data-url="{{ $url }}" id="{{ $id }}" type="button"
-                    data-bs-toggle="offcanvas" data-bs-target="#offcanvasScrolling">
+            <div class="d-flex align-items-center gap-2">
+                @if ($importUrl)
+                    @if (!$permission || auth()->user()->can($permission . '_create'))
+                        <button type="button" class="btn btn-outline-dark rounded-3 shadow-sm px-4 fw-semibold text-nowrap"
+                            id="importPlayerBtn" data-title="Import Players" data-url="{{ $importUrl }}"
+                            data-bs-toggle="offcanvas" data-bs-target="#offcanvasScrolling">
+                            <i class="bi bi-upload me-1"></i>
+                            Import
+                        </button>
+                    @endif
+                @endif
 
-                    <i class="bi bi-plus-circle me-1"></i>
+                @if ($exportUrl)
+                    @if (!$permission || auth()->user()->can($permission . '_view'))
+                        <button type="button" class="btn btn-outline-dark rounded-3 shadow-sm px-4 fw-semibold text-nowrap"
+                            data-bs-toggle="modal" data-bs-target="#exportModal">
+                            <i class="bi bi-download me-1"></i>
+                            Export
+                        </button>
+                    @endif
+                @endif
 
-                    {{ $title }}
+                @if ($canCreate)
+                    <button class="btn btn-dark rounded-3 shadow-sm px-4 fw-semibold text-nowrap"
+                        data-title="{{ $title }}" data-url="{{ $url }}" id="{{ $id }}" type="button"
+                        data-bs-toggle="offcanvas" data-bs-target="#offcanvasScrolling">
 
-                </button>
-            @endif
+                        <i class="bi bi-plus-circle me-1"></i>
+
+                        {{ $title }}
+
+                    </button>
+                @endif
+            </div>
 
         </div>
 
