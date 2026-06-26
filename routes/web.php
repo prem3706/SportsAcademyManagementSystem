@@ -6,6 +6,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExpenseCategoriesController;
 use App\Http\Controllers\ExpensesController;
 use App\Http\Controllers\ForgotPasswordController;
+use App\Http\Controllers\ImportExportController;
 use App\Http\Controllers\LevelsController;
 use App\Http\Controllers\PlayerController;
 use App\Http\Controllers\PlayerFeesController;
@@ -93,6 +94,12 @@ Route::middleware('auth')->group(function () {
     Route::post('settings/penalty', [SettingController::class, 'updatePenalty'])->name('settings.updatePenalty');
     Route::post('settings/discount', [SettingController::class, 'updateDiscount'])->name('settings.updateDiscount');
     Route::get('settings/role-permission', [SettingController::class, 'rolePermission'])->name('role.permission.index');
+    Route::get('settings/import-export', [ImportExportController::class, 'index'])->name('import.export.index');
+    Route::post('settings/import-preview', [ImportExportController::class, 'preview'])->name('import.export.preview');
+    Route::get('settings/download-sample', [ImportExportController::class, 'downloadSample'])->name('import.export.download-sample');
+    Route::post('settings/export', [ImportExportController::class, 'export'])->name('import.export.export');
+    Route::get('settings/export-fields', [ImportExportController::class, 'exportFields'])->name('import.export.fields');
+
     Route::resource('roles', RoleController::class);
 
     Route::get('get-batches/{sport_id}/{level_id}', [PlayerController::class, 'getBatches'])->name('players.getBatches');
