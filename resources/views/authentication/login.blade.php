@@ -136,7 +136,7 @@
                     </form>
 
                     <!-- Register -->
-                    <div class="text-center mt-4 small text-secondary">
+                    {{-- <div class="text-center mt-4 small text-secondary">
 
                         Need an account?
 
@@ -146,7 +146,7 @@
 
                         </a>
 
-                    </div>
+                    </div> --}}
 
                 </div>
 

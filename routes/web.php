@@ -9,11 +9,11 @@ use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\LevelsController;
 use App\Http\Controllers\PlayerController;
 use App\Http\Controllers\PlayerFeesController;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SportLevelController;
 use App\Http\Controllers\SportsController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\RoleController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -21,8 +21,8 @@ Route::middleware('guest')->group(function () {
 
     Route::post('/login', [AuthController::class, 'login']);
 
-    Route::view('/register', 'authentication.register');
-    Route::post('/register', [AuthController::class, 'register'])->name('register');
+    // Route::view('/register', 'authentication.register');
+    // Route::post('/register', [AuthController::class, 'register'])->name('register');
 
     Route::get('forget-password', [ForgotPasswordController::class, 'showForgetPasswordForm'])
         ->name('forget.password.get');
@@ -92,12 +92,16 @@ Route::middleware('auth')->group(function () {
     Route::get('settings', [SettingController::class, 'index'])->name('settings.index');
     Route::post('settings/penalty', [SettingController::class, 'updatePenalty'])->name('settings.updatePenalty');
     Route::post('settings/discount', [SettingController::class, 'updateDiscount'])->name('settings.updateDiscount');
-    Route::get('settings/role-permission',[SettingController::class,'rolePermission'])->name('role.permission.index');
+    Route::get('settings/role-permission', [SettingController::class, 'rolePermission'])->name('role.permission.index');
     Route::resource('roles', RoleController::class);
-    
+
     Route::get('get-batches/{sport_id}/{level_id}', [PlayerController::class, 'getBatches'])->name('players.getBatches');
     Route::delete('/players/bulk-delete', [PlayerController::class, 'bulkDelete'])->name('players.bulkDelete');
     Route::patch('/players/bulk-update', [PlayerController::class, 'bulkUpdate'])->name('players.bulkUpdate');
+    Route::get('/players/import-form', [PlayerController::class, 'importForm'])->name('players.importForm');
+    Route::post('/players/import', [PlayerController::class, 'import'])->name('players.import');
+    Route::post('/players/export', [PlayerController::class, 'export'])->name('players.export');
+    Route::post('/players/readExcel', [PlayerController::class, 'readExcel'])->name('players.readExcel');
     Route::resource('players', PlayerController::class);
 
     Route::delete('/expense-category/bulk-delete', [ExpenseCategoriesController::class, 'bulkDelete'])

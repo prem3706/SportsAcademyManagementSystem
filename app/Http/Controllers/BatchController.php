@@ -8,8 +8,10 @@ use App\Models\Level;
 use App\Models\Sport;
 use App\Models\User;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class BatchController extends Controller
 {
@@ -20,334 +22,337 @@ class BatchController extends Controller
     {
         abort_if(! Auth::user()->can('batch_view'), 403);
 
-        return $dataTable->render('batches.index');
+        try {
+            return $dataTable->render('batches.index');
+        } catch (Exception $e) {
+            Log::error('Batch Index Error: '.$e->getMessage());
+
+            return back()->with('error', 'Something went wrong.');
+        }
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Show the form for creating the resource.
      */
     public function create()
     {
         abort_if(! Auth::user()->can('batch_create'), 403);
-        // Sports
-        $sports = Sport::where('status', 'active')->get();
 
-        // Levels
-        $levels = Level::where('status', 'active')->get();
+        try {
+            $sports = Sport::where('status', 'active')->get();
 
-        // Coaches From Users Table
-        $coaches = User::where('role', 'coach')
-            ->where('status', 'active')
-            ->get();
+            $levels = Level::where('status', 'active')->get();
 
-        // Players From Users Table
-        $players = User::where('role', 'player')
-            ->where('status', 'active')
-            ->get();
+            $coaches = User::where('role', 'coach')
+                ->where('status', 'active')
+                ->get();
 
-        // dd($sports, $levels, $coaches, $players);
+            $players = User::where('role', 'player')
+                ->where('status', 'active')
+                ->get();
 
-        return view('batches.addBatchesForm', compact(
+            return view(
+                'batches.addBatchesForm',
+                compact('sports', 'levels', 'coaches', 'players')
+            );
 
-            'sports',
+        } catch (Exception $e) {
+            Log::error('Batch Create Form Error: '.$e->getMessage());
 
-            'levels',
-
-            'coaches',
-
-            'players'
-
-        ));
+            return back()->with('error', 'Something went wrong.');
+        }
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store batch.
      */
     public function store(Request $request)
     {
         abort_if(! Auth::user()->can('batch_create'), 403);
 
-        $validated = $request->validate([
+        try {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'capacity' => 'required|integer|min:1',
+                'start_time' => 'required',
+                'end_time' => 'required',
+                'sport_id' => 'required|exists:sports,id',
+                'level_id' => 'required|exists:levels,id',
+                'coaches' => 'nullable|array',
+                'coaches.*' => 'exists:users,id',
+                'players' => 'nullable|array',
+                'players.*' => 'exists:users,id',
+                'status' => 'required|in:active,inactive',
+            ]);
 
-            'name' => 'required|string|max:255',
+            $validated['start_time'] = Carbon::parse($request->start_time)
+                ->format('H:i:s');
 
-            'capacity' => 'required|integer|min:1',
+            $validated['end_time'] = Carbon::parse($request->end_time)
+                ->format('H:i:s');
 
-            'start_time' => 'required',
+            if ($request->players &&
+                count($request->players) > $request->capacity) {
 
-            'end_time' => 'required',
+                return response()->json([
+                    'message' => 'Players limit exceeded.',
+                ], 422);
+            }
 
-            'sport_id' => 'required|exists:sports,id',
+            $batch = Batch::create($validated);
 
-            'level_id' => 'required|exists:levels,id',
+            if ($request->has('coaches')) {
+                $batch->coaches()->attach($request->coaches);
+            }
 
-            'coaches' => 'nullable|array',
-
-            'coaches.*' => 'exists:users,id',
-
-            'players' => 'nullable|array',
-
-            'players.*' => 'exists:users,id',
-
-            'status' => 'required|in:active,inactive',
-
-        ]);
-        $validated['start_time'] = Carbon::parse($request->start_time)
-            ->format('H:i:s');
-
-        $validated['end_time'] = Carbon::parse($request->end_time)
-            ->format('H:i:s');
-        if ($request->players && count($request->players) > $request->capacity) {
+            if ($request->has('players')) {
+                foreach ($request->players as $playerId) {
+                    $batch->players()->attach($playerId, [
+                        'joined_at' => now(),
+                    ]);
+                }
+            }
 
             return response()->json([
+                'success' => true,
+                'message' => 'Batch created successfully.',
+            ]);
 
-                'message' => 'Players limit exceeded.',
+        } catch (Exception $e) {
+            Log::error('Batch Store Error: '.$e->getMessage());
 
-            ], 422);
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong.',
+            ], 500);
         }
-
-        $batch = Batch::create($validated);
-
-        // Attach Coaches
-        if ($request->has('coaches')) {
-
-            $batch->coaches()->attach($request->coaches);
-        }
-
-        // Attach Players
-        // Attach Players
-        if ($request->has('players')) {
-
-            foreach ($request->players as $playerId) {
-
-                $batch->players()->attach($playerId, [
-
-                    'joined_at' => now(),
-
-                ]);
-            }
-        }
-
-        return response()->json([
-
-            'success' => true,
-
-            'message' => 'Batch created successfully.',
-
-        ]);
     }
 
     /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
+     * Edit batch.
      */
     public function edit(Batch $batch)
     {
         abort_if(! Auth::user()->can('batch_edit'), 403);
-        // Sports
-        $sports = Sport::where('status', 'active')->get();
 
-        // Levels
-        $levels = Level::where('status', 'active')->get();
+        try {
+            $sports = Sport::where('status', 'active')->get();
 
-        // Coaches From Users Table
-        $coaches = User::where('role', 'coach')
-            ->where('status', 'active')
-            ->get();
+            $levels = Level::where('status', 'active')->get();
 
-        // Players From Users Table
-        $players = User::where('role', 'player')
-            ->where('status', 'active')
-            ->get();
+            $coaches = User::where('role', 'coach')
+                ->where('status', 'active')
+                ->get();
 
-        return view('batches.editBatchesForm', compact('batch', 'sports', 'levels', 'coaches', 'players'));
+            $players = User::where('role', 'player')
+                ->where('status', 'active')
+                ->get();
+
+            return view(
+                'batches.editBatchesForm',
+                compact('batch', 'sports', 'levels', 'coaches', 'players')
+            );
+
+        } catch (Exception $e) {
+            Log::error('Batch Edit Error: '.$e->getMessage());
+
+            return back()->with('error', 'Something went wrong.');
+        }
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update batch.
      */
     public function update(Request $request, Batch $batch)
     {
         abort_if(! Auth::user()->can('batch_edit'), 403);
-        $validated = $request->validate([
 
-            'name' => 'required|string|max:255',
+        try {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'capacity' => 'required|integer|min:1',
+                'start_time' => 'required',
+                'end_time' => 'required',
+                'sport_id' => 'required|exists:sports,id',
+                'level_id' => 'required|exists:levels,id',
+                'coaches' => 'nullable|array',
+                'coaches.*' => 'exists:users,id',
+                'players' => 'nullable|array',
+                'players.*' => 'exists:users,id',
+                'status' => 'required|in:active,inactive',
+            ]);
 
-            'capacity' => 'required|integer|min:1',
+            $validated['start_time'] = Carbon::parse($request->start_time)
+                ->format('H:i:s');
 
-            'start_time' => 'required',
+            $validated['end_time'] = Carbon::parse($request->end_time)
+                ->format('H:i:s');
 
-            'end_time' => 'required',
+            $batch->update([
+                'name' => $validated['name'],
+                'capacity' => $validated['capacity'],
+                'start_time' => $validated['start_time'],
+                'end_time' => $validated['end_time'],
+                'sport_id' => $validated['sport_id'],
+                'level_id' => $validated['level_id'],
+                'status' => $validated['status'],
+            ]);
 
-            'sport_id' => 'required|exists:sports,id',
+            $batch->coaches()->sync($request->coaches ?? []);
 
-            'level_id' => 'required|exists:levels,id',
+            $syncPlayers = [];
 
-            'coaches' => 'nullable|array',
+            if ($request->has('players')) {
+                foreach ($request->players as $playerId) {
 
-            'coaches.*' => 'exists:users,id',
+                    $existingPlayer = $batch->players()
+                        ->where('player_id', $playerId)
+                        ->first();
 
-            'players' => 'nullable|array',
-
-            'players.*' => 'exists:users,id',
-
-            'status' => 'required|in:active,inactive',
-
-        ]);
-
-        // Convert AM/PM time to database format
-        $validated['start_time'] = Carbon::parse($request->start_time)
-            ->format('H:i:s');
-
-        $validated['end_time'] = Carbon::parse($request->end_time)
-            ->format('H:i:s');
-
-        // Update Batch
-        $batch->update([
-
-            'name' => $validated['name'],
-
-            'capacity' => $validated['capacity'],
-
-            'start_time' => $validated['start_time'],
-
-            'end_time' => $validated['end_time'],
-
-            'sport_id' => $validated['sport_id'],
-
-            'level_id' => $validated['level_id'],
-
-            'status' => $validated['status'],
-
-        ]);
-
-        // Sync Coaches
-        $batch->coaches()->sync($request->coaches ?? []);
-
-        // Sync Players
-        // Sync Players With joined_at
-        $syncPlayers = [];
-
-        if ($request->has('players')) {
-
-            foreach ($request->players as $playerId) {
-
-                // Check if player already exists in this batch
-                $existingPlayer = $batch->players()
-                    ->where('player_id', $playerId)
-                    ->first();
-
-                // Old player → keep old joined_at
-                if ($existingPlayer) {
-
-                    $syncPlayers[$playerId] = [
-
-                        'joined_at' => $existingPlayer->pivot->joined_at,
-
-                    ];
-
-                } else {
-
-                    // New player → add current datetime
-                    $syncPlayers[$playerId] = [
-
-                        'joined_at' => now(),
-
-                    ];
+                    if ($existingPlayer) {
+                        $syncPlayers[$playerId] = [
+                            'joined_at' => $existingPlayer->pivot->joined_at,
+                        ];
+                    } else {
+                        $syncPlayers[$playerId] = [
+                            'joined_at' => now(),
+                        ];
+                    }
                 }
             }
+
+            $batch->players()->sync($syncPlayers);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Batch updated successfully.',
+            ]);
+
+        } catch (Exception $e) {
+            Log::error('Batch Update Error: '.$e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong.',
+            ], 500);
         }
-
-        $batch->players()->sync($syncPlayers);
-
-        return response()->json([
-
-            'success' => true,
-
-            'message' => 'Batch updated successfully.',
-
-        ]);
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Delete batch.
      */
     public function destroy(Batch $batch)
     {
         abort_if(! Auth::user()->can('batch_delete'), 403);
-        $batch->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Batch deleted successfully.',
-        ]);
+        try {
+            $batch->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Batch deleted successfully.',
+            ]);
+
+        } catch (Exception $e) {
+            Log::error('Batch Delete Error: '.$e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong.',
+            ], 500);
+        }
     }
 
     public function getSportLevels($id)
     {
         abort_if(! Auth::user()->can('batch_view'), 403);
-        $sport = Sport::with('levels')->findOrFail($id);
 
-        return response()->json($sport->levels);
+        try {
+            $sport = Sport::with('levels')->findOrFail($id);
+
+            return response()->json($sport->levels);
+
+        } catch (Exception $e) {
+            Log::error('Sport Levels Error: '.$e->getMessage());
+
+            return response()->json([], 500);
+        }
     }
 
     public function bulkDelete(Request $request)
     {
         abort_if(! Auth::user()->can('batch_delete'), 403);
-        $ids = $request->input('select', []);
 
-        // Convert comma separated string into array
-        if (! is_array($ids)) {
+        try {
+            $ids = $request->input('select', []);
 
-            $ids = array_filter(explode(',', $ids));
-        }
+            if (! is_array($ids)) {
+                $ids = array_filter(explode(',', $ids));
+            }
 
-        // Check selected users
-        if (count($ids) > 0) {
+            if (count($ids) > 0) {
+                $deletedCount = Batch::destroy($ids);
 
-            $deletedCount = Batch::destroy($ids);
+                return response()->json([
+                    'success' => true,
+                    'message' => $deletedCount.' Batches deleted successfully.',
+                ]);
+            }
 
             return response()->json([
-                'success' => true,
-                'message' => $deletedCount.' Batches deleted successfully.',
-            ]);
+                'success' => false,
+                'message' => 'No batches selected.',
+            ], 422);
+
+        } catch (Exception $e) {
+            Log::error('Bulk Delete Error: '.$e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong.',
+            ], 500);
         }
     }
 
     public function bulkUpdate(Request $request)
     {
         abort_if(! Auth::user()->can('batch_edit'), 403);
-        $validated = $request->validate([
-            'select' => 'required',
-            'status' => 'required|string|in:active,inactive',
-        ]);
 
-        $ids = $request->input('select', []);
-        $status = $request->input('status');
+        try {
+            $validated = $request->validate([
+                'select' => 'required',
+                'status' => 'required|in:active,inactive',
+            ]);
 
-        if (! is_array($ids)) {
-            $ids = array_filter(explode(',', $ids));
-        }
+            $ids = $request->input('select', []);
+            $status = $request->input('status');
 
-        if (count($ids) > 0) {
-            $updatedCount = Batch::whereIn('id', $ids)->update(['status' => $status]);
+            if (! is_array($ids)) {
+                $ids = array_filter(explode(',', $ids));
+            }
+
+            if (count($ids) > 0) {
+                $updatedCount = Batch::whereIn('id', $ids)
+                    ->update(['status' => $status]);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => $updatedCount.' Batches updated successfully.',
+                ]);
+            }
 
             return response()->json([
-                'success' => true,
-                'message' => $updatedCount.' Batches updated successfully.',
-            ]);
-        }
+                'success' => false,
+                'message' => 'No valid batches selected.',
+            ], 422);
 
-        return response()->json([
-            'success' => false,
-            'message' => 'No valid Batches selected for update.',
-        ], 422);
+        } catch (Exception $e) {
+            Log::error('Bulk Update Error: '.$e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong.',
+            ], 500);
+        }
     }
 }

@@ -4,7 +4,6 @@ namespace App\DataTables;
 
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder as QueryBuilder;
-use Illuminate\Support\Facades\Auth;
 use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Builder as HtmlBuilder;
 use Yajra\DataTables\Html\Button;
@@ -54,7 +53,7 @@ class PlayersDataTable extends DataTable
     </button>';
                 }
 
-                return '<div class="d-flex justify-content-center gap-2">' . $editBtn . $deleteBtn . '</div>';
+                return '<div class="d-flex justify-content-center gap-2">'.$editBtn.$deleteBtn.'</div>';
             })
             ->editColumn('status', function (User $user) {
                 if ($user->status == 'active') {

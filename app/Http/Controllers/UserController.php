@@ -8,6 +8,8 @@ use App\Http\Requests\UpdateUserRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Exception;
 
 class UserController extends Controller
 {
@@ -18,7 +20,12 @@ class UserController extends Controller
     {
         abort_if(! Auth::user()->can('user_view'), 403);
 
-        return $dataTable->render('user.index');
+        try {
+            return $dataTable->render('user.index');
+        } catch (Exception $e) {
+            Log::error('User Index Error: ' . $e->getMessage());
+            return back()->with('error', 'Something went wrong.');
+        }
     }
 
     /**
@@ -28,7 +35,12 @@ class UserController extends Controller
     {
         abort_if(! Auth::user()->can('user_create'), 403);
 
-        return view('user.addUserForm');
+        try {
+            return view('user.addUserForm');
+        } catch (Exception $e) {
+            Log::error('User Create Form Error: ' . $e->getMessage());
+            return abort(500);
+        }
     }
 
     /**
@@ -37,16 +49,25 @@ class UserController extends Controller
     public function store(StoreUserRequest $request)
     {
         abort_if(! Auth::user()->can('user_create'), 403);
-        $validatedData = $request->validated();
 
-        $user = User::create($validatedData);
+        try {
+            $validatedData = $request->validated();
 
-        $user->assignRole($validatedData['role']);
+            $user = User::create($validatedData);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'User created successfully.',
-        ]);
+            $user->assignRole($validatedData['role']);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'User created successfully.',
+            ]);
+        } catch (Exception $e) {
+            Log::error('User Store Error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong.',
+            ], 500);
+        }
     }
 
     /**
@@ -64,7 +85,12 @@ class UserController extends Controller
     {
         abort_if(! Auth::user()->can('user_edit'), 403);
 
-        return view('user.editUserForm', compact('user'));
+        try {
+            return view('user.editUserForm', compact('user'));
+        } catch (Exception $e) {
+            Log::error('User Edit Form Error: ' . $e->getMessage());
+            return abort(500);
+        }
     }
 
     /**
@@ -74,19 +100,27 @@ class UserController extends Controller
     {
         abort_if(! Auth::user()->can('user_edit'), 403);
 
-        $validatedData = $request->validated();
+        try {
+            $validatedData = $request->validated();
 
-        if (empty($validatedData['password'])) {
-            unset($validatedData['password']);
+            if (empty($validatedData['password'])) {
+                unset($validatedData['password']);
+            }
+
+            $user->update($validatedData);
+            $user->syncRoles([$validatedData['role']]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'User updated successfully.',
+            ]);
+        } catch (Exception $e) {
+            Log::error('User Update Error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong.',
+            ], 500);
         }
-
-        $user->update($validatedData);
-        $user->syncRoles([$validatedData['role']]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'User updated successfully.',
-        ]);
     }
 
     /**
@@ -96,12 +130,20 @@ class UserController extends Controller
     {
         abort_if(! Auth::user()->can('user_delete'), 403);
 
-        $user->delete();
+        try {
+            $user->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'User deleted successfully.',
-        ]);
+            return response()->json([
+                'success' => true,
+                'message' => 'User deleted successfully.',
+            ]);
+        } catch (Exception $e) {
+            Log::error('User Delete Error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong.',
+            ], 500);
+        }
     }
 
     /**
@@ -111,59 +153,73 @@ class UserController extends Controller
     {
         abort_if(! Auth::user()->can('user_delete'), 403);
 
-        $ids = $request->input('select', []);
+        try {
+            $ids = $request->input('select', []);
 
-        // Convert comma separated string into array
-        if (! is_array($ids)) {
+            // Convert comma separated string into array
+            if (! is_array($ids)) {
+                $ids = array_filter(explode(',', $ids));
+            }
 
-            $ids = array_filter(explode(',', $ids));
-        }
+            // Check selected users
+            if (count($ids) > 0) {
+                $deletedCount = User::destroy($ids);
 
-        // Check selected users
-        if (count($ids) > 0) {
-
-            $deletedCount = User::destroy($ids);
+                return response()->json([
+                    'success' => true,
+                    'message' => $deletedCount.' users deleted successfully.',
+                ]);
+            }
 
             return response()->json([
-                'success' => true,
-                'message' => $deletedCount.' users deleted successfully.',
-            ]);
+                'success' => false,
+                'message' => 'No users selected.',
+            ], 400);
+        } catch (Exception $e) {
+            Log::error('User Bulk Delete Error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong.',
+            ], 500);
         }
-
-        return response()->json([
-            'success' => false,
-            'message' => 'No users selected.',
-        ], 400);
     }
 
     public function bulkUpdate(Request $request)
     {
         abort_if(! Auth::user()->can('user_edit'), 403);
 
-        $validated = $request->validate([
-            'select' => 'required',
-            'status' => 'required|string|in:active,inactive',
-        ]);
+        try {
+            $validated = $request->validate([
+                'select' => 'required',
+                'status' => 'required|string|in:active,inactive',
+            ]);
 
-        $ids = $request->input('select', []);
-        $status = $request->input('status');
+            $ids = $request->input('select', []);
+            $status = $request->input('status');
 
-        if (! is_array($ids)) {
-            $ids = array_filter(explode(',', $ids));
-        }
+            if (! is_array($ids)) {
+                $ids = array_filter(explode(',', $ids));
+            }
 
-        if (count($ids) > 0) {
-            $updatedCount = User::whereIn('id', $ids)->update(['status' => $status]);
+            if (count($ids) > 0) {
+                $updatedCount = User::whereIn('id', $ids)->update(['status' => $status]);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => $updatedCount.' users updated successfully.',
+                ]);
+            }
 
             return response()->json([
-                'success' => true,
-                'message' => $updatedCount.' users updated successfully.',
-            ]);
+                'success' => false,
+                'message' => 'No valid users selected for update.',
+            ], 422);
+        } catch (Exception $e) {
+            Log::error('User Bulk Update Error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong.',
+            ], 500);
         }
-
-        return response()->json([
-            'success' => false,
-            'message' => 'No valid users selected for update.',
-        ], 422);
     }
 }

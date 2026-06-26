@@ -7,6 +7,8 @@ use App\Models\Level;
 use App\Models\Sport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Exception;
 
 class SportLevelController extends Controller
 {
@@ -17,8 +19,12 @@ class SportLevelController extends Controller
     {
         abort_if(! Auth::user()->can('sports_level_view'), 403);
 
-        return $dataTable->render('sportLevel.index');
-
+        try {
+            return $dataTable->render('sportLevel.index');
+        } catch (Exception $e) {
+            Log::error('SportLevel Index Error: ' . $e->getMessage());
+            return back()->with('error', 'Something went wrong.');
+        }
     }
 
     /**
@@ -28,15 +34,23 @@ class SportLevelController extends Controller
     {
         abort_if(! Auth::user()->can('sports_level_create'), 403);
 
-        $sports = Sport::where('status', 'active')
-            ->orderBy('name')
-            ->get();
+        try {
+            $sports = Sport::where('status', 'active')
+                ->orderBy('name')
+                ->get();
 
-        $levels = Level::where('status', 'active')
-            ->orderBy('name')
-            ->get();
+            $levels = Level::where('status', 'active')
+                ->orderBy('name')
+                ->get();
 
-        return view('sportLevel.addSportslevelsForm', compact('sports', 'levels'))->render();
+            return view('sportLevel.addSportslevelsForm', compact('sports', 'levels'))->render();
+        } catch (Exception $e) {
+            Log::error('SportLevel Create Form Error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to load create form.',
+            ], 500);
+        }
     }
 
     /**
@@ -46,54 +60,47 @@ class SportLevelController extends Controller
     {
         abort_if(! Auth::user()->can('sports_level_create'), 403);
 
-        $request->validate([
+        try {
+            $request->validate([
+                'sport_id' => 'required|exists:sports,id',
+                'levels' => 'required|array',
+                'levels.*.level_id' => 'required|exists:levels,id',
+                'levels.*.fees' => 'required|numeric|min:0',
+            ]);
 
-            'sport_id' => 'required|exists:sports,id',
+            $sport = Sport::findOrFail($request->sport_id);
 
-            'levels' => 'required|array',
+            foreach ($request->levels as $level) {
+                $exists = $sport->levels()
+                    ->where('level_id', $level['level_id'])
+                    ->exists();
 
-            'levels.*.level_id' => 'required|exists:levels,id',
+                if ($exists) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'This level is already added for this sport.',
+                    ], 422);
+                }
 
-            'levels.*.fees' => 'required|numeric|min:0',
-
-        ]);
-
-        $sport = Sport::findOrFail($request->sport_id);
-
-        foreach ($request->levels as $level) {
-
-            $exists = $sport->levels()
-                ->where('level_id', $level['level_id'])
-                ->exists();
-
-            if ($exists) {
-
-                return response()->json([
-
-                    'success' => false,
-
-                    'message' => 'This level is already added for this sport.',
-
-                ], 422);
+                $sport->levels()->attach(
+                    $level['level_id'],
+                    [
+                        'fees' => $level['fees'],
+                    ]
+                );
             }
 
-            $sport->levels()->attach(
-
-                $level['level_id'],
-                [
-                    'fees' => $level['fees'],
-                ]
-
-            );
+            return response()->json([
+                'success' => true,
+                'message' => 'Sports Level created successfully.',
+            ]);
+        } catch (Exception $e) {
+            Log::error('SportLevel Store Error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage() ?: 'Something went wrong.',
+            ], 500);
         }
-
-        return response()->json([
-
-            'success' => true,
-
-            'message' => 'Sports Level created successfully.',
-
-        ]);
     }
 
     /**
@@ -111,17 +118,22 @@ class SportLevelController extends Controller
     {
         abort_if(! Auth::user()->can('sports_level_edit'), 403);
 
-        $sport = Sport::with('levels')->findOrFail($id);
+        try {
+            $sport = Sport::with('levels')->findOrFail($id);
 
-        $sports = Sport::where('status', 'active')
-            ->orderBy('name')
-            ->get();
+            $sports = Sport::where('status', 'active')
+                ->orderBy('name')
+                ->get();
 
-        $levels = Level::where('status', 'active')
-            ->orderBy('name')
-            ->get();
+            $levels = Level::where('status', 'active')
+                ->orderBy('name')
+                ->get();
 
-        return view('sportLevel.editSportsLevelsForm', compact('sport', 'sports', 'levels'));
+            return view('sportLevel.editSportsLevelsForm', compact('sport', 'sports', 'levels'));
+        } catch (Exception $e) {
+            Log::error('SportLevel Edit Form Error: ' . $e->getMessage());
+            return abort(500);
+        }
     }
 
     /**
@@ -131,43 +143,40 @@ class SportLevelController extends Controller
     {
         abort_if(! Auth::user()->can('sports_level_edit'), 403);
 
-        $request->validate([
+        try {
+            $request->validate([
+                'sport_id' => 'required|exists:sports,id',
+                'levels' => 'required|array',
+                'levels.*.level_id' => 'required|exists:levels,id',
+                'levels.*.fees' => 'required|numeric|min:0',
+            ]);
 
-            'sport_id' => 'required|exists:sports,id',
+            // Find Sport
+            $sport = Sport::findOrFail($id);
 
-            'levels' => 'required|array',
+            // Prepare Sync Data
+            $syncData = [];
+            $levels = array_values($request->levels);
 
-            'levels.*.level_id' => 'required|exists:levels,id',
+            foreach ($levels as $level) {
+                $syncData[$level['level_id']] = [
+                    'fees' => $level['fees'],
+                ];
+            }
 
-            'levels.*.fees' => 'required|numeric|min:0',
+            $sport->levels()->sync($syncData);
 
-        ]);
-
-        // Find Sport
-        $sport = Sport::findOrFail($id);
-
-        // Prepare Sync Data
-        $syncData = [];
-        $levels = array_values($request->levels);
-
-        foreach ($levels as $level) {
-
-            $syncData[$level['level_id']] = [
-
-                'fees' => $level['fees'],
-
-            ];
+            return response()->json([
+                'success' => true,
+                'message' => 'Sport Levels updated successfully.',
+            ]);
+        } catch (Exception $e) {
+            Log::error('SportLevel Update Error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage() ?: 'Something went wrong.',
+            ], 500);
         }
-
-        $sport->levels()->sync($syncData);
-
-        return response()->json([
-
-            'success' => true,
-
-            'message' => 'Sport Levels updated successfully.',
-
-        ]);
     }
 
     /**
