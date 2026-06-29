@@ -9,12 +9,15 @@ use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\AllTablesSampleExport;
 use App\Exports\CustomAllTablesExport;
+use App\Imports\VerticalImport;
 use App\Models\Batch;
 use App\Models\Expense;
 use App\Models\ExpenseCategory;
 use App\Models\Level;
 use App\Models\Sport;
 use App\Models\User;
+use App\Models\SportsLevel;
+use Illuminate\Support\Facades\DB;
 
 class ImportExportController extends Controller
 {
@@ -142,6 +145,57 @@ class ImportExportController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error reading Excel file: '.$e->getMessage(),
+            ], 422);
+        }
+    }
+
+    public function import(Request $request)
+    {
+        abort_if(! Auth::user()->can('setting_view'), 403);
+
+        $request->validate([
+            'sports' => 'array',
+            'levels' => 'array',
+            'sport_levels' => 'array',
+            'expense_categories' => 'array',
+            'batches' => 'array',
+            'users' => 'array',
+            'expenses' => 'array',
+            'players' => 'array',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $importer = new VerticalImport();
+            $importer->import($request->all());
+
+            DB::commit();
+
+            $importedCount = $importer->getImportedCount();
+            $skippedCount = $importer->getSkippedCount();
+            $errors = $importer->getErrors();
+            $totalCount = $importedCount + $skippedCount;
+
+            $message = "Import process completed. Imported: {$importedCount}, Skipped/Errors: {$skippedCount}";
+
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'summary' => [
+                    'imported' => $importedCount,
+                    'skipped' => $skippedCount,
+                    'total' => $totalCount,
+                ],
+                'errors' => $errors,
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Bulk import settings error: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error during save: ' . $e->getMessage(),
             ], 422);
         }
     }

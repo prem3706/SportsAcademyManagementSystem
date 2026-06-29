@@ -77,14 +77,14 @@ class ImportExportPreviewTest extends TestCase
             'headers',
             'rows',
             'schema' => [
-                'Sports',
-                'Levels',
-                'Sport Levels',
-                'Expense Categories',
-                'Batches',
-                'Users / Staff',
-                'Expenses',
-                'Players',
+                'sports',
+                'levels',
+                'sport_levels',
+                'expense_categories',
+                'batches',
+                'users',
+                'expenses',
+                'players',
             ]
         ]);
 
@@ -98,9 +98,56 @@ class ImportExportPreviewTest extends TestCase
         $this->assertContains('[Levels] - name', $json['headers']);
         
         // Assert schema prefixes and fields
-        $this->assertEquals('sport', $json['schema']['Sports']['prefix']);
-        $this->assertEquals('Sport Name', $json['schema']['Sports']['fields']['name']);
-        $this->assertEquals('Sport Description', $json['schema']['Sports']['fields']['description']);
-        $this->assertEquals('Sport Status', $json['schema']['Sports']['fields']['status']);
+        $this->assertEquals('sport', $json['schema']['sports']['prefix']);
+        $this->assertEquals('Sport Name', $json['schema']['sports']['fields']['name']);
+        $this->assertEquals('Sport Description', $json['schema']['sports']['fields']['description']);
+        $this->assertEquals('Sport Status', $json['schema']['sports']['fields']['status']);
+    }
+
+    public function test_authenticated_user_with_permission_can_save_vertical_import()
+    {
+        $permission = Permission::firstOrCreate([
+            'name' => 'setting_view',
+            'guard_name' => 'web',
+            'module_name' => 'settings',
+        ]);
+        $admin = User::factory()->create();
+        $admin->givePermissionTo($permission);
+
+        $sportsData = [
+            [
+                'name' => 'Basketball',
+                'description' => 'Basketball Coaching',
+                'status' => 'active',
+            ]
+        ];
+
+        $levelsData = [
+            [
+                'name' => 'Advanced',
+                'status' => 'active',
+            ]
+        ];
+
+        $response = $this->actingAs($admin)->postJson(route('import.export.import'), [
+            'sports' => $sportsData,
+            'levels' => $levelsData,
+        ]);
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'success' => true,
+        ]);
+
+        $this->assertDatabaseHas('sports', [
+            'name' => 'Basketball',
+            'description' => 'Basketball Coaching',
+            'status' => 'active',
+        ]);
+
+        $this->assertDatabaseHas('levels', [
+            'name' => 'Advanced',
+            'status' => 'active',
+        ]);
     }
 }

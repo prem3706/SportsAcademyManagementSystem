@@ -2161,7 +2161,143 @@ $(document).ready(function () {
 
     // Save vertical import button handler
     $(document).on('click', '#saveVerticalImportBtn', function () {
-        toastr.success('Ready to save!');
+        let sportsData = [];
+        let levelsData = [];
+        let sportLevelsData = [];
+        let expCatsData = [];
+        let batchesData = [];
+        let usersData = [];
+        let expensesData = [];
+        let playersData = [];
+
+        let hasAnyMapping = false;
+        $('.mapping-select').each(function () {
+            let val = $(this).val();
+            if (val && val !== 'skip') {
+                hasAnyMapping = true;
+            }
+        });
+
+        if (!hasAnyMapping) {
+            toastr.error('Please map at least one column to save.');
+            return;
+        }
+
+        $('#previewTableBody tr').each(function () {
+            let $row = $(this);
+            
+            let sportObj = {}, hasSport = false;
+            let levelObj = {}, hasLevel = false;
+            let sportLevelObj = {}, hasSportLevel = false;
+            let expCatObj = {}, hasExpCat = false;
+            let batchObj = {}, hasBatch = false;
+            let userObj = {}, hasUser = false;
+            let expenseObj = {}, hasExpense = false;
+            let playerObj = {}, hasPlayer = false;
+
+            $('.mapping-select').each(function (index) {
+                let val = $(this).val(); // e.g. "sport_name", "player_phone", "skip", ""
+                if (val && val !== 'skip') {
+                    let cellVal = $row.find(`td:eq(${index + 1})`).text().trim();
+                    
+                    if (val.startsWith('sport_level_')) {
+                        let field = val.replace('sport_level_', '');
+                        sportLevelObj[field] = cellVal;
+                        if (cellVal !== '') hasSportLevel = true;
+                    } else if (val.startsWith('sport_')) {
+                        let field = val.replace('sport_', '');
+                        sportObj[field] = cellVal;
+                        if (cellVal !== '') hasSport = true;
+                    } else if (val.startsWith('level_')) {
+                        let field = val.replace('level_', '');
+                        levelObj[field] = cellVal;
+                        if (cellVal !== '') hasLevel = true;
+                    } else if (val.startsWith('exp_cat_')) {
+                        let field = val.replace('exp_cat_', '');
+                        expCatObj[field] = cellVal;
+                        if (cellVal !== '') hasExpCat = true;
+                    } else if (val.startsWith('batch_')) {
+                        let field = val.replace('batch_', '');
+                        batchObj[field] = cellVal;
+                        if (cellVal !== '') hasBatch = true;
+                    } else if (val.startsWith('user_')) {
+                        let field = val.replace('user_', '');
+                        userObj[field] = cellVal;
+                        if (cellVal !== '') hasUser = true;
+                    } else if (val.startsWith('expense_')) {
+                        let field = val.replace('expense_', '');
+                        expenseObj[field] = cellVal;
+                        if (cellVal !== '') hasExpense = true;
+                    } else if (val.startsWith('player_')) {
+                        let field = val.replace('player_', '');
+                        playerObj[field] = cellVal;
+                        if (cellVal !== '') hasPlayer = true;
+                    }
+                }
+            });
+
+            if (hasSport) sportsData.push(sportObj);
+            if (hasLevel) levelsData.push(levelObj);
+            if (hasSportLevel) sportLevelsData.push(sportLevelObj);
+            if (hasExpCat) expCatsData.push(expCatObj);
+            if (hasBatch) batchesData.push(batchObj);
+            if (hasUser) usersData.push(userObj);
+            if (hasExpense) expensesData.push(expenseObj);
+            if (hasPlayer) playersData.push(playerObj);
+        });
+
+        let saveBtn = $(this);
+        let originalHtml = saveBtn.html();
+        saveBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Saving...');
+
+        $.ajax({
+            url: '/settings/import',
+            method: 'POST',
+            data: {
+                _token: $('#exportCsrfToken').val(),
+                sports: sportsData,
+                levels: levelsData,
+                sport_levels: sportLevelsData,
+                expense_categories: expCatsData,
+                batches: batchesData,
+                users: usersData,
+                expenses: expensesData,
+                players: playersData
+            },
+            success: function (response) {
+                saveBtn.prop('disabled', false).html(originalHtml);
+                if (response.success) {
+                    toastr.success(response.message || 'Data imported successfully!');
+                    $('#clearVerticalPreviewBtn').trigger('click');
+
+                    // Show detailed modal results
+                    $('#importSuccessCount').text(response.summary.imported);
+                    $('#importSkippedCount').text(response.summary.skipped);
+                    $('#importTotalCount').text(response.summary.total);
+
+                    let $errList = $('#importErrorsList');
+                    $errList.empty();
+                    if (response.errors && response.errors.length > 0) {
+                        response.errors.forEach(function (err) {
+                            $errList.append(`<li><i class="bi bi-dot"></i> ${err}</li>`);
+                        });
+                        $('#importErrorsContainer').removeClass('d-none');
+                    } else {
+                        $('#importErrorsContainer').addClass('d-none');
+                    }
+
+                    let myModal = new bootstrap.Modal(document.getElementById('importResultsModal'));
+                    myModal.show();
+                } else {
+                    toastr.error(response.message || 'Failed to import data.');
+                }
+            },
+            error: function (xhr) {
+                saveBtn.prop('disabled', false).html(originalHtml);
+                let msg = xhr.responseJSON?.message || 'Error importing data.';
+                toastr.error(msg);
+            }
+        });
     });
 
     // Clear vertical preview button handler
