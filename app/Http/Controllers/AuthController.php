@@ -65,9 +65,21 @@ class AuthController extends Controller
 
                 $request->session()->regenerate();
 
-                return redirect()
-                    ->intended('/')
-                    ->with('success', 'Welcome back!');
+                $user = Auth::user();
+
+                if ($user->roles()->exists()) {
+
+                    return redirect()
+                        ->intended('/')
+                        ->with('success', 'Welcome back!');
+                }
+
+                Auth::logout();
+
+                return back()
+                    ->withErrors([
+                        'email' => 'No role assigned to this account.',
+                    ]);
             }
 
             return back()

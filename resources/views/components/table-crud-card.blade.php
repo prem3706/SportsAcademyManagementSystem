@@ -1,6 +1,7 @@
 @props([
     'heading',
     'subheading',
+    'roles' => [],
 
     // Add Button
     'id' => '',
@@ -69,8 +70,11 @@
 
             <div class="d-flex align-items-center gap-2">
                 @if ($importUrl)
-                    @if (!$permission || auth()->user()->can($permission . '_create'))
-                        <button type="button" class="btn btn-outline-dark rounded-3 shadow-sm px-4 fw-semibold text-nowrap"
+                    @if (
+                        !$permission ||
+                            auth()->user()->can($permission . '_create'))
+                        <button type="button"
+                            class="btn btn-outline-dark rounded-3 shadow-sm px-4 fw-semibold text-nowrap"
                             id="importPlayerBtn" data-title="Import Players" data-url="{{ $importUrl }}"
                             data-bs-toggle="offcanvas" data-bs-target="#offcanvasScrolling">
                             <i class="bi bi-upload me-1"></i>
@@ -80,8 +84,11 @@
                 @endif
 
                 @if ($exportUrl)
-                    @if (!$permission || auth()->user()->can($permission . '_view'))
-                        <button type="button" class="btn btn-outline-dark rounded-3 shadow-sm px-4 fw-semibold text-nowrap"
+                    @if (
+                        !$permission ||
+                            auth()->user()->can($permission . '_view'))
+                        <button type="button"
+                            class="btn btn-outline-dark rounded-3 shadow-sm px-4 fw-semibold text-nowrap"
                             data-bs-toggle="modal" data-bs-target="#exportModal">
                             <i class="bi bi-download me-1"></i>
                             Export
@@ -91,8 +98,8 @@
 
                 @if ($canCreate)
                     <button class="btn btn-dark rounded-3 shadow-sm px-4 fw-semibold text-nowrap"
-                        data-title="{{ $title }}" data-url="{{ $url }}" id="{{ $id }}" type="button"
-                        data-bs-toggle="offcanvas" data-bs-target="#offcanvasScrolling">
+                        data-title="{{ $title }}" data-url="{{ $url }}" id="{{ $id }}"
+                        type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasScrolling">
 
                         <i class="bi bi-plus-circle me-1"></i>
 
@@ -146,21 +153,11 @@
                                     All Roles
                                 </option>
 
-                                <option value="admin">
-                                    Admin
-                                </option>
-
-                                <option value="player">
-                                    Player
-                                </option>
-
-                                <option value="coach">
-                                    Coach
-                                </option>
-
-                                <option value="manager">
-                                    Manager
-                                </option>
+                                @foreach ($roles as $role)
+                                    <option value="{{ $role }}">
+                                        {{ ucfirst($role) }}
+                                    </option>
+                                @endforeach
 
                             </select>
 

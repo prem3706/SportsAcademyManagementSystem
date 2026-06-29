@@ -5,11 +5,12 @@ namespace App\Http\Controllers;
 use App\DataTables\UsersDataTable;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
+use App\Models\Role;
 use App\Models\User;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use Exception;
 
 class UserController extends Controller
 {
@@ -21,9 +22,12 @@ class UserController extends Controller
         abort_if(! Auth::user()->can('user_view'), 403);
 
         try {
-            return $dataTable->render('user.index');
+            $roles = Role::pluck('name', 'name');
+
+            return $dataTable->render('user.index', compact('roles'));
         } catch (Exception $e) {
-            Log::error('User Index Error: ' . $e->getMessage());
+            Log::error('User Index Error: '.$e->getMessage());
+
             return back()->with('error', 'Something went wrong.');
         }
     }
@@ -38,7 +42,8 @@ class UserController extends Controller
         try {
             return view('user.addUserForm');
         } catch (Exception $e) {
-            Log::error('User Create Form Error: ' . $e->getMessage());
+            Log::error('User Create Form Error: '.$e->getMessage());
+
             return abort(500);
         }
     }
@@ -62,7 +67,8 @@ class UserController extends Controller
                 'message' => 'User created successfully.',
             ]);
         } catch (Exception $e) {
-            Log::error('User Store Error: ' . $e->getMessage());
+            Log::error('User Store Error: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
                 'message' => 'Something went wrong.',
@@ -88,7 +94,8 @@ class UserController extends Controller
         try {
             return view('user.editUserForm', compact('user'));
         } catch (Exception $e) {
-            Log::error('User Edit Form Error: ' . $e->getMessage());
+            Log::error('User Edit Form Error: '.$e->getMessage());
+
             return abort(500);
         }
     }
@@ -115,7 +122,8 @@ class UserController extends Controller
                 'message' => 'User updated successfully.',
             ]);
         } catch (Exception $e) {
-            Log::error('User Update Error: ' . $e->getMessage());
+            Log::error('User Update Error: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
                 'message' => 'Something went wrong.',
@@ -138,7 +146,8 @@ class UserController extends Controller
                 'message' => 'User deleted successfully.',
             ]);
         } catch (Exception $e) {
-            Log::error('User Delete Error: ' . $e->getMessage());
+            Log::error('User Delete Error: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
                 'message' => 'Something went wrong.',
@@ -176,7 +185,8 @@ class UserController extends Controller
                 'message' => 'No users selected.',
             ], 400);
         } catch (Exception $e) {
-            Log::error('User Bulk Delete Error: ' . $e->getMessage());
+            Log::error('User Bulk Delete Error: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
                 'message' => 'Something went wrong.',
@@ -215,7 +225,8 @@ class UserController extends Controller
                 'message' => 'No valid users selected for update.',
             ], 422);
         } catch (Exception $e) {
-            Log::error('User Bulk Update Error: ' . $e->getMessage());
+            Log::error('User Bulk Update Error: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
                 'message' => 'Something went wrong.',

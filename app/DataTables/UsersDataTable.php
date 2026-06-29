@@ -54,7 +54,7 @@ class UsersDataTable extends DataTable
     </button>';
                 }
 
-                return '<div class="d-flex justify-content-center gap-2">' . $editBtn . $deleteBtn . '</div>';
+                return '<div class="d-flex justify-content-center gap-2">'.$editBtn.$deleteBtn.'</div>';
             })
             ->editColumn('status', function (User $user) {
                 if ($user->status == 'active') {
@@ -97,8 +97,9 @@ class UsersDataTable extends DataTable
         }
 
         if (request()->filled('role')) {
-
-            $query->where('role', request('role'));
+            $query->whereHas('roles', function ($q) {
+                $q->where('name', request('role'));
+            });
         }
 
         return $query;
