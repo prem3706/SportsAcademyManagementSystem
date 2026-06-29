@@ -163,7 +163,8 @@
         @endcanany
 
         @can('setting_view')
-            <li class="nav-group {{ request()->is('settings*') ? 'show' : '' }}">
+            <li
+                class="nav-group {{ request()->is('settings*') || request()->is('role-permission*') || request()->is('import-export*') ? 'show' : '' }}">
                 <a class="nav-link nav-group-toggle" href="#">
                     <i class="bi bi-gear nav-icon"></i>
                     Settings
@@ -176,22 +177,28 @@
                             href="{{ route('settings.index') }}">
                             <span class="nav-icon">
                                 <i class="bi bi-percent"></i>
-
                             </span>
                             Discount & Penalty
-
                         </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->is('role-permission') ? 'active' : '' }}"
+                        <a class="nav-link {{ request()->is('role-permission*') ? 'active' : '' }}"
                             href="{{ route('role.permission.index') }}">
                             <span class="nav-icon">
                                 <i class="bi bi-shield-lock"></i>
-
                             </span>
                             Roles & Permissions
+                        </a>
+                    </li>
 
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->is('import-export*') ? 'active' : '' }}"
+                            href="{{ route('import.export.index') }}">
+                            <span class="nav-icon">
+                                <i class="bi bi-upload"></i>
+                            </span>
+                            Import & Export
                         </a>
                     </li>
 

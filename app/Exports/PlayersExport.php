@@ -25,6 +25,10 @@ class PlayersExport implements FromCollection, WithHeadings
 
                 $data = [];
 
+                if (in_array('name', $this->columns)) {
+                    $data['Name'] = $user->firstname . ' ' . $user->lastname;
+                }
+
                 if (in_array('firstname', $this->columns)) {
                     $data['FirstName'] = $user->firstname;
                     
@@ -91,6 +95,10 @@ class PlayersExport implements FromCollection, WithHeadings
     public function headings(): array
     {
         $headings = [];
+
+        if (in_array('name', $this->columns)) {
+            $headings[] = 'Name';
+        }
 
         if (in_array('firstname', $this->columns)) {
             $headings[] = 'FirstName';

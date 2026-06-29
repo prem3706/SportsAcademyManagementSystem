@@ -1987,5 +1987,565 @@ $(document).ready(function () {
         }, 300);
     });
 
+    // Intercept and handle vertical stacked Excel import preview (Step 1)
+    $(document).on('submit', '#verticalImportForm', function (e) {
+        e.preventDefault();
+
+        let $form = $(this);
+        let formEl = $form[0];
+        let formData = new FormData(formEl);
+        let url = $form.attr('action');
+        let submitBtn = $form.find('#submitImportBtn');
+        let originalHtml = submitBtn.html();
+
+        submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Reading Excel...');
+
+        $.ajax({
+            url: url,
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                submitBtn.prop('disabled', false).html(originalHtml);
+
+                if (response.success) {
+                    toastr.success('Excel file read successfully!');
+                    renderHorizontalMappingPreview(response.headers, response.rows, response.schema);
+                } else {
+                    toastr.error(response.message || 'Failed to read Excel file.');
+                }
+            },
+            error: function (xhr) {
+                submitBtn.prop('disabled', false).html(originalHtml);
+                let msg = xhr.responseJSON?.message || 'Error reading Excel file.';
+                toastr.error(msg);
+            }
+        });
+    });
+
+    // Automatically find a suitable database mapping field based on the Excel header text
+    function findSuitableMapping(headerText) {
+        if (!headerText) return '';
+        headerText = headerText.trim().toLowerCase();
+
+        // Pattern to match "[Entity] - column" (e.g. "[Sports] - name")
+        let match = headerText.match(/^\[([^\]]+)\]\s*-\s*(.+)$/i);
+        if (match) {
+            let entity = match[1].trim().toLowerCase();
+            let column = match[2].trim().toLowerCase();
+
+            let prefix = '';
+            if (entity === 'sports') prefix = 'sport';
+            else if (entity === 'levels') prefix = 'level';
+            else if (entity === 'sport levels') prefix = 'sport_level';
+            else if (entity === 'expense categories') prefix = 'exp_cat';
+            else if (entity === 'batches') prefix = 'batch';
+            else if (entity === 'users') prefix = 'user';
+            else if (entity === 'expenses') prefix = 'expense';
+            else if (entity === 'players') prefix = 'player';
+
+            if (prefix) {
+                let candidate = column;
+                let expectedPrefix = prefix + '_';
+                if (!candidate.startsWith(expectedPrefix) && candidate !== prefix) {
+                    candidate = expectedPrefix + candidate;
+                }
+                return candidate;
+            }
+        }
+
+        // Fallback: clean header string and match
+        return headerText.replace(/[^a-z0-9_]/g, '_').replace(/_+/g, '_');
+    }
+
+    // Render Excel column mapping selectors and preview rows horizontally (stacked dataset preview)
+    function renderHorizontalMappingPreview(headers, rows, schema) {
+        let container = $('#importExportContainer');
+        container.empty();
+
+        let thsHtml = '';
+        headers.forEach(function (headerText, index) {
+            let colIndex = index;
+            let bestMatch = findSuitableMapping(headerText);
+
+            // Dynamically build the select field option group list
+            let selectOptionsHtml = `
+                <option value="">Select Field</option>
+                <option value="skip" ${bestMatch === 'skip' ? 'selected' : ''}>skip</option>
+            `;
+
+            if (schema) {
+                Object.keys(schema).forEach(function (groupKey) {
+                    let groupObj = schema[groupKey];
+                    selectOptionsHtml += `<optgroup label="${groupObj.label}">`;
+
+                    Object.keys(groupObj.fields).forEach(function (fieldKey) {
+                        let fieldLabel = groupObj.fields[fieldKey];
+                        let prefix = groupObj.prefix;
+
+                        let optionValue = fieldKey;
+                        if (prefix) {
+                            let expectedPrefix = prefix + '_';
+                            if (!optionValue.startsWith(expectedPrefix)) {
+                                optionValue = expectedPrefix + optionValue;
+                            }
+                        }
+
+                        let isSelected = (optionValue === bestMatch) ? 'selected' : '';
+                        selectOptionsHtml += `<option value="${optionValue}" ${isSelected}>${fieldLabel}</option>`;
+                    });
+
+                    selectOptionsHtml += `</optgroup>`;
+                });
+            }
+
+            thsHtml += `
+                <th class="col-header-container p-3" data-col-index="${colIndex}" data-html-col-index="${index}" data-header-text="${headerText || ''}" style="min-width: 170px; vertical-align: top; background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;">
+                    <div class="d-flex flex-column align-items-center">
+                        <span class="fw-semibold text-secondary mb-2 small text-truncate" style="max-width: 150px; font-size: 0.75rem; letter-spacing: 0.5px;" title="${headerText || ''}">${headerText || ''}</span>
+                        <select class="form-select form-select-sm mapping-select shadow-sm" data-col-index="${colIndex}" style="font-size: 0.8rem; border-color: #cbd5e1; border-radius: 6px;">
+                            ${selectOptionsHtml}
+                        </select>
+                        <a href="javascript:void(0)" class="text-danger skip-column-btn small fw-semibold text-decoration-none mt-2" data-col-index="${colIndex}">skip</a>
+                    </div>
+                </th>
+            `;
+        });
+
+        let trsHtml = '';
+        rows.forEach(function (row, rowIndex) {
+            trsHtml += `<tr><td class="text-muted text-center fw-semibold small bg-light" style="width: 50px; border-bottom: 1px solid #f1f5f9;">${rowIndex + 1}</td>`;
+            headers.forEach(function (header, index) {
+                let cellValue = row[index] !== undefined && row[index] !== null ? row[index] : '';
+                trsHtml += `<td class="small px-3 py-2.5 text-secondary" style="border-bottom: 1px solid #f1f5f9;">${cellValue}</td>`;
+            });
+            trsHtml += '</tr>';
+        });
+
+        let previewHtml = `
+            <div class="card border-0 shadow-sm rounded-4 mt-4 animate__animated animate__fadeInUp">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center py-3 border-bottom-0 rounded-top-4">
+                    <h5 class="fw-bold mb-0 text-dark" style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.15rem;">
+                        Excel Data
+                    </h5>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-light px-3 py-1.5 fw-semibold border rounded-3" id="clearVerticalPreviewBtn" style="font-size: 0.875rem;">
+                            Clear
+                        </button>
+                        <button type="button" class="btn btn-primary px-4 py-1.5 fw-semibold shadow-sm rounded-3" id="saveVerticalImportBtn" style="background-color: #4f46e5; border-color: #4f46e5; font-size: 0.875rem;">
+                            Save
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body p-0 rounded-bottom-4">
+                    <div class="table-responsive" style="max-height: 450px; overflow: auto;">
+                        <table class="table table-hover align-middle mb-0 text-nowrap" id="excelPreviewTable">
+                            <thead>
+                                <tr id="mappingHeaderRow">
+                                    <th class="text-secondary fw-bold text-center bg-light" style="width: 50px; border-bottom: 2px solid #e2e8f0;">#</th>
+                                    ${thsHtml}
+                                </tr>
+                            </thead>
+                            <tbody id="previewTableBody">
+                                ${trsHtml}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        container.html(previewHtml);
+    }
+
+    // Save vertical import button handler
+    $(document).on('click', '#saveVerticalImportBtn', function () {
+        let sportsData = [];
+        let levelsData = [];
+        let sportLevelsData = [];
+        let expCatsData = [];
+        let batchesData = [];
+        let usersData = [];
+        let expensesData = [];
+        let playersData = [];
+
+        let hasAnyMapping = false;
+        $('.mapping-select').each(function () {
+            let val = $(this).val();
+            if (val && val !== 'skip') {
+                hasAnyMapping = true;
+            }
+        });
+
+        if (!hasAnyMapping) {
+            toastr.error('Please map at least one column to save.');
+            return;
+        }
+
+        $('#previewTableBody tr').each(function () {
+            let $row = $(this);
+            
+            let sportObj = {}, hasSport = false;
+            let levelObj = {}, hasLevel = false;
+            let sportLevelObj = {}, hasSportLevel = false;
+            let expCatObj = {}, hasExpCat = false;
+            let batchObj = {}, hasBatch = false;
+            let userObj = {}, hasUser = false;
+            let expenseObj = {}, hasExpense = false;
+            let playerObj = {}, hasPlayer = false;
+
+            $('.mapping-select').each(function (index) {
+                let val = $(this).val(); // e.g. "sport_name", "player_phone", "skip", ""
+                if (val && val !== 'skip') {
+                    let cellVal = $row.find(`td:eq(${index + 1})`).text().trim();
+                    
+                    if (val.startsWith('sport_level_')) {
+                        let field = val.replace('sport_level_', '');
+                        sportLevelObj[field] = cellVal;
+                        if (cellVal !== '') hasSportLevel = true;
+                    } else if (val.startsWith('sport_')) {
+                        let field = val.replace('sport_', '');
+                        sportObj[field] = cellVal;
+                        if (cellVal !== '') hasSport = true;
+                    } else if (val.startsWith('level_')) {
+                        let field = val.replace('level_', '');
+                        levelObj[field] = cellVal;
+                        if (cellVal !== '') hasLevel = true;
+                    } else if (val.startsWith('exp_cat_')) {
+                        let field = val.replace('exp_cat_', '');
+                        expCatObj[field] = cellVal;
+                        if (cellVal !== '') hasExpCat = true;
+                    } else if (val.startsWith('batch_')) {
+                        let field = val.replace('batch_', '');
+                        batchObj[field] = cellVal;
+                        if (cellVal !== '') hasBatch = true;
+                    } else if (val.startsWith('user_')) {
+                        let field = val.replace('user_', '');
+                        userObj[field] = cellVal;
+                        if (cellVal !== '') hasUser = true;
+                    } else if (val.startsWith('expense_')) {
+                        let field = val.replace('expense_', '');
+                        expenseObj[field] = cellVal;
+                        if (cellVal !== '') hasExpense = true;
+                    } else if (val.startsWith('player_')) {
+                        let field = val.replace('player_', '');
+                        playerObj[field] = cellVal;
+                        if (cellVal !== '') hasPlayer = true;
+                    }
+                }
+            });
+
+            if (hasSport) sportsData.push(sportObj);
+            if (hasLevel) levelsData.push(levelObj);
+            if (hasSportLevel) sportLevelsData.push(sportLevelObj);
+            if (hasExpCat) expCatsData.push(expCatObj);
+            if (hasBatch) batchesData.push(batchObj);
+            if (hasUser) usersData.push(userObj);
+            if (hasExpense) expensesData.push(expenseObj);
+            if (hasPlayer) playersData.push(playerObj);
+        });
+
+        let saveBtn = $(this);
+        let originalHtml = saveBtn.html();
+        saveBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Saving...');
+
+        $.ajax({
+            url: '/settings/import',
+            method: 'POST',
+            data: {
+                _token: $('#exportCsrfToken').val(),
+                sports: sportsData,
+                levels: levelsData,
+                sport_levels: sportLevelsData,
+                expense_categories: expCatsData,
+                batches: batchesData,
+                users: usersData,
+                expenses: expensesData,
+                players: playersData
+            },
+            success: function (response) {
+                saveBtn.prop('disabled', false).html(originalHtml);
+                if (response.success) {
+                    toastr.success(response.message || 'Data imported successfully!');
+                    $('#clearVerticalPreviewBtn').trigger('click');
+
+                    // Show detailed modal results
+                    $('#importSuccessCount').text(response.summary.imported);
+                    $('#importSkippedCount').text(response.summary.skipped);
+                    $('#importTotalCount').text(response.summary.total);
+
+                    let $errList = $('#importErrorsList');
+                    $errList.empty();
+                    if (response.errors && response.errors.length > 0) {
+                        response.errors.forEach(function (err) {
+                            $errList.append(`<li><i class="bi bi-dot"></i> ${err}</li>`);
+                        });
+                        $('#importErrorsContainer').removeClass('d-none');
+                    } else {
+                        $('#importErrorsContainer').addClass('d-none');
+                    }
+
+                    let myModal = new bootstrap.Modal(document.getElementById('importResultsModal'));
+                    myModal.show();
+                } else {
+                    toastr.error(response.message || 'Failed to import data.');
+                }
+            },
+            error: function (xhr) {
+                saveBtn.prop('disabled', false).html(originalHtml);
+                let msg = xhr.responseJSON?.message || 'Error importing data.';
+                toastr.error(msg);
+            }
+        });
+    });
+
+    // Clear vertical preview button handler
+    $(document).on('click', '#clearVerticalPreviewBtn', function () {
+        // Reset file input
+        let dropifyEl = $('#importFile').data('dropify');
+        if (dropifyEl) {
+            dropifyEl.clearElement();
+        }
+
+        // Restore original instructions template
+        let container = $('#importExportContainer');
+        container.html(`
+            <div class="card border-0 shadow-sm rounded-4 mt-4 animate__animated animate__fadeInUp">
+                <div class="card-header border-0 pt-4 pb-2 px-4 bg-white rounded-top-4">
+                    <h6 class="fw-bold mb-1" style="font-family: 'Plus Jakarta Sans', sans-serif;">
+                        Expected File Structure (Vertical Stack)
+                    </h6>
+                    <p class="text-secondary small mb-3">
+                        Your Excel file must contain all table data vertically stacked in the first sheet. Separate each table section using a blank row and identify each section with its bracketed header as shown below:
+                    </p>
+                </div>
+                <div class="card-body px-4 pb-4 pt-0 bg-white rounded-bottom-4">
+                    <!-- Instruction Steps -->
+                    <div class="mb-4">
+                        <div class="d-flex align-items-start mb-2 small text-secondary">
+                            <span class="badge bg-primary me-2">1</span>
+                            <span>Each model section starts with a section header in brackets, e.g., <code>[Sports]</code> in the first cell of a row.</span>
+                        </div>
+                        <div class="d-flex align-items-start mb-2 small text-secondary">
+                            <span class="badge bg-primary me-2">2</span>
+                            <span>The immediate next row contains the column field names (comma-separated).</span>
+                        </div>
+                        <div class="d-flex align-items-start mb-2 small text-secondary">
+                            <span class="badge bg-primary me-2">3</span>
+                            <span>Subsequent rows contain the actual records to import.</span>
+                        </div>
+                        <div class="d-flex align-items-start mb-2 small text-secondary">
+                            <span class="badge bg-primary me-2">4</span>
+                            <span>Leave a single empty/blank row before starting the next model section.</span>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold mb-3 text-dark small" style="letter-spacing: 0.5px; text-transform: uppercase;">Supported Models &amp; Fields</h6>
+
+                    <div class="row g-3">
+                        <!-- Sports -->
+                        <div class="col-md-6 col-lg-4">
+                            <div class="p-3 rounded-3 border bg-light h-100">
+                                <div class="fw-bold text-primary mb-1"><code>[Sports]</code></div>
+                                <div class="small text-secondary mb-2"><strong>Columns:</strong> <code>name, description, status</code></div>
+                                <div class="small text-muted italic">E.g., Football, Football Academy, active</div>
+                            </div>
+                        </div>
+
+                        <!-- Levels -->
+                        <div class="col-md-6 col-lg-4">
+                            <div class="p-3 rounded-3 border bg-light h-100">
+                                <div class="fw-bold text-success mb-1"><code>[Levels]</code></div>
+                                <div class="small text-secondary mb-2"><strong>Columns:</strong> <code>name, status</code></div>
+                                <div class="small text-muted italic">E.g., Beginner, active</div>
+                            </div>
+                        </div>
+
+                        <!-- Sport Levels -->
+                        <div class="col-md-6 col-lg-4">
+                            <div class="p-3 rounded-3 border bg-light h-100">
+                                <div class="fw-bold text-warning mb-1"><code>[Sport Levels]</code></div>
+                                <div class="small text-secondary mb-2"><strong>Columns:</strong> <code>sport, level, fees</code></div>
+                                <div class="small text-muted italic">E.g., Football, Beginner, 500.00</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <span class="small text-secondary">
+                            <i class="bi bi-info-circle me-1 text-primary"></i>
+                            You can download the template by clicking <strong>Sample File</strong> in the Import card above to get a complete reference.
+                        </span>
+                    </div>
+                </div>
+            </div>
+        `);
+    });
+
+    // Dynamically loaded schema from backend used instead of hardcoded config
+
+    // Keep standard template HTML in a helper variable to clear/cancel cleanly
+    const getInstructionsTemplateHtml = () => `
+        <div class="card border-0 shadow-sm rounded-4 mt-4 animate__animated animate__fadeInUp">
+            <div class="card-header border-0 pt-4 pb-2 px-4 bg-white rounded-top-4">
+                <h6 class="fw-bold mb-1" style="font-family: 'Plus Jakarta Sans', sans-serif;">
+                    Expected File Structure (Vertical Stack)
+                </h6>
+                <p class="text-secondary small mb-3">
+                    Your Excel file must contain all table data vertically stacked in the first sheet. Separate each table section using a blank row and identify each section with its bracketed header as shown below:
+                </p>
+            </div>
+            <div class="card-body px-4 pb-4 pt-0 bg-white rounded-bottom-4">
+                <!-- Instruction Steps -->
+                <div class="mb-4">
+                    <div class="d-flex align-items-start mb-2 small text-secondary">
+                        <span class="badge bg-primary me-2">1</span>
+                        <span>Each model section starts with a section header in brackets, e.g., <code>[Sports]</code> in the first cell of a row.</span>
+                    </div>
+                    <div class="d-flex align-items-start mb-2 small text-secondary">
+                        <span class="badge bg-primary me-2">2</span>
+                        <span>The immediate next row contains the column field names (comma-separated).</span>
+                    </div>
+                    <div class="d-flex align-items-start mb-2 small text-secondary">
+                        <span class="badge bg-primary me-2">3</span>
+                        <span>Subsequent rows contain the actual records to import.</span>
+                    </div>
+                    <div class="d-flex align-items-start mb-2 small text-secondary">
+                        <span class="badge bg-primary me-2">4</span>
+                        <span>Leave a single empty/blank row before starting the next model section.</span>
+                    </div>
+                </div>
+
+                <h6 class="fw-bold mb-3 text-dark small" style="letter-spacing: 0.5px; text-transform: uppercase;">Supported Models &amp; Fields</h6>
+
+                <div class="row g-3">
+                    <!-- Sports -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="p-3 rounded-3 border bg-light h-100">
+                            <div class="fw-bold text-primary mb-1"><code>[Sports]</code></div>
+                            <div class="small text-secondary mb-2"><strong>Columns:</strong> <code>name, description, status</code></div>
+                            <div class="small text-muted italic">E.g., Football, Football Academy, active</div>
+                        </div>
+                    </div>
+
+                    <!-- Levels -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="p-3 rounded-3 border bg-light h-100">
+                            <div class="fw-bold text-success mb-1"><code>[Levels]</code></div>
+                            <div class="small text-secondary mb-2"><strong>Columns:</strong> <code>name, status</code></div>
+                            <div class="small text-muted italic">E.g., Beginner, active</div>
+                        </div>
+                    </div>
+
+                    <!-- Sport Levels -->
+                    <div class="col-md-6 col-lg-4">
+                        <div class="p-3 rounded-3 border bg-light h-100">
+                            <div class="fw-bold text-warning mb-1"><code>[Sport Levels]</code></div>
+                            <div class="small text-secondary mb-2"><strong>Columns:</strong> <code>sport, level, fees</code></div>
+                            <div class="small text-muted italic">E.g., Football, Beginner, 500.00</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <span class="small text-secondary">
+                        <i class="bi bi-info-circle me-1 text-primary"></i>
+                        You can download the template by clicking <strong>Sample File</strong> in the Import card above to get a complete reference.
+                    </span>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Show export fields selection view
+    $(document).on('click', '#showExportFieldsBtn', function () {
+        let container = $('#importExportContainer');
+
+        // Show loading spinner
+        container.html(`
+            <div class="card border-0 shadow-sm rounded-4 mt-4 animate__animated animate__fadeInUp" id="exportLoadingCard">
+                <div class="card-body p-5 text-center bg-white rounded-4">
+                    <div class="spinner-border text-primary" role="status" style="color: #4f46e5 !important;">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="text-secondary mt-2 mb-0" style="font-family: 'Plus Jakarta Sans', sans-serif;">Loading export selection form...</p>
+                </div>
+            </div>
+        `);
+
+        // Fetch form from backend
+        $.ajax({
+            url: '/settings/export-fields',
+            method: 'GET',
+            success: function (html) {
+                container.html(html);
+                $('html, body').animate({
+                    scrollTop: $("#exportSelectionCard").offset().top - 20
+                }, 500);
+            },
+            error: function (xhr) {
+                toastr.error('Failed to load export options form.');
+                container.html(getInstructionsTemplateHtml());
+            }
+        });
+    });
+
+    // Cancel selection handler
+    $(document).on('click', '#cancelExportSelectionBtn', function () {
+        $('#importExportContainer').html(getInstructionsTemplateHtml());
+    });
+
+    // Global Select All handler
+    $(document).on('change', '#globalSelectAllFields', function () {
+        const checked = this.checked;
+        const form = $('#customExportFieldsForm');
+        form.find('.model-select-all').prop('checked', checked);
+        form.find('.column-checkbox').prop('checked', checked);
+    });
+
+    // Model Select All handler
+    $(document).on('change', '.model-select-all', function () {
+        const model = $(this).data('model');
+        const checked = this.checked;
+        const form = $('#customExportFieldsForm');
+        form.find(`.column-checkbox[data-model="${model}"]`).prop('checked', checked);
+
+        // Update global select all checkbox
+        updateGlobalCheckbox();
+    });
+
+    // Individual Column Checkbox handler
+    $(document).on('change', '.column-checkbox', function () {
+        const model = $(this).data('model');
+        const form = $('#customExportFieldsForm');
+
+        const totalInModel = form.find(`.column-checkbox[data-model="${model}"]`).length;
+        const checkedInModel = form.find(`.column-checkbox[data-model="${model}"]:checked`).length;
+
+        form.find(`#model_all_${model}`).prop('checked', totalInModel === checkedInModel);
+
+        // Update global select all checkbox
+        updateGlobalCheckbox();
+    });
+
+    // Helper to update global select all state
+    function updateGlobalCheckbox() {
+        const form = $('#customExportFieldsForm');
+        const total = form.find('.column-checkbox').length;
+        const checked = form.find('.column-checkbox:checked').length;
+        $('#globalSelectAllFields').prop('checked', total === checked);
+    }
+
+    // Export Form Submission handler
+    $(document).on('submit', '#customExportFieldsForm', function (e) {
+        const checkedCount = $(this).find('.column-checkbox:checked').length;
+        if (checkedCount === 0) {
+            e.preventDefault();
+            toastr.error('Please select at least one column to export.');
+            return false;
+        }
+    });
+
 });
 

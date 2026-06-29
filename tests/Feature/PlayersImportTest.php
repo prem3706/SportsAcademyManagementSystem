@@ -183,8 +183,6 @@ class PlayersImportTest extends TestCase
 
     public function test_authenticated_user_with_permission_can_import_players()
     {
-        Excel::fake();
-
         $admin = User::create([
             'firstname' => 'Admin',
             'lastname' => 'User',
@@ -197,19 +195,34 @@ class PlayersImportTest extends TestCase
         ]);
         $admin->assignRole('admin');
 
-        $file = UploadedFile::fake()->create('players.xlsx', 100);
+        $playersData = [
+            [
+                'first_name' => 'Jane',
+                'last_name' => 'Smith',
+                'email' => 'jane.smith@example.com',
+                'phone' => '9876543210',
+                'gender' => 'female',
+                'joined_at' => '2026-06-23',
+            ]
+        ];
 
-        $response = $this->actingAs($admin)->post('/players/import', [
-            'file' => $file,
+        $response = $this->actingAs($admin)->postJson('/players/import', [
+            'players' => $playersData,
         ]);
 
         $response->assertStatus(200);
         $response->assertJson([
             'success' => true,
-            'message' => 'Players imported successfully.',
         ]);
 
-        Excel::assertImported('players.xlsx');
+        $this->assertDatabaseHas('users', [
+            'firstname' => 'Jane',
+            'lastname' => 'Smith',
+            'email' => 'jane.smith@example.com',
+            'phone' => '9876543210',
+            'gender' => 'female',
+            'joined_at' => '2026-06-23',
+        ]);
     }
 
     public function test_import_route_validates_uploaded_file()
@@ -226,20 +239,20 @@ class PlayersImportTest extends TestCase
         ]);
         $admin->assignRole('admin');
 
-        // Post without file
-        $response = $this->actingAs($admin)->post('/players/import');
-        $response->assertStatus(302) // Redirect back with validation error (standard Laravel behavior on non-ajax) or 422
+        // Post without file to readExcel
+        $response = $this->actingAs($admin)->post('/players/readExcel');
+        $response->assertStatus(302)
                  ->assertSessionHasErrors('file');
 
         // Post with invalid file format (e.g. txt)
         $txtFile = UploadedFile::fake()->create('players.txt', 10);
-        $response2 = $this->actingAs($admin)->post('/players/import', [
+        $response2 = $this->actingAs($admin)->post('/players/readExcel', [
             'file' => $txtFile,
         ]);
         $response2->assertSessionHasErrors('file');
     }
 
-    public function test_authenticated_user_with_permission_can_do_mapped_import()
+    public function test_authenticated_user_with_permission_can_read_excel()
     {
         $admin = User::create([
             'firstname' => 'Admin',
@@ -253,46 +266,29 @@ class PlayersImportTest extends TestCase
         ]);
         $admin->assignRole('admin');
 
-        $importToken = 'test_import_' . uniqid();
-        $sheetData = [
-            ['Header1', 'Header2', 'Header3', 'Header4', 'Header5', 'Header6'],
-            ['Jane', 'Smith', 'jane.smith@example.com', '9876543210', 'female', '2026-06-23']
-        ];
-        
-        // Put the data into the session
-        session([$importToken => $sheetData]);
+        Excel::fake();
+        Excel::shouldReceive('toArray')
+            ->once()
+            ->andReturn([
+                [
+                    ['First Name', 'Last Name', 'Email', 'Phone', 'Gender', 'Joined At'],
+                    ['Jane', 'Smith', 'jane.smith@example.com', '9876543210', 'female', '2026-06-23']
+                ]
+            ]);
 
-        // Define mapping: col index => database field
-        $mappings = [
-            '0' => 'firstname',
-            '1' => 'lastname',
-            '2' => 'email',
-            '3' => 'phone',
-            '4' => 'gender',
-            '5' => 'joined_at'
-        ];
+        $file = UploadedFile::fake()->create('players.xlsx', 100);
 
-        $response = $this->actingAs($admin)->postJson('/players/import', [
-            'import_token' => $importToken,
-            'mappings' => $mappings,
+        $response = $this->actingAs($admin)->postJson('/players/readExcel', [
+            'file' => $file,
         ]);
 
         $response->assertStatus(200);
         $response->assertJson([
             'success' => true,
+            'headers' => ['First Name', 'Last Name', 'Email', 'Phone', 'Gender', 'Joined At'],
+            'rows' => [
+                ['Jane', 'Smith', 'jane.smith@example.com', '9876543210', 'female', '2026-06-23']
+            ]
         ]);
-
-        // Check if database has the imported player
-        $this->assertDatabaseHas('users', [
-            'firstname' => 'Jane',
-            'lastname' => 'Smith',
-            'email' => 'jane.smith@example.com',
-            'phone' => '9876543210',
-            'gender' => 'female',
-            'joined_at' => '2026-06-23',
-        ]);
-
-        // Verify the session data was cleaned up
-        $this->assertNull(session($importToken));
     }
 }

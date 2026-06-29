@@ -6,6 +6,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExpenseCategoriesController;
 use App\Http\Controllers\ExpensesController;
 use App\Http\Controllers\ForgotPasswordController;
+use App\Http\Controllers\ImportExportController;
 use App\Http\Controllers\LevelsController;
 use App\Http\Controllers\PlayerController;
 use App\Http\Controllers\PlayerFeesController;
@@ -89,19 +90,30 @@ Route::middleware('auth')->group(function () {
         ->name('player-fees.check-overlap');
     Route::resource('player-fees', PlayerFeesController::class);
 
-    Route::get('settings', [SettingController::class, 'index'])->name('settings.index');
-    Route::post('settings/penalty', [SettingController::class, 'updatePenalty'])->name('settings.updatePenalty');
-    Route::post('settings/discount', [SettingController::class, 'updateDiscount'])->name('settings.updateDiscount');
-    Route::get('settings/role-permission', [SettingController::class, 'rolePermission'])->name('role.permission.index');
+    Route::prefix('settings')->group(function () {
+        Route::get('/', [SettingController::class, 'index'])->name('settings.index');
+        Route::post('penalty', [SettingController::class, 'updatePenalty'])->name('settings.updatePenalty');
+        Route::post('discount', [SettingController::class, 'updateDiscount'])->name('settings.updateDiscount');
+        Route::get('role-permission', [SettingController::class, 'rolePermission'])->name('role.permission.index');
+        Route::get('import-export', [ImportExportController::class, 'index'])->name('import.export.index');
+        Route::post('import-preview', [ImportExportController::class, 'preview'])->name('import.export.preview');
+        Route::post('import', [ImportExportController::class, 'import'])->name('import.export.import');
+        Route::get('download-sample', [ImportExportController::class, 'downloadSample'])->name('import.export.download-sample');
+        Route::post('export', [ImportExportController::class, 'export'])->name('import.export.export');
+        Route::get('export-fields', [ImportExportController::class, 'exportFields'])->name('import.export.fields');
+    });
+
     Route::resource('roles', RoleController::class);
 
     Route::get('get-batches/{sport_id}/{level_id}', [PlayerController::class, 'getBatches'])->name('players.getBatches');
-    Route::delete('/players/bulk-delete', [PlayerController::class, 'bulkDelete'])->name('players.bulkDelete');
-    Route::patch('/players/bulk-update', [PlayerController::class, 'bulkUpdate'])->name('players.bulkUpdate');
-    Route::get('/players/import-form', [PlayerController::class, 'importForm'])->name('players.importForm');
-    Route::post('/players/import', [PlayerController::class, 'import'])->name('players.import');
-    Route::post('/players/export', [PlayerController::class, 'export'])->name('players.export');
-    Route::post('/players/readExcel', [PlayerController::class, 'readExcel'])->name('players.readExcel');
+    Route::prefix('players')->group(function () {
+        Route::delete('bulk-delete', [PlayerController::class, 'bulkDelete'])->name('players.bulkDelete');
+        Route::patch('bulk-update', [PlayerController::class, 'bulkUpdate'])->name('players.bulkUpdate');
+        Route::get('import-form', [PlayerController::class, 'importForm'])->name('players.importForm');
+        Route::post('import', [PlayerController::class, 'import'])->name('players.import');
+        Route::post('export', [PlayerController::class, 'export'])->name('players.export');
+        Route::post('readExcel', [PlayerController::class, 'readExcel'])->name('players.readExcel');
+    });
     Route::resource('players', PlayerController::class);
 
     Route::delete('/expense-category/bulk-delete', [ExpenseCategoriesController::class, 'bulkDelete'])
