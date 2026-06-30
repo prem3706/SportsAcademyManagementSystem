@@ -16,6 +16,8 @@ class DashboardController extends Controller
 {
     public function index(UnpaidPlayersDataTable $dataTable, Request $request)
     {
+        abort_if(! $request->user()->can('dashboard_view'), 403);
+
         try {
             // 1. Monthly Revenue collections (Last 6 Months)
             $monthly_earnings = collect(range(5, 0))->map(function ($i) {
@@ -80,8 +82,8 @@ class DashboardController extends Controller
             $total_expenses = Expense::sum('amount');
 
             $stats = [
-                'total_players' => User::where('role', 'player')->count(),
-                'total_coaches' => User::where('role', 'coach')->count(),
+                'total_players' => User::role('player')->count(),
+                'total_coaches' => User::role('coach')->count(),
                 'total_sports' => Sport::count(),
                 'total_batches' => Batch::count(),
                 'month_fees_collected' => $month_fees_collected,
@@ -91,7 +93,7 @@ class DashboardController extends Controller
                 'total_fees_pending' => $total_fees_pending,
                 'total_monthly_fees_pending' => $total_monthly_fees_pending,
                 'recent_fees' => PlayerFee::with('player')->latest()->take(5)->get(),
-                'recent_players' => User::where('role', 'player')->latest()->take(5)->get(),
+                'recent_players' => User::role('player')->latest()->take(5)->get(),
                 'recent_batches' => Batch::with(['sport', 'level', 'coaches'])->latest()->take(5)->get(),
             ];
 
@@ -119,6 +121,7 @@ class DashboardController extends Controller
             ]));
         } catch (\Exception $e) {
             Log::error('Dashboard Index Error: '.$e->getMessage());
+
             return back()->with('error', 'Something went wrong while loading the dashboard.');
         }
     }

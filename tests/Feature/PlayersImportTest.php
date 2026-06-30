@@ -48,7 +48,6 @@ class PlayersImportTest extends TestCase
             'email' => 'jane.smith@example.com',
             'phone' => '9876543210',
             'gender' => 'female',
-            'role' => 'player',
             'status' => 'active',
             'joined_at' => '2026-06-23',
         ]);
@@ -71,7 +70,6 @@ class PlayersImportTest extends TestCase
             'email' => 'jane.smith@example.com',
             'phone' => '9876543210',
             'password' => 'secret123',
-            'role' => 'player',
             'status' => 'active',
             'joined_at' => '2026-06-23',
         ]);
@@ -125,7 +123,6 @@ class PlayersImportTest extends TestCase
             'email' => 'john.doe@example.com',
             'phone' => '1234567890',
             'password' => 'password123',
-            'role' => 'player',
             'status' => 'active',
             'joined_at' => '2026-06-23',
         ]);
@@ -143,7 +140,6 @@ class PlayersImportTest extends TestCase
             'email' => 'admin@example.com',
             'phone' => '0987654321',
             'password' => 'password123',
-            'role' => 'admin',
             'status' => 'active',
             'joined_at' => '2026-06-23',
         ]);
@@ -171,7 +167,6 @@ class PlayersImportTest extends TestCase
             'email' => 'john.doe@example.com',
             'phone' => '1234567890',
             'password' => 'password123',
-            'role' => 'player',
             'status' => 'active',
             'joined_at' => '2026-06-23',
         ]);
@@ -189,7 +184,6 @@ class PlayersImportTest extends TestCase
             'email' => 'admin@example.com',
             'phone' => '0987654321',
             'password' => 'password123',
-            'role' => 'admin',
             'status' => 'active',
             'joined_at' => '2026-06-23',
         ]);
@@ -233,7 +227,6 @@ class PlayersImportTest extends TestCase
             'email' => 'admin@example.com',
             'phone' => '0987654321',
             'password' => 'password123',
-            'role' => 'admin',
             'status' => 'active',
             'joined_at' => '2026-06-23',
         ]);
@@ -260,7 +253,6 @@ class PlayersImportTest extends TestCase
             'email' => 'admin@example.com',
             'phone' => '0987654321',
             'password' => 'password123',
-            'role' => 'admin',
             'status' => 'active',
             'joined_at' => '2026-06-23',
         ]);

@@ -89,8 +89,7 @@ class PlayersDataTable extends DataTable
      */
     public function query(User $model): QueryBuilder
     {
-        $query = $model->newQuery()
-            ->where('role', 'player')
+        $query = $model->role('player')
             ->with(['playerBatches.sport', 'playerBatches.level']);
 
         if (request()->filled('status')) {

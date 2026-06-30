@@ -12,106 +12,30 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('player_fees', function (Blueprint $table) {
-
             $table->id();
-
-            /*
-            |--------------------------------------------------------------------------
-            | Fees Generate Relation
-            |--------------------------------------------------------------------------
-            */
-
-            $table->foreignId('fees_generate_id')
-                ->constrained('fees_generates')
-                ->onDelete('cascade');
-
-            /*
-            |--------------------------------------------------------------------------
-            | Player Relation
-            |--------------------------------------------------------------------------
-            */
-
-            $table->foreignId('user_id')
+            
+            // Player relation
+            $table->foreignId('player_id')
                 ->constrained('users')
                 ->onDelete('cascade');
 
-            /*
-            |--------------------------------------------------------------------------
-            | Sport Relation
-            |--------------------------------------------------------------------------
-            */
-
-            $table->foreignId('sport_id')
-                ->constrained()
+            // Batch relation
+            $table->foreignId('batch_id')
+                ->nullable()
+                ->constrained('batches')
                 ->onDelete('cascade');
 
-            /*
-            |--------------------------------------------------------------------------
-            | Level Relation
-            |--------------------------------------------------------------------------
-            */
-
-            $table->foreignId('level_id')
-                ->constrained()
-                ->onDelete('cascade');
-
-            /*
-            |--------------------------------------------------------------------------
-            | Month & Year
-            |--------------------------------------------------------------------------
-            */
-
-            $table->integer('month');
-
-            $table->integer('year');
-
-            /*
-            |--------------------------------------------------------------------------
-            | Fees Amount
-            |--------------------------------------------------------------------------
-            */
-
-            $table->decimal('amount', 10, 2);
-
-            /*
-            |--------------------------------------------------------------------------
-            | Fees Status
-            |--------------------------------------------------------------------------
-            | unpaid
-            | partial
-            | paid
-            */
-
-            $table->enum('status', [
-
-                'unpaid',
-
-                'partial',
-
-                'paid',
-
-            ])->default('unpaid');
-
-            /*
-            |--------------------------------------------------------------------------
-            | Generated Date
-            |--------------------------------------------------------------------------
-            */
-
-            $table->timestamp('generated_at')
-                ->nullable();
-
-            /*
-            |--------------------------------------------------------------------------
-            | Paid Date
-            |--------------------------------------------------------------------------
-            */
-
-            $table->timestamp('paid_at')
-                ->nullable();
-
+            $table->decimal('sub_totalamount', 10, 2);
+            $table->decimal('discount_amount', 10, 2)->default(0.00);
+            $table->decimal('penalty_amount', 10, 2)->default(0.00);
+            $table->decimal('total_amt', 10, 2);
+            $table->date('start_date');
+            $table->date('end_date');
+            $table->enum('payment_type', ['upi', 'cash', 'card']);
+            $table->string('upi_id')->nullable();
+            $table->string('img_upi')->nullable();
+            $table->enum('status', ['paid', 'pending'])->default('pending');
             $table->timestamps();
-
         });
     }
 

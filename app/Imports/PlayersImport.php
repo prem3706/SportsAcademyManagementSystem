@@ -9,6 +9,8 @@ use App\Models\Batch;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
+use Spatie\Permission\Models\Role;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 
 class PlayersImport implements ToModel, WithHeadingRow
@@ -198,31 +200,48 @@ class PlayersImport implements ToModel, WithHeadingRow
                 }
             }
 
+            // Check resolved batches capacity
+            foreach ($resolvedBatches as $batch) {
+                if ($batch->isFull()) {
+                    $this->skippedCount++;
+                    $this->errors[] = "Row for '{$rowName}': Batch '{$batch->name}' has reached its maximum capacity of {$batch->capacity} players.";
+                    return null;
+                }
+            }
+
             // Generate password: lowercase firstname + @123
             $plainPassword = strtolower(str_replace(' ', '', $firstname)) . '@123';
 
-            // Create player
-            $player = User::create([
-                'firstname' => $firstname,
-                'lastname' => $lastname,
-                'email' => $email,
-                'phone' => $phone,
-                'gender' => $gender,
-                'password' => $plainPassword,
-                'role' => 'player',
-                'status' => $status,
-                'joined_at' => $joinedAt,
-            ]);
+            // Ensure the 'player' role exists
+            if (!Role::where('name', 'player')->exists()) {
+                $this->skippedCount++;
+                $this->errors[] = "Row for '{$rowName}': The player role does not exist in the database.";
+                return null;
+            }
 
-            // Assign Spatie player role
-            $player->assignRole('player');
-
-            // Attach to batches if resolved
-            foreach ($resolvedBatches as $batch) {
-                $batch->players()->attach($player->id, [
+            DB::transaction(function () use ($firstname, $lastname, $email, $phone, $gender, $plainPassword, $status, $joinedAt, $resolvedBatches) {
+                // Create player
+                $player = User::create([
+                    'firstname' => $firstname,
+                    'lastname' => $lastname,
+                    'email' => $email,
+                    'phone' => $phone,
+                    'gender' => $gender,
+                    'password' => $plainPassword,
+                    'status' => $status,
                     'joined_at' => $joinedAt,
                 ]);
-            }
+
+                // Assign Spatie player role
+                $player->assignRole('player');
+
+                // Attach to batches if resolved
+                foreach ($resolvedBatches as $batch) {
+                    $batch->players()->attach($player->id, [
+                        'joined_at' => $joinedAt,
+                    ]);
+                }
+            });
 
             $this->importedCount++;
         } catch (\Exception $e) {

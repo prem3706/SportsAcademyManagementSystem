@@ -99,11 +99,15 @@ class CustomAllTablesExport implements FromArray
             'users' => [
                 'header' => '[Users]',
                 'model' => User::class,
-                'query' => function() { return User::whereIn('role', ['admin', 'coach', 'manager'])->get(); },
+                'query' => function() { return User::role(['admin', 'coach', 'manager'])->get(); },
                 'map_row' => function($item, $cols) {
                     $row = [];
                     foreach ($cols as $col) {
-                        $row[] = $item->{$col} ?? '';
+                        if ($col === 'role') {
+                            $row[] = $item->getRoleNames()->first() ?? '';
+                        } else {
+                            $row[] = $item->{$col} ?? '';
+                        }
                     }
                     return $row;
                 }
@@ -127,7 +131,7 @@ class CustomAllTablesExport implements FromArray
             'players' => [
                 'header' => '[Players]',
                 'model' => User::class,
-                'query' => function() { return User::where('role', 'player')->with(['playerBatches.sport', 'playerBatches.level'])->get(); },
+                'query' => function() { return User::role('player')->with(['playerBatches.sport', 'playerBatches.level'])->get(); },
                 'map_row' => function($item, $cols) {
                     $row = [];
                     foreach ($cols as $col) {

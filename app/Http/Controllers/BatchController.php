@@ -43,11 +43,11 @@ class BatchController extends Controller
 
             $levels = Level::where('status', 'active')->get();
 
-            $coaches = User::where('role', 'coach')
+            $coaches = User::role('coach')
                 ->where('status', 'active')
                 ->get();
 
-            $players = User::where('role', 'player')
+            $players = User::role('player')
                 ->where('status', 'active')
                 ->get();
 
@@ -140,11 +140,11 @@ class BatchController extends Controller
 
             $levels = Level::where('status', 'active')->get();
 
-            $coaches = User::where('role', 'coach')
+            $coaches = User::role('coach')
                 ->where('status', 'active')
                 ->get();
 
-            $players = User::where('role', 'player')
+            $players = User::role('player')
                 ->where('status', 'active')
                 ->get();
 
@@ -187,6 +187,13 @@ class BatchController extends Controller
 
             $validated['end_time'] = Carbon::parse($request->end_time)
                 ->format('H:i:s');
+
+            if ($request->players &&
+                count($request->players) > $request->capacity) {
+                return response()->json([
+                    'message' => 'Players limit exceeded.',
+                ], 422);
+            }
 
             $batch->update([
                 'name' => $validated['name'],
@@ -281,78 +288,11 @@ class BatchController extends Controller
 
     public function bulkDelete(Request $request)
     {
-        abort_if(! Auth::user()->can('batch_delete'), 403);
-
-        try {
-            $ids = $request->input('select', []);
-
-            if (! is_array($ids)) {
-                $ids = array_filter(explode(',', $ids));
-            }
-
-            if (count($ids) > 0) {
-                $deletedCount = Batch::destroy($ids);
-
-                return response()->json([
-                    'success' => true,
-                    'message' => $deletedCount.' Batches deleted successfully.',
-                ]);
-            }
-
-            return response()->json([
-                'success' => false,
-                'message' => 'No batches selected.',
-            ], 422);
-
-        } catch (Exception $e) {
-            Log::error('Bulk Delete Error: '.$e->getMessage());
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Something went wrong.',
-            ], 500);
-        }
+        return handleBulkDelete($request, Batch::class, 'Batches', 'batch_delete');
     }
 
     public function bulkUpdate(Request $request)
     {
-        abort_if(! Auth::user()->can('batch_edit'), 403);
-
-        try {
-            $validated = $request->validate([
-                'select' => 'required',
-                'status' => 'required|in:active,inactive',
-            ]);
-
-            $ids = $request->input('select', []);
-            $status = $request->input('status');
-
-            if (! is_array($ids)) {
-                $ids = array_filter(explode(',', $ids));
-            }
-
-            if (count($ids) > 0) {
-                $updatedCount = Batch::whereIn('id', $ids)
-                    ->update(['status' => $status]);
-
-                return response()->json([
-                    'success' => true,
-                    'message' => $updatedCount.' Batches updated successfully.',
-                ]);
-            }
-
-            return response()->json([
-                'success' => false,
-                'message' => 'No valid batches selected.',
-            ], 422);
-
-        } catch (Exception $e) {
-            Log::error('Bulk Update Error: '.$e->getMessage());
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Something went wrong.',
-            ], 500);
-        }
+        return handleBulkUpdate($request, Batch::class, 'Batches', 'batch_edit');
     }
 }

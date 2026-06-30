@@ -20,7 +20,6 @@ return new class extends Migration
             $table->string('phone')->nullable();
             $table->string('profile_picture')->nullable();
             $table->enum('gender', ['male', 'female', 'other'])->nullable();
-            $table->enum('role', ['admin', 'player', 'coach'])->nullable();
             $table->enum('status', ['active', 'inactive'])->nullable();
             $table->date('joined_at')->nullable();
             $table->string('password')->nullable();

@@ -33,7 +33,7 @@ class UpdateUserRequest extends FormRequest
             'email' => ['nullable', 'email', Rule::unique('users', 'email')->ignore($userId)],
             'phone' => ['required', 'string', 'max:10', Rule::unique('users', 'phone')->ignore($userId)],
             'password' => 'nullable|string|min:8',
-            'role' => 'required|in:admin,player,coach,manager',
+            'role' => 'required|exists:roles,name',
             'gender' => 'required|in:male,female,other',
             'status' => 'required|in:active,inactive',
             'joined_at' => 'nullable|date',

@@ -12,7 +12,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        require_once app_path('Helpers/bulk_helpers.php');
     }
 
     /**
@@ -22,7 +22,7 @@ class AppServiceProvider extends ServiceProvider
     {
         // Implicitly grant "admin" role all permissions
         Gate::before(function ($user, $ability) {
-            return $user->role === 'admin' ? true : null;
+            return $user->hasRole('admin') ? true : null;
         });
     }
 }

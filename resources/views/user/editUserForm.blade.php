@@ -112,10 +112,13 @@
                         placeholder="Enter password">
                 </div>
 
-                <div style="height:10px;">
-                    {{-- <p class="text-danger small mb-0" id="passwordDescription"></p> --}}
-                    <p class="text-danger small mb-0" id="passwordError">Your password will be changed if you
-                        enter a new one.</p>
+                <div style="height: auto;" class="mt-2">
+                    <p class="text-danger small mb-0" id="passwordError"></p>
+                    <div class="p-2 rounded-3 border-start border-warning"
+                        style="border-left: 4px solid #ffc107 !important; background-color: #fff9e6; color: #664d03; font-size: 0.75rem; line-height: 1.4;">
+                        <i class="bi bi-exclamation-triangle-fill text-warning me-1"></i>
+                        Leave blank to keep current password. Enter a new password only if you want to change it.
+                    </div>
                 </div>
 
             </div>
@@ -126,16 +129,14 @@
                 <label for="role" class="form-label fw-semibold small text-dark mb-2">
                     Role <span class="text-danger">*</span>
                 </label>
-
                 <select class="form-select py-2" id="role" name="role">
-
                     <option value="" disabled selected>
                         Select role
                     </option>
-
-                    <option value="admin" {{ $user->role == 'admin' ? 'selected' : '' }}>Admin</option>
-                    <option value="coach" {{ $user->role == 'coach' ? 'selected' : '' }}>Coach</option>
-                    <option value="manager" {{ $user->role == 'manager' ? 'selected' : '' }}>Manager</option>
+                    <option value="admin" {{ $user->hasRole('admin') ? 'selected' : '' }}>Admin</option>
+                    <option value="coach" {{ $user->hasRole('coach') ? 'selected' : '' }}>Coach</option>
+                    <option value="manager" {{ $user->hasRole('manager') ? 'selected' : '' }}>Manager</option>
+                    <option value="player" {{ $user->hasRole('player') ? 'selected' : '' }}>Player</option>
 
                 </select>
 

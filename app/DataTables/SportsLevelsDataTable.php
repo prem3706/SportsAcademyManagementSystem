@@ -62,9 +62,9 @@ class SportsLevelsDataTable extends DataTable
     <!-- Delete Button -->
     <button type="button"
         class="btn btn-light btn-action text-danger shadow-sm"
-        id="deleteSportBtn"
+        id="deleteSportsLevelsBtn"
         data-id="'.$sport->id.'"
-        data-url="'.route('sports.destroy', $sport->id).'">
+        data-url="'.route('sport-levels.destroy', $sport->id).'">
         <i class="bi bi-trash"></i>
     </button>';
                 }

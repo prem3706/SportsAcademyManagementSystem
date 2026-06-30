@@ -50,28 +50,22 @@ class UserFactory extends Factory
 
     public function coach(): static
     {
-        return $this->state(fn (array $attributes) => [
-
-            'role' => 'coach',
-
-        ]);
+        return $this->afterCreating(function (User $user) {
+            $user->assignRole('coach');
+        });
     }
 
     public function admin(): static
     {
-        return $this->state(fn (array $attributes) => [
-
-            'role' => 'admin',
-
-        ]);
+        return $this->afterCreating(function (User $user) {
+            $user->assignRole('admin');
+        });
     }
 
     public function player(): static
     {
-        return $this->state(fn (array $attributes) => [
-
-            'role' => 'player',
-
-        ]);
+        return $this->afterCreating(function (User $user) {
+            $user->assignRole('player');
+        });
     }
 }

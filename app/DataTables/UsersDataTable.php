@@ -78,6 +78,9 @@ class UsersDataTable extends DataTable
 
                 return $fullName;
             })
+            ->editColumn('role', function (User $user) {
+                return ucfirst($user->getRoleNames()->first() ?? '');
+            })
             ->setRowId('id')
             ->rawColumns(['select', 'action', 'Name', 'status']);
     }
@@ -97,9 +100,7 @@ class UsersDataTable extends DataTable
         }
 
         if (request()->filled('role')) {
-            $query->whereHas('roles', function ($q) {
-                $q->where('name', request('role'));
-            });
+            $query->role(request('role'));
         }
 
         return $query;
@@ -149,7 +150,7 @@ class UsersDataTable extends DataTable
             Column::make('phone'),
             Column::make('gender'),
             Column::make('status')->title('Status'),
-            Column::make('role'),
+            Column::make('role')->orderable(false)->searchable(false),
         ]);
 
         if (auth()->user()->can('user_edit') || auth()->user()->can('user_delete')) {

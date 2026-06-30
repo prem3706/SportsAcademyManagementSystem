@@ -9,6 +9,8 @@ use App\Models\ExpenseCategory;
 use App\Models\Batch;
 use App\Models\User;
 use App\Models\Expense;
+use Illuminate\Support\Facades\DB;
+use Spatie\Permission\Models\Role;
 
 class VerticalImport
 {
@@ -253,19 +255,27 @@ class VerticalImport
                     continue;
                 }
 
-                $user = User::create([
-                    'firstname' => trim($row['firstname']),
-                    'lastname' => trim($row['lastname']),
-                    'email' => trim($row['email']),
-                    'phone' => trim($row['phone']),
-                    'gender' => strtolower($row['gender'] ?? '') === 'female' ? 'female' : 'male',
-                    'password' => $plainPassword,
-                    'role' => $role,
-                    'status' => strtolower($row['status'] ?? '') === 'active' ? 'active' : 'inactive',
-                    'joined_at' => !empty($row['joined_at']) ? date('Y-m-d', strtotime($row['joined_at'])) : now()->toDateString(),
-                ]);
+                // Check if the role exists
+                if (!Role::where('name', $role)->exists()) {
+                    $this->skippedCount++;
+                    $this->errors[] = "Staff Users Section (Name: '{$rowName}'): Role '{$role}' does not exist in the database.";
+                    continue;
+                }
 
-                $user->syncRoles([$role]);
+                DB::transaction(function () use ($row, $plainPassword, $role) {
+                    $user = User::create([
+                        'firstname' => trim($row['firstname']),
+                        'lastname' => trim($row['lastname']),
+                        'email' => trim($row['email']),
+                        'phone' => trim($row['phone']),
+                        'gender' => strtolower($row['gender'] ?? '') === 'female' ? 'female' : 'male',
+                        'password' => $plainPassword,
+                        'status' => strtolower($row['status'] ?? '') === 'active' ? 'active' : 'inactive',
+                        'joined_at' => !empty($row['joined_at']) ? date('Y-m-d', strtotime($row['joined_at'])) : now()->toDateString(),
+                    ]);
+
+                    $user->syncRoles([$role]);
+                });
                 $this->importedCount++;
             } catch (\Exception $e) {
                 $this->skippedCount++;
@@ -341,39 +351,49 @@ class VerticalImport
                     continue;
                 }
 
-                $player = User::create([
-                    'firstname' => trim($row['firstname']),
-                    'lastname' => trim($row['lastname']),
-                    'email' => $email,
-                    'phone' => $phone,
-                    'gender' => strtolower($row['gender'] ?? '') === 'female' ? 'female' : 'male',
-                    'password' => $plainPassword,
-                    'role' => 'player',
-                    'status' => strtolower($row['status'] ?? '') === 'active' ? 'active' : 'inactive',
-                    'joined_at' => !empty($row['joined_at']) ? date('Y-m-d', strtotime($row['joined_at'])) : now()->toDateString(),
-                ]);
-                $player->assignRole('player');
+                // Check if the 'player' role exists
+                if (!Role::where('name', 'player')->exists()) {
+                    $this->skippedCount++;
+                    $this->errors[] = "Players Section (Name: '{$rowName}'): The player role does not exist in the database.";
+                    continue;
+                }
 
-                if (!empty($row['batch']) && !empty($row['sport']) && !empty($row['level'])) {
-                    $sport = Sport::where('name', trim($row['sport']))->first();
-                    $level = Level::where('name', trim($row['level']))->first();
+                DB::transaction(function () use ($row, $email, $phone, $plainPassword) {
+                    $player = User::create([
+                        'firstname' => trim($row['firstname']),
+                        'lastname' => trim($row['lastname']),
+                        'email' => $email,
+                        'phone' => $phone,
+                        'gender' => strtolower($row['gender'] ?? '') === 'female' ? 'female' : 'male',
+                        'password' => $plainPassword,
+                        'status' => strtolower($row['status'] ?? '') === 'active' ? 'active' : 'inactive',
+                        'joined_at' => !empty($row['joined_at']) ? date('Y-m-d', strtotime($row['joined_at'])) : now()->toDateString(),
+                    ]);
+                    $player->assignRole('player');
 
-                    if ($sport && $level) {
-                        $batch = Batch::where('name', trim($row['batch']))
-                            ->where('sport_id', $sport->id)
-                            ->where('level_id', $level->id)
-                            ->first();
+                    if (!empty($row['batch']) && !empty($row['sport']) && !empty($row['level'])) {
+                        $sport = Sport::where('name', trim($row['sport']))->first();
+                        $level = Level::where('name', trim($row['level']))->first();
 
-                        if ($batch) {
-                            if (!$batch->players()->where('users.id', $player->id)->exists()) {
-                                $batch->players()->attach($player->id, [
-                                    'joined_at' => $player->joined_at ?: now()->toDateString(),
-                                ]);
+                        if ($sport && $level) {
+                            $batch = Batch::where('name', trim($row['batch']))
+                                ->where('sport_id', $sport->id)
+                                ->where('level_id', $level->id)
+                                ->first();
+
+                            if ($batch) {
+                                if ($batch->isFull($player->id)) {
+                                    throw new \Exception("Batch '{$batch->name}' has reached its maximum capacity of {$batch->capacity} players.");
+                                }
+                                if (!$batch->players()->where('users.id', $player->id)->exists()) {
+                                    $batch->players()->attach($player->id, [
+                                        'joined_at' => $player->joined_at ?: now()->toDateString(),
+                                    ]);
+                                }
                             }
                         }
                     }
-                }
-
+                });
                 $this->importedCount++;
             } catch (\Exception $e) {
                 $this->skippedCount++;

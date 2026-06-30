@@ -69,7 +69,6 @@ class PlayersExportTest extends TestCase
             'phone' => '1234567890',
             'password' => 'password123',
             'gender' => 'male',
-            'role' => 'player',
             'status' => 'active',
             'joined_at' => now()->toDateString(),
         ]);
@@ -106,7 +105,6 @@ class PlayersExportTest extends TestCase
             'phone' => '0987654321',
             'password' => 'password123',
             'gender' => 'male',
-            'role' => 'admin',
             'status' => 'active',
             'joined_at' => now()->toDateString(),
         ]);
@@ -120,7 +118,6 @@ class PlayersExportTest extends TestCase
             'phone' => '1234567890',
             'password' => 'password123',
             'gender' => 'male',
-            'role' => 'player',
             'status' => 'active',
             'joined_at' => now()->toDateString(),
         ]);
@@ -151,7 +148,6 @@ class PlayersExportTest extends TestCase
             'phone' => '1234567890',
             'password' => 'password123',
             'gender' => 'male',
-            'role' => 'player',
             'status' => 'active',
             'joined_at' => now()->toDateString(),
         ]);
@@ -172,7 +168,6 @@ class PlayersExportTest extends TestCase
             'phone' => '0987654321',
             'password' => 'password123',
             'gender' => 'male',
-            'role' => 'admin',
             'status' => 'active',
             'joined_at' => now()->toDateString(),
         ]);

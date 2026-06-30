@@ -97,7 +97,7 @@
                                 <span class="nav-icon">
                                     <i class="bi bi-grid-3x3-gap"></i>
                                 </span>
-                                Sports Levels
+                                Fees Structure
                             </a>
                         </li>
                     @endcan

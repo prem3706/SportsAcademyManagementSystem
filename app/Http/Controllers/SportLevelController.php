@@ -50,7 +50,7 @@ class SportLevelController extends Controller
                 'success' => false,
                 'message' => 'Failed to load create form.',
             ], 500);
-        }
+        }   
     }
 
     /**
@@ -184,6 +184,24 @@ class SportLevelController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        abort_if(! Auth::user()->can('sports_level_delete'), 403);
+
+        try {
+            $sport = Sport::findOrFail($id);
+
+            // Detach all levels from this sport
+            $sport->levels()->detach();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Sports Levels deleted successfully.',
+            ]);
+        } catch (Exception $e) {
+            Log::error('SportLevel Destroy Error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong.',
+            ], 500);
+        }
     }
 }

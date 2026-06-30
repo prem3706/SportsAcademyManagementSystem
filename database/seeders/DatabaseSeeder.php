@@ -65,7 +65,6 @@ class DatabaseSeeder extends Seeder
             'password' => 'admin123',
             'phone' => '9876543210',
             'gender' => 'male',
-            'role' => 'admin',
             'status' => 'active',
             'joined_at' => now(),
         ]);

@@ -184,73 +184,11 @@ class LevelsController extends Controller
 
     public function bulkDelete(Request $request)
     {
-        abort_if(! Auth::user()->can('level_delete'), 403);
-
-        try {
-            $ids = $request->input('select', []);
-
-            if (! is_array($ids)) {
-                $ids = array_filter(explode(',', $ids));
-            }
-
-            if (count($ids) > 0) {
-                $deletedCount = Level::destroy($ids);
-
-                return response()->json([
-                    'success' => true,
-                    'message' => $deletedCount.' Levels deleted successfully.',
-                ]);
-            }
-
-            return response()->json([
-                'success' => false,
-                'message' => 'No levels selected.',
-            ], 422);
-        } catch (Exception $e) {
-            Log::error('Level Bulk Delete Error: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Something went wrong.',
-            ], 500);
-        }
+        return handleBulkDelete($request, Level::class, 'Levels', 'level_delete');
     }
 
     public function bulkUpdate(Request $request)
     {
-        abort_if(! Auth::user()->can('level_edit'), 403);
-
-        try {
-            $validated = $request->validate([
-                'select' => 'required',
-                'status' => 'required|string|in:active,inactive',
-            ]);
-
-            $ids = $request->input('select', []);
-            $status = $request->input('status');
-
-            if (! is_array($ids)) {
-                $ids = array_filter(explode(',', $ids));
-            }
-
-            if (count($ids) > 0) {
-                $updatedCount = Level::whereIn('id', $ids)->update(['status' => $status]);
-
-                return response()->json([
-                    'success' => true,
-                    'message' => $updatedCount.' Levels updated successfully.',
-                ]);
-            }
-
-            return response()->json([
-                'success' => false,
-                'message' => 'No valid Levels selected for update.',
-            ], 422);
-        } catch (Exception $e) {
-            Log::error('Level Bulk Update Error: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Something went wrong.',
-            ], 500);
-        }
+        return handleBulkUpdate($request, Level::class, 'Levels', 'level_edit');
     }
 }

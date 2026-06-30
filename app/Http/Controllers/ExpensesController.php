@@ -181,47 +181,20 @@ class ExpensesController extends Controller
         }
     }
 
-    /**
-     * Bulk delete resources.
-     */
     public function bulkDelete(Request $request)
     {
-        abort_if(! Auth::user()->can('expense_delete'), 403);
+        return handleBulkDelete($request, Expense::class, 'Expenses', 'expense_delete', function ($ids) {
+            $expenses = Expense::whereIn('id', $ids)->get();
 
-        try {
-            $ids = $request->input('select', []);
-
-            if (! is_array($ids)) {
-                $ids = array_filter(explode(',', $ids));
-            }
-
-            if (count($ids) > 0) {
-                $expenses = Expense::whereIn('id', $ids)->get();
-
-                foreach ($expenses as $expense) {
-                    if ($expense->receipt) {
-                        $oldPath = str_replace('storage/', '', $expense->receipt);
-                        Storage::disk('public')->delete($oldPath);
-                    }
-                    $expense->delete();
+            foreach ($expenses as $expense) {
+                if ($expense->receipt) {
+                    $oldPath = str_replace('storage/', '', $expense->receipt);
+                    Storage::disk('public')->delete($oldPath);
                 }
-
-                return response()->json([
-                    'success' => true,
-                    'message' => count($ids).' Expenses deleted successfully.',
-                ]);
+                $expense->delete();
             }
 
-            return response()->json([
-                'success' => false,
-                'message' => 'No valid Expenses selected for deletion.',
-            ], 422);
-        } catch (Exception $e) {
-            Log::error('Expense Bulk Delete Error: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Something went wrong.',
-            ], 500);
-        }
+            return count($ids);
+        });
     }
 }

@@ -28,7 +28,7 @@ class StoreUserRequest extends FormRequest
             'email' => 'nullable|email|unique:users,email',
             'phone' => 'required|string|max:10|unique:users,phone',
             'password' => 'required|string|min:8',
-            'role' => 'required|in:admin,player,coach,manager',
+            'role' => 'required|exists:roles,name',
             'gender' => 'required|in:male,female,other',
             'status' => 'required|in:active,inactive',
             'joined_at' => 'nullable|date',

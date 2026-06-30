@@ -1060,3 +1060,168 @@ html[data-coreui-theme="dark"] .dashboard-stat-card .text-dark {
     color: #5b3fd7 !important;
     text-decoration: underline !important;
 }
+
+/* ==========================================================================
+   TOASTR PREMIUM THEME CUSTOM STYLING (Light & Dark Mode)
+   ========================================================================== */
+#toast-container > div {
+    opacity: 0.98 !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12) !important;
+    border-radius: 12px !important;
+    padding: 16px 16px 16px 52px !important;
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-size: 13.5px !important;
+    font-weight: 500 !important;
+    border: none !important;
+    background-image: none !important;
+    transition: all 0.2s ease-in-out;
+}
+
+/* Success Gradient */
+#toast-container > .toast-success {
+    background: linear-gradient(135deg, #10b981, #059669) !important;
+    color: #ffffff !important;
+}
+#toast-container > .toast-success .toast-title,
+#toast-container > .toast-success .toast-message {
+    color: #ffffff !important;
+    font-weight: 600 !important;
+}
+#toast-container > .toast-success .toast-title {
+    font-weight: 700 !important;
+}
+
+/* Error Gradient */
+#toast-container > .toast-error {
+    background: linear-gradient(135deg, #f43f5e, #e11d48) !important;
+    color: #ffffff !important;
+}
+#toast-container > .toast-error .toast-title,
+#toast-container > .toast-error .toast-message {
+    color: #ffffff !important;
+    font-weight: 600 !important;
+}
+#toast-container > .toast-error .toast-title {
+    font-weight: 700 !important;
+}
+
+/* Warning Gradient */
+#toast-container > .toast-warning {
+    background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+    color: #ffffff !important;
+}
+#toast-container > .toast-warning .toast-title,
+#toast-container > .toast-warning .toast-message {
+    color: #ffffff !important;
+    font-weight: 600 !important;
+}
+#toast-container > .toast-warning .toast-title {
+    font-weight: 700 !important;
+}
+
+/* Info Gradient */
+#toast-container > .toast-info {
+    background: linear-gradient(135deg, #6366f1, #4f46e5) !important;
+    color: #ffffff !important;
+}
+#toast-container > .toast-info .toast-title,
+#toast-container > .toast-info .toast-message {
+    color: #ffffff !important;
+    font-weight: 600 !important;
+}
+#toast-container > .toast-info .toast-title {
+    font-weight: 700 !important;
+}
+
+/* Toastr Close Button Styling */
+#toast-container .toast-close-button {
+    top: -2px !important;
+    right: -2px !important;
+    opacity: 0.6 !important;
+    font-size: 18px !important;
+    transition: all 0.15s ease;
+    color: #ffffff !important;
+}
+#toast-container .toast-close-button:hover {
+    opacity: 1 !important;
+}
+
+/* Toastr Icons - using Bootstrap Icons */
+#toast-container > div::before {
+    position: absolute;
+    left: 18px;
+    top: 16px;
+    font-family: "bootstrap-icons" !important;
+    font-size: 22px !important;
+    line-height: 1;
+}
+
+#toast-container > .toast-success::before {
+    content: "\f272"; /* bi-check-circle-fill */
+    color: #10b981;
+}
+
+#toast-container > .toast-error::before {
+    content: "\f5c7"; /* bi-x-circle-fill */
+    color: #f43f5e;
+}
+
+#toast-container > .toast-warning::before {
+    content: "\f33a"; /* bi-exclamation-triangle-fill */
+    color: #f59e0b;
+}
+
+#toast-container > .toast-info::before {
+    content: "\f437"; /* bi-info-circle-fill */
+    color: #4f46e5;
+}
+
+/* Toastr Progress Bar Colors */
+#toast-container > div::before {
+    position: absolute;
+    left: 18px;
+    top: 16px;
+    font-family: "bootstrap-icons" !important;
+    font-size: 22px !important;
+    line-height: 1;
+    color: #ffffff !important;
+}
+
+#toast-container > div .toast-progress {
+    background-color: #ffffff !important;
+    opacity: 0.35 !important;
+    height: 3px !important;
+}
+
+/* Dark Mode Overrides for Vibrant Gradients */
+html[data-coreui-theme="dark"] #toast-container > div {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4) !important;
+}
+
+html[data-coreui-theme="dark"] #toast-container > .toast-success {
+    background: linear-gradient(135deg, #064e3b, #047857) !important;
+    border: 1px solid rgba(16, 185, 129, 0.35) !important;
+}
+
+html[data-coreui-theme="dark"] #toast-container > .toast-error {
+    background: linear-gradient(135deg, #7f1d1d, #b91c1c) !important;
+    border: 1px solid rgba(244, 63, 94, 0.35) !important;
+}
+
+html[data-coreui-theme="dark"] #toast-container > .toast-warning {
+    background: linear-gradient(135deg, #78350f, #d97706) !important;
+    border: 1px solid rgba(245, 158, 11, 0.35) !important;
+}
+
+html[data-coreui-theme="dark"] #toast-container > .toast-info {
+    background: linear-gradient(135deg, #312e81, #4338ca) !important;
+    border: 1px solid rgba(99, 102, 241, 0.35) !important;
+}
+
+html[data-coreui-theme="dark"] #toast-container .toast-close-button {
+    color: rgba(255, 255, 255, 0.7) !important;
+}
+
+html[data-coreui-theme="dark"] #toast-container .toast-close-button:hover {
+    color: #ffffff !important;
+}

@@ -26,7 +26,7 @@ class PlayerFeesController extends Controller
         abort_if(! Auth::user()->can('fee_view'), 403);
 
         try {
-            $players = User::where('role', 'player')
+            $players = User::role('player')
                 ->where('status', 'active')
                 ->orderBy('firstname')
                 ->orderBy('lastname')
@@ -65,7 +65,7 @@ class PlayerFeesController extends Controller
         abort_if(! Auth::user()->can('fee_create'), 403);
 
         try {
-            $players = User::where('role', 'player')
+            $players = User::role('player')
                 ->where('status', 'active')
                 ->orderBy('firstname')
                 ->orderBy('lastname')
@@ -238,7 +238,7 @@ class PlayerFeesController extends Controller
         abort_if(! Auth::user()->can('fee_edit'), 403);
 
         try {
-            $players = User::where('role', 'player')
+            $players = User::role('player')
                 ->where('status', 'active')
                 ->orderBy('firstname')
                 ->orderBy('lastname')
