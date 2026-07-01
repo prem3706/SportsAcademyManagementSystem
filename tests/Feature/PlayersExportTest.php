@@ -71,8 +71,8 @@ class PlayersExportTest extends TestCase
             'gender' => 'male',
             'status' => 'active',
             'joined_at' => now()->toDateString(),
+            'role' => 'player',
         ]);
-        $player->assignRole('player');
 
         // 5. Assign player to batch
         $batch->players()->attach($player->id, [
@@ -96,7 +96,6 @@ class PlayersExportTest extends TestCase
 
     public function test_players_export_only_exports_players()
     {
-        // Create an admin role and user
         Role::firstOrCreate(['name' => 'admin']);
         $admin = User::create([
             'firstname' => 'Admin',
@@ -107,8 +106,8 @@ class PlayersExportTest extends TestCase
             'gender' => 'male',
             'status' => 'active',
             'joined_at' => now()->toDateString(),
+            'role' => 'admin',
         ]);
-        $admin->assignRole('admin');
 
         // Create player
         $player = User::create([
@@ -120,8 +119,8 @@ class PlayersExportTest extends TestCase
             'gender' => 'male',
             'status' => 'active',
             'joined_at' => now()->toDateString(),
+            'role' => 'player',
         ]);
-        $player->assignRole('player');
 
         // Run export
         $export = new PlayersExport(['name']);
@@ -150,8 +149,8 @@ class PlayersExportTest extends TestCase
             'gender' => 'male',
             'status' => 'active',
             'joined_at' => now()->toDateString(),
+            'role' => 'player',
         ]);
-        $player->assignRole('player');
         // Player has no player_view permission by default
 
         $response = $this->actingAs($player)->post('/players/export');
@@ -170,8 +169,8 @@ class PlayersExportTest extends TestCase
             'gender' => 'male',
             'status' => 'active',
             'joined_at' => now()->toDateString(),
+            'role' => 'admin',
         ]);
-        $admin->assignRole('admin');
 
         // Admin has all permissions globally via Gate::before in AppServiceProvider
  

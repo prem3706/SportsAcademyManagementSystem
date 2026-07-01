@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\DataTables\ExpensesDataTable;
+use App\Http\Requests\ExpenseRequest;
 use App\Models\Expense;
 use App\Models\ExpenseCategory;
 use Illuminate\Http\Request;
@@ -48,20 +49,12 @@ class ExpensesController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(ExpenseRequest $request)
     {
         abort_if(! Auth::user()->can('expense_create'), 403);
 
         try {
-            $validatedData = $request->validate([
-                'expense_category_id' => 'required|exists:expense_categories,id',
-                'expense_date' => 'required|date',
-                'amount' => 'required|numeric|min:0.01',
-                'payment_mode' => 'nullable|string|max:255',
-                'reference_no' => 'nullable|string|max:255',
-                'description' => 'nullable|string|max:1000',
-                'receipt' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:4096',
-            ]);
+            $validatedData = $request->validated();
 
             if ($request->hasFile('receipt')) {
                 $path = $request->file('receipt')->store('expense_receipts', 'public');
@@ -111,20 +104,12 @@ class ExpensesController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Expense $expense)
+    public function update(ExpenseRequest $request, Expense $expense)
     {
         abort_if(! Auth::user()->can('expense_edit'), 403);
 
         try {
-            $validatedData = $request->validate([
-                'expense_category_id' => 'required|exists:expense_categories,id',
-                'expense_date' => 'required|date',
-                'amount' => 'required|numeric|min:0.01',
-                'payment_mode' => 'nullable|string|max:255',
-                'reference_no' => 'nullable|string|max:255',
-                'description' => 'nullable|string|max:1000',
-                'receipt' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:4096',
-            ]);
+            $validatedData = $request->validated();
 
             if ($request->hasFile('receipt')) {
                 // Delete old file

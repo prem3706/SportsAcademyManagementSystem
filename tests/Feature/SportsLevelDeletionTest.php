@@ -36,8 +36,8 @@ class SportsLevelDeletionTest extends TestCase
             'password' => 'password123',
             'status' => 'active',
             'joined_at' => now(),
+            'role' => 'admin',
         ]);
-        $this->adminUser->assignRole('admin');
 
         // Create a sport and associate it with a level
         $this->sport = Sport::create([

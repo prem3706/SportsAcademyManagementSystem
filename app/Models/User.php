@@ -11,7 +11,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 
-#[Fillable(['firstname', 'lastname', 'email', 'password', 'phone', 'profile_picture', 'gender', 'status', 'joined_at'])]
+#[Fillable(['firstname', 'lastname', 'email', 'password', 'phone', 'profile_picture', 'gender', 'status', 'joined_at', 'role'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -28,12 +28,37 @@ class User extends Authenticatable
         'gender',
         'status',
         'joined_at',
+        'role',
     ];
 
     protected $hidden = [
         'password',
         'remember_token',
     ];
+
+    public $tempRole;
+
+    public function setRoleAttribute($role)
+    {
+        $this->tempRole = $role;
+    }
+
+    protected static function booted()
+    {
+        static::creating(function ($user) {
+            if (empty($user->tempRole)) {
+                throw new \InvalidArgumentException('A user cannot be created without assigning a role.');
+            }
+        });
+
+        static::saved(function ($user) {
+            if ($user->tempRole) {
+                Role::firstOrCreate(['name' => $user->tempRole]);
+                $user->syncRoles([$user->tempRole]);
+                $user->tempRole = null;
+            }
+        });
+    }
 
     /**
      * Get the attributes that should be cast.

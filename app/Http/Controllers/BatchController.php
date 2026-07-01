@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\DataTables\BatchesDataTable;
+use App\Http\Requests\BatchRequest;
 use App\Models\Batch;
 use App\Models\Level;
 use App\Models\Sport;
@@ -66,24 +67,12 @@ class BatchController extends Controller
     /**
      * Store batch.
      */
-    public function store(Request $request)
+    public function store(BatchRequest $request)
     {
         abort_if(! Auth::user()->can('batch_create'), 403);
 
         try {
-            $validated = $request->validate([
-                'name' => 'required|string|max:255',
-                'capacity' => 'required|integer|min:1',
-                'start_time' => 'required',
-                'end_time' => 'required',
-                'sport_id' => 'required|exists:sports,id',
-                'level_id' => 'required|exists:levels,id',
-                'coaches' => 'nullable|array',
-                'coaches.*' => 'exists:users,id',
-                'players' => 'nullable|array',
-                'players.*' => 'exists:users,id',
-                'status' => 'required|in:active,inactive',
-            ]);
+            $validated = $request->validated();
 
             $validated['start_time'] = Carbon::parse($request->start_time)
                 ->format('H:i:s');
@@ -163,24 +152,12 @@ class BatchController extends Controller
     /**
      * Update batch.
      */
-    public function update(Request $request, Batch $batch)
+    public function update(BatchRequest $request, Batch $batch)
     {
         abort_if(! Auth::user()->can('batch_edit'), 403);
 
         try {
-            $validated = $request->validate([
-                'name' => 'required|string|max:255',
-                'capacity' => 'required|integer|min:1',
-                'start_time' => 'required',
-                'end_time' => 'required',
-                'sport_id' => 'required|exists:sports,id',
-                'level_id' => 'required|exists:levels,id',
-                'coaches' => 'nullable|array',
-                'coaches.*' => 'exists:users,id',
-                'players' => 'nullable|array',
-                'players.*' => 'exists:users,id',
-                'status' => 'required|in:active,inactive',
-            ]);
+            $validated = $request->validated();
 
             $validated['start_time'] = Carbon::parse($request->start_time)
                 ->format('H:i:s');

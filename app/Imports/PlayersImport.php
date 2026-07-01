@@ -230,10 +230,8 @@ class PlayersImport implements ToModel, WithHeadingRow
                     'password' => $plainPassword,
                     'status' => $status,
                     'joined_at' => $joinedAt,
+                    'role' => 'player',
                 ]);
-
-                // Assign Spatie player role
-                $player->assignRole('player');
 
                 // Attach to batches if resolved
                 foreach ($resolvedBatches as $batch) {

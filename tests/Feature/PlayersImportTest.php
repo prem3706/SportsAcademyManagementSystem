@@ -72,8 +72,8 @@ class PlayersImportTest extends TestCase
             'password' => 'secret123',
             'status' => 'active',
             'joined_at' => '2026-06-23',
+            'role' => 'player',
         ]);
-        $existing->assignRole('player');
 
         $importer = new PlayersImport();
 
@@ -125,8 +125,8 @@ class PlayersImportTest extends TestCase
             'password' => 'password123',
             'status' => 'active',
             'joined_at' => '2026-06-23',
+            'role' => 'player',
         ]);
-        $player->assignRole('player');
 
         $response = $this->actingAs($player)->get('/players/import-form');
         $response->assertStatus(403);
@@ -142,8 +142,8 @@ class PlayersImportTest extends TestCase
             'password' => 'password123',
             'status' => 'active',
             'joined_at' => '2026-06-23',
+            'role' => 'admin',
         ]);
-        $admin->assignRole('admin');
 
         $response = $this->actingAs($admin)->get('/players/import-form');
         $response->assertStatus(200);
@@ -169,10 +169,14 @@ class PlayersImportTest extends TestCase
             'password' => 'password123',
             'status' => 'active',
             'joined_at' => '2026-06-23',
+            'role' => 'player',
         ]);
-        $player->assignRole('player');
 
-        $response = $this->actingAs($player)->post('/players/import');
+        $response = $this->actingAs($player)->post('/players/import', [
+            'players' => [
+                ['first_name' => 'Test']
+            ],
+        ]);
         $response->assertStatus(403);
     }
 
@@ -186,8 +190,8 @@ class PlayersImportTest extends TestCase
             'password' => 'password123',
             'status' => 'active',
             'joined_at' => '2026-06-23',
+            'role' => 'admin',
         ]);
-        $admin->assignRole('admin');
 
         $playersData = [
             [
@@ -229,8 +233,8 @@ class PlayersImportTest extends TestCase
             'password' => 'password123',
             'status' => 'active',
             'joined_at' => '2026-06-23',
+            'role' => 'admin',
         ]);
-        $admin->assignRole('admin');
 
         // Post without file to readExcel
         $response = $this->actingAs($admin)->post('/players/readExcel');
@@ -255,8 +259,8 @@ class PlayersImportTest extends TestCase
             'password' => 'password123',
             'status' => 'active',
             'joined_at' => '2026-06-23',
+            'role' => 'admin',
         ]);
-        $admin->assignRole('admin');
 
         Excel::fake();
         Excel::shouldReceive('toArray')

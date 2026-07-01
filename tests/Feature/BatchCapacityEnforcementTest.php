@@ -48,8 +48,8 @@ class BatchCapacityEnforcementTest extends TestCase
             'password' => 'password123',
             'status' => 'active',
             'joined_at' => now(),
+            'role' => 'admin',
         ]);
-        $this->adminUser->assignRole('admin');
 
         // Create Sport, Level, Batch with capacity 1
         $this->sport = Sport::create(['name' => 'Tennis', 'slug' => 'tennis', 'status' => 'active']);
@@ -81,8 +81,8 @@ class BatchCapacityEnforcementTest extends TestCase
             'password' => 'password123',
             'status' => 'active',
             'joined_at' => now(),
+            'role' => 'player',
         ]);
-        $player1->assignRole($this->playerRole);
         $this->batch->players()->attach($player1->id, ['joined_at' => now()]);
 
         // Attempt to create player 2 and assign to the same batch
@@ -126,8 +126,8 @@ class BatchCapacityEnforcementTest extends TestCase
             'password' => 'password123',
             'status' => 'active',
             'joined_at' => now(),
+            'role' => 'player',
         ]);
-        $player1->assignRole($this->playerRole);
         $this->batch->players()->attach($player1->id, ['joined_at' => now()]);
 
         // Player 2 is currently not assigned to any batch
@@ -139,8 +139,8 @@ class BatchCapacityEnforcementTest extends TestCase
             'password' => 'password123',
             'status' => 'active',
             'joined_at' => now(),
+            'role' => 'player',
         ]);
-        $player2->assignRole($this->playerRole);
 
         // Attempt to update player 2 and assign to the full batch
         $response = $this->putJson(route('players.update', $player2->id), [
@@ -179,12 +179,14 @@ class BatchCapacityEnforcementTest extends TestCase
             'lastname' => 'One',
             'phone' => '0000000001',
             'status' => 'active',
+            'role' => 'player',
         ]);
         $player2 = User::create([
             'firstname' => 'Player',
             'lastname' => 'Two',
             'phone' => '0000000002',
             'status' => 'active',
+            'role' => 'player',
         ]);
 
         // Attempt to sync 2 players to a batch of capacity 1
@@ -216,8 +218,8 @@ class BatchCapacityEnforcementTest extends TestCase
             'lastname' => 'One',
             'phone' => '0000000001',
             'status' => 'active',
+            'role' => 'player',
         ]);
-        $player1->assignRole($this->playerRole);
         $this->batch->players()->attach($player1->id, ['joined_at' => now()]);
 
         $row = [

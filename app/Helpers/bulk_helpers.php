@@ -54,6 +54,10 @@ if (!function_exists('handleBulkUpdate')) {
             $validated = $request->validate([
                 'select' => 'required',
                 'status' => 'required|string|in:active,inactive',
+            ], [
+                'select.required' => 'Please select at least one record to update.',
+                'status.required' => 'The status field is required.',
+                'status.in' => 'The status must be active or inactive.',
             ]);
 
             $ids = $request->input('select', []);

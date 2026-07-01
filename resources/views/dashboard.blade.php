@@ -293,7 +293,7 @@
                         </div>
                         <div class="card-body p-4">
                             <div class="table-responsive">
-                                {{ $dataTable->table(['class' => 'table table-sm table-hover align-middle mb-0 dataTable', 'id' => 'unpaidTable']) }}
+                                {{ $dataTable->table(['class' => 'table table-sm table-hover align-middle mb-0 dataTable', 'id' => 'datatable']) }}
                             </div>
                         </div>
                     </div>

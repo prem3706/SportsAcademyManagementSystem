@@ -3,12 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\DataTables\ExpenseCategoriesDataTable;
+use App\Http\Requests\ExpenseCategoryRequest;
 use App\Models\ExpenseCategory;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 
 class ExpenseCategoriesController extends Controller
 {
@@ -47,38 +47,12 @@ class ExpenseCategoriesController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(ExpenseCategoryRequest $request)
     {
         abort_if(! Auth::user()->can('expense_category_create'), 403);
 
         try {
-            $request->merge([
-                'slug' => Str::slug($request->input('name')),
-            ]);
-
-            $validator = validator($request->all(), [
-                'name' => 'required|string|max:255',
-                'slug' => 'required|string|max:255|unique:expense_categories,slug',
-                'description' => 'nullable|string|max:1000',
-                'status' => 'required|in:1,0',
-            ], [
-                'slug.unique' => 'This category name has already been taken.',
-            ]);
-
-            if ($validator->fails()) {
-                $errors = $validator->errors();
-
-                if ($errors->has('slug')) {
-                    $errors->add('name', $errors->first('slug'));
-                }
-
-                return response()->json([
-                    'message' => 'The given data was invalid.',
-                    'errors' => $errors,
-                ], 422);
-            }
-
-            ExpenseCategory::create($validator->validated());
+            ExpenseCategory::create($request->validated());
 
             return response()->json([
                 'success' => true,
@@ -121,38 +95,12 @@ class ExpenseCategoriesController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, ExpenseCategory $expenseCategory)
+    public function update(ExpenseCategoryRequest $request, ExpenseCategory $expenseCategory)
     {
         abort_if(! Auth::user()->can('expense_category_edit'), 403);
 
         try {
-            $request->merge([
-                'slug' => Str::slug($request->input('name')),
-            ]);
-
-            $validator = validator($request->all(), [
-                'name' => 'required|string|max:255',
-                'slug' => 'required|string|max:255|unique:expense_categories,slug,'.$expenseCategory->id,
-                'description' => 'nullable|string|max:1000',
-                'status' => 'required|in:1,0',
-            ], [
-                'slug.unique' => 'This category name has already been taken.',
-            ]);
-
-            if ($validator->fails()) {
-                $errors = $validator->errors();
-
-                if ($errors->has('slug')) {
-                    $errors->add('name', $errors->first('slug'));
-                }
-
-                return response()->json([
-                    'message' => 'The given data was invalid.',
-                    'errors' => $errors,
-                ], 422);
-            }
-
-            $expenseCategory->update($validator->validated());
+            $expenseCategory->update($request->validated());
 
             return response()->json([
                 'success' => true,

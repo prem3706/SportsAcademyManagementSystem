@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ForgotPasswordRequest;
 use App\Models\User;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\Request;
@@ -24,10 +25,10 @@ class ForgotPasswordController extends Controller
     }
 
     // Send Reset Password Email
-    public function submitForgetPasswordForm(Request $request)
+    public function submitForgetPasswordForm(ForgotPasswordRequest $request)
     {
         try {
-            $request->validate(['email' => 'required|email']);
+            $request->validated();
 
             $status = Password::sendResetLink(
                 $request->only('email')
@@ -56,14 +57,10 @@ class ForgotPasswordController extends Controller
     }
 
     // Reset Password
-    public function submitResetPasswordForm(Request $request)
+    public function submitResetPasswordForm(ForgotPasswordRequest $request)
     {
         try {
-            $request->validate([
-                'token' => 'required',
-                'email' => 'required|email',
-                'password' => 'required|min:8|confirmed',
-            ]);
+            $request->validated();
 
             $status = Password::reset(
                 $request->only('email', 'password', 'password_confirmation', 'token'),

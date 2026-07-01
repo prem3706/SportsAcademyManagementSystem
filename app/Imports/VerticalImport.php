@@ -272,9 +272,8 @@ class VerticalImport
                         'password' => $plainPassword,
                         'status' => strtolower($row['status'] ?? '') === 'active' ? 'active' : 'inactive',
                         'joined_at' => !empty($row['joined_at']) ? date('Y-m-d', strtotime($row['joined_at'])) : now()->toDateString(),
+                        'role' => $role,
                     ]);
-
-                    $user->syncRoles([$role]);
                 });
                 $this->importedCount++;
             } catch (\Exception $e) {
@@ -368,8 +367,8 @@ class VerticalImport
                         'password' => $plainPassword,
                         'status' => strtolower($row['status'] ?? '') === 'active' ? 'active' : 'inactive',
                         'joined_at' => !empty($row['joined_at']) ? date('Y-m-d', strtotime($row['joined_at'])) : now()->toDateString(),
+                        'role' => 'player',
                     ]);
-                    $player->assignRole('player');
 
                     if (!empty($row['batch']) && !empty($row['sport']) && !empty($row['level'])) {
                         $sport = Sport::where('name', trim($row['sport']))->first();

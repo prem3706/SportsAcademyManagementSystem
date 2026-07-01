@@ -3,8 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\DataTables\UsersDataTable;
-use App\Http\Requests\StoreUserRequest;
-use App\Http\Requests\UpdateUserRequest;
+use App\Http\Requests\UserRequest;
 use App\Models\Role;
 use App\Models\User;
 use Exception;
@@ -52,7 +51,7 @@ class UserController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreUserRequest $request)
+    public function store(UserRequest $request)
     {
         abort_if(! Auth::user()->can('user_create'), 403);
 
@@ -105,7 +104,7 @@ class UserController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateUserRequest $request, User $user)
+    public function update(UserRequest $request, User $user)
     {
         abort_if(! Auth::user()->can('user_edit'), 403);
 

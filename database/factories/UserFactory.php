@@ -35,6 +35,7 @@ class UserFactory extends Factory
             'status' => 'active',
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
+            'role' => 'player',
         ];
     }
 
@@ -50,22 +51,22 @@ class UserFactory extends Factory
 
     public function coach(): static
     {
-        return $this->afterCreating(function (User $user) {
-            $user->assignRole('coach');
-        });
+        return $this->state(fn (array $attributes) => [
+            'role' => 'coach',
+        ]);
     }
 
     public function admin(): static
     {
-        return $this->afterCreating(function (User $user) {
-            $user->assignRole('admin');
-        });
+        return $this->state(fn (array $attributes) => [
+            'role' => 'admin',
+        ]);
     }
 
     public function player(): static
     {
-        return $this->afterCreating(function (User $user) {
-            $user->assignRole('player');
-        });
+        return $this->state(fn (array $attributes) => [
+            'role' => 'player',
+        ]);
     }
 }

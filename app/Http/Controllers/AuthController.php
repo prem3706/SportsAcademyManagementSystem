@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\LoginRequest;
 use App\Models\User;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -53,13 +55,10 @@ class AuthController extends Controller
     //     }
     // }
 
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
         try {
-            $credentials = $request->validate([
-                'email' => 'required|email',
-                'password' => 'required',
-            ]);
+            $credentials = $request->validated();
 
             if (Auth::attempt($credentials, $request->boolean('remember'))) {
 
@@ -88,7 +87,7 @@ class AuthController extends Controller
                 ])
                 ->onlyInput('email');
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
 
             Log::error('Login Error: '.$e->getMessage());
 
@@ -110,7 +109,7 @@ class AuthController extends Controller
             return redirect('/')
                 ->with('success', 'You have been logged out successfully.');
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
 
             Log::error('Logout Error: '.$e->getMessage());
 

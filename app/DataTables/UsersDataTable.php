@@ -70,7 +70,11 @@ class UsersDataTable extends DataTable
                 return $user->updated_at->format('Y-m-d');
             })
             ->editColumn('Name', function (User $user) {
-                $fullName = $user->firstname.' '.'('.$user->getRoleNames()->first().')';
+                $fullName = trim($user->firstname . ' ' . $user->lastname);
+                $role = $user->getRoleNames()->first();
+                if ($role) {
+                    $fullName .= ' (' . $role . ')';
+                }
 
                 if (Auth::id() === $user->id) {
                     $fullName .= ' <span class="badge bg-secondary">You</span>';
@@ -92,7 +96,7 @@ class UsersDataTable extends DataTable
      */
     public function query(User $model): QueryBuilder
     {
-        $query = $model->newQuery();
+        $query = $model->newQuery()->with('roles');
 
         if (request()->filled('status')) {
 

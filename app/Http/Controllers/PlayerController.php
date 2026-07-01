@@ -8,6 +8,7 @@ use App\Imports\PlayersImport;
 use App\Models\Batch;
 use App\Models\Level;
 use App\Models\Sport;
+use App\Http\Requests\PlayerRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -56,23 +57,11 @@ class PlayerController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(PlayerRequest $request)
     {
         abort_if(! Auth::user()->can('player_create'), 403);
         try {
-            $request->validate([
-                'firstname' => 'required|string|max:255',
-                'lastname' => 'required|string|max:255',
-                'email' => 'nullable|email|unique:users,email',
-                'phone' => 'required|string|max:10|unique:users,phone',
-                'joined_at' => 'required|date',
-                'gender' => 'nullable|in:male,female,other',
-                'assignments' => 'required|array|min:1',
-                'assignments.*.sport_id' => 'required|exists:sports,id',
-                'assignments.*.level_id' => 'required|exists:levels,id',
-                'assignments.*.batch_id' => 'required|exists:batches,id',
-                'assignments.*.joined_at' => 'required|date',
-            ]);
+            $validated = $request->validated();
 
             // Ensure the 'player' role exists
             if (!Role::where('name', 'player')->exists()) {
@@ -107,8 +96,8 @@ class PlayerController extends Controller
                     'gender' => $request->gender,
                     'status' => 'active',
                     'joined_at' => $request->joined_at,
+                    'role' => 'player',
                 ]);
-                $player->assignRole('player');
 
                 // Attach player to all selected batches
                 foreach ($request->assignments as $assignment) {
@@ -166,24 +155,13 @@ class PlayerController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(PlayerRequest $request, string $id)
     {
         abort_if(! Auth::user()->can('player_edit'), 403);
         try {
             $player = User::findOrFail($id);
 
-            $request->validate([
-                'firstname' => 'required|string|max:255',
-                'lastname' => 'required|string|max:255',
-                'email' => 'nullable|email|unique:users,email,'.$player->id,
-                'phone' => 'required|string|max:10|unique:users,phone,'.$player->id,
-                'joined_at' => 'required|date',
-                'gender' => 'nullable|in:male,female,other',
-                'status' => 'required|in:active,inactive',
-                'assignments' => 'required|array|min:1',
-                'assignments.*.batch_id' => 'required|exists:batches,id',
-                'assignments.*.joined_at' => 'required|date',
-            ]);
+            $validatedData = $request->validated();
 
             // Ensure the 'player' role exists
             if (!Role::where('name', 'player')->exists()) {
@@ -329,13 +307,9 @@ class PlayerController extends Controller
     /**
      * Import Players from Excel
      */
-    public function import(Request $request)
+    public function import(PlayerRequest $request)
     {
         abort_if(! Auth::user()->can('player_create'), 403);
-
-        $request->validate([
-            'players' => 'required|array',
-        ]);
 
         try {
             $players = $request->input('players');
@@ -377,12 +351,8 @@ class PlayerController extends Controller
         }
     }
 
-    public function readExcel(Request $request)
+    public function readExcel(PlayerRequest $request)
     {
-        // Validate the uploaded file
-        $request->validate([
-            'file' => 'required|file|mimes:xlsx,xls,csv|max:10240',
-        ]);
 
         try {
             // Read data into a plain PHP array directly from the uploaded file

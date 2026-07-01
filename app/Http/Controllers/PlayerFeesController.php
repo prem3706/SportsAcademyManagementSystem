@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\DataTables\PlayerFeesDataTable;
+use App\Http\Requests\PlayerFeeRequest;
 use App\Models\Batch;
 use App\Models\PlayerFee;
 use App\Models\Setting;
@@ -143,30 +144,12 @@ class PlayerFeesController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(PlayerFeeRequest $request)
     {
         abort_if(! Auth::user()->can('fee_create'), 403);
 
         try {
-            $rules = [
-                'player_id' => 'required|exists:users,id',
-                'batch_id' => 'required|exists:batches,id',
-                'start_date' => 'required|date',
-                'end_date' => 'required|date|after_or_equal:start_date',
-                'sub_totalamount' => 'required|numeric|min:0',
-                'discount_amount' => 'required|numeric|min:0',
-                'penalty_amount' => 'required|numeric|min:0',
-                'total_amt' => 'required|numeric|min:0',
-                'payment_type' => 'required|in:upi,cash,card',
-                'status' => 'required|in:paid,pending',
-            ];
-
-            if ($request->payment_type === 'upi') {
-                $rules['upi_id'] = 'required|string|max:255';
-                $rules['img_upi'] = 'required|image|mimes:jpg,jpeg,png|max:2048';
-            }
-
-            $request->validate($rules);
+            $request->validated();
 
             // Check for overlapping fee payments for this player and batch
             $overlapping = PlayerFee::where('player_id', $request->player_id)
@@ -262,30 +245,12 @@ class PlayerFeesController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, PlayerFee $playerFee)
+    public function update(PlayerFeeRequest $request, PlayerFee $playerFee)
     {
         abort_if(! Auth::user()->can('fee_edit'), 403);
 
         try {
-            $rules = [
-                'player_id' => 'required|exists:users,id',
-                'batch_id' => 'required|exists:batches,id',
-                'start_date' => 'required|date',
-                'end_date' => 'required|date|after_or_equal:start_date',
-                'sub_totalamount' => 'required|numeric|min:0',
-                'discount_amount' => 'required|numeric|min:0',
-                'penalty_amount' => 'required|numeric|min:0',
-                'total_amt' => 'required|numeric|min:0',
-                'payment_type' => 'required|in:upi,cash,card',
-                'status' => 'required|in:paid,pending',
-            ];
-
-            if ($request->payment_type === 'upi') {
-                $rules['upi_id'] = 'required|string|max:255';
-                $rules['img_upi'] = 'nullable|image|mimes:jpg,jpeg,png|max:2048';
-            }
-
-            $request->validate($rules);
+            $request->validated();
 
             // Check for overlapping fee payments for this player and batch, excluding the current record
             $overlapping = PlayerFee::where('player_id', $request->player_id)
@@ -383,18 +348,12 @@ class PlayerFeesController extends Controller
     /**
      * Check for overlapping player fee payments.
      */
-    public function checkOverlap(Request $request)
+    public function checkOverlap(PlayerFeeRequest $request)
     {
         abort_if(! Auth::user()->can('fee_create'), 403);
 
         try {
-            $request->validate([
-                'player_id' => 'required|exists:users,id',
-                'batch_id' => 'required|exists:batches,id',
-                'start_date' => 'required|date',
-                'end_date' => 'required|date|after_or_equal:start_date',
-                'exclude_id' => 'nullable|integer',
-            ]);
+            $request->validated();
 
             $query = PlayerFee::where('player_id', $request->player_id)
                 ->where('batch_id', $request->batch_id)

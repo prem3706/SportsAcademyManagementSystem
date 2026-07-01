@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\DataTables\LevelsDataTable;
+use App\Http\Requests\LevelRequest;
 use App\Models\Level;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 use Exception;
 
@@ -45,36 +45,12 @@ class LevelsController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(LevelRequest $request)
     {
         abort_if(! Auth::user()->can('level_create'), 403);
 
         try {
-            $request->merge([
-                'slug' => Str::slug($request->input('name')),
-            ]);
-
-            $validator = validator($request->all(), [
-                'name' => 'required|string|max:255',
-                'slug' => 'required|string|max:255|unique:levels,slug',
-                'status' => 'required|in:active,inactive',
-            ], [
-                'slug.unique' => 'This level name has already been taken.',
-            ]);
-
-            if ($validator->fails()) {
-                $errors = $validator->errors();
-                if ($errors->has('slug')) {
-                    $errors->add('name', $errors->first('slug'));
-                }
-
-                return response()->json([
-                    'message' => 'The given data was invalid.',
-                    'errors' => $errors,
-                ], 422);
-            }
-
-            Level::create($validator->validated());
+            Level::create($request->validated());
 
             return response()->json([
                 'success' => true,
@@ -115,36 +91,12 @@ class LevelsController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Level $level)
+    public function update(LevelRequest $request, Level $level)
     {
         abort_if(! Auth::user()->can('level_edit'), 403);
 
         try {
-            $request->merge([
-                'slug' => Str::slug($request->input('name')),
-            ]);
-
-            $validator = validator($request->all(), [
-                'name' => 'required|string|max:255',
-                'slug' => 'required|string|max:255|unique:levels,slug,'.$level->id,
-                'status' => 'required|in:active,inactive',
-            ], [
-                'slug.unique' => 'This level name has already been taken.',
-            ]);
-
-            if ($validator->fails()) {
-                $errors = $validator->errors();
-                if ($errors->has('slug')) {
-                    $errors->add('name', $errors->first('slug'));
-                }
-
-                return response()->json([
-                    'message' => 'The given data was invalid.',
-                    'errors' => $errors,
-                ], 422);
-            }
-
-            $level->update($validator->validated());
+            $level->update($request->validated());
 
             return response()->json([
                 'success' => true,

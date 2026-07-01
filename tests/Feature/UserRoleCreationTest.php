@@ -34,8 +34,8 @@ class UserRoleCreationTest extends TestCase
             'password' => 'password123',
             'status' => 'active',
             'joined_at' => now(),
+            'role' => 'admin',
         ]);
-        $this->adminUser->assignRole('admin');
     }
 
     /**
