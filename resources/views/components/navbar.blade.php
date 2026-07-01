@@ -62,40 +62,53 @@
             <li class="nav-item dropdown">
                 <a class="nav-link py-0 pe-0" data-coreui-toggle="dropdown" href="#" role="button"
                     aria-haspopup="true" aria-expanded="false">
-                    <div class="avatar avatar-md"><img class="avatar-img" src="assets/img/avatars/8.jpg"
-                            alt="user@email.com"></div>
+                    <div class="avatar avatar-md">
+                        <img class="avatar-img"
+                            src="{{ auth()->user()->profile_picture ? asset('storage/' . auth()->user()->profile_picture) : asset('assets/img/avatars/default.jpg') }}"
+                            alt="{{ auth()->user()->email }}" style="width: 40px; height: 40px; object-fit: cover;">
+                    </div>
                 </a>
-                <div class="dropdown-menu dropdown-menu-end pt-0">
+                <div class="dropdown-menu dropdown-menu-end pt-0 shadow-sm"
+                    style="border-radius: 12px; overflow: hidden; min-width: 230px;">
+                    <!-- User Account Header Info -->
+                    <div class="p-3 bg-light text-center border-bottom">
+                        <div class="avatar avatar-lg mb-2 mx-auto d-block">
+                            <img class="avatar-img shadow-sm"
+                                src="{{ auth()->user()->profile_picture ? asset('storage/' . auth()->user()->profile_picture) : asset('assets/img/avatars/default.jpg') }}"
+                                alt="{{ auth()->user()->email }}" style="width: 52px; height: 52px; object-fit: cover;">
+                        </div>
+                        <div class="fw-bold text-dark mb-0.5" style="font-size: 13.5px;">{{ auth()->user()->firstname }}
+                            {{ auth()->user()->lastname }}</div>
+                        <div class="text-secondary small text-truncate mb-1.5" style="font-size: 11.5px;">
+                            {{ auth()->user()->email }}</div>
+                        <span class="badge bg-secondary text-uppercase fw-semibold"
+                            style="font-size: 8.5px; padding: 3px 8px; letter-spacing: 0.5px;">
+                            {{ auth()->user()->roles->first()->name ?? 'User' }}
+                        </span>
+                    </div>
 
-                    <a class="dropdown-item" href="#">
-                        <svg class="icon me-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                    <a class="dropdown-item py-2.5 d-flex align-items-center" href="{{ route('profile.edit') }}">
+                        <svg class="icon me-2 text-secondary" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
                             <path fill="var(--ci-primary-color, currentcolor)"
                                 d="m411.6 343.656-72.823-47.334 27.455-50.334A80.2 80.2 0 0 0 376 207.681V128a112 112 0 0 0-224 0v79.681a80.24 80.24 0 0 0 9.768 38.308l27.455 50.333-72.823 47.334A79.72 79.72 0 0 0 80 410.732V496h368v-85.268a79.73 79.73 0 0 0-36.4-67.076M416 464H112v-53.268a47.84 47.84 0 0 1 21.841-40.246l97.66-63.479-41.64-76.341A48.15 48.15 0 0 1 184 207.681V128a80 80 0 0 1 160 0v79.681a48.15 48.15 0 0 1-5.861 22.985L296.5 307.007l97.662 63.479A47.84 47.84 0 0 1 416 410.732Z"
                                 class="ci-primary" />
                         </svg>
-                        Profile
+                        <span>Profile Settings</span>
                     </a>
 
-                    <a class="dropdown-item" href="{{ route('logout') }}">
-                        <svg class="icon me-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                    <a class="dropdown-item py-2.5 d-flex align-items-center text-danger border-top"
+                        href="{{ route('logout') }}">
+                        <svg class="icon me-2 text-danger" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
                             <path fill="var(--ci-primary-color, currentcolor)"
                                 d="M77.155 272.034H351.75v-32.001H77.155l75.053-75.053v-.001l-22.628-22.626-113.681 113.68.001.001h-.001L129.58 369.715l22.628-22.627v-.001z"
                                 class="ci-primary" />
                             <path fill="var(--ci-primary-color, currentcolor)" d="M160 16v32h304v416H160v32h336V16z"
                                 class="ci-primary" />
                         </svg>
-                        Logout
+                        <span>Logout</span>
                     </a>
                 </div>
             </li>
         </ul>
     </div>
-    {{-- <div class="container-fluid px-4">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb my-0">
-                <li class="breadcrumb-item"><a href="#">Home</a></li>
-                <li class="breadcrumb-item active"><span>Dashboard</span></li>
-            </ol>
-        </nav>
-    </div> --}}
 </header>

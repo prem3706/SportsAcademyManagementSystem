@@ -19,7 +19,7 @@ class DatabaseSeeder extends Seeder
 {
     /**
      * Seed the application's database.
-    */
+     */
     // 1. Truncate existing data to avoid conflicts
     public function run(): void
     {
@@ -40,7 +40,7 @@ class DatabaseSeeder extends Seeder
         // 2. Call separated seeders
         $this->call([
             SystemDataSeeder::class,
-            TestDataSeeder::class,
-            ]);
-            }
-            }
+            // TestDataSeeder::class,
+        ]);
+    }
+}
