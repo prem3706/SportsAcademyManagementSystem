@@ -114,4 +114,46 @@ class DashboardOptimizationTest extends TestCase
         // Verify that the queryCount is reasonably low
         $this->assertLessThanOrEqual(25, $queryCount);
     }
+
+    public function test_dashboard_has_no_duplicate_role_queries()
+    {
+        $this->actingAs($this->adminUser);
+
+        $executedQueries = [];
+        DB::listen(function ($query) use (&$executedQueries) {
+            $executedQueries[] = [
+                'sql' => $query->sql,
+                'bindings' => $query->bindings,
+            ];
+        });
+
+        $response = $this->get(route('dashboard'));
+
+        $response->assertStatus(200);
+
+        // Find how many times roles are queried by name or param
+        $roleQueries = array_filter($executedQueries, function ($query) {
+            return str_contains($query['sql'], 'roles') && 
+                   str_contains($query['sql'], 'name');
+        });
+
+        // Map queries to their bindings (e.g., 'player', 'coach')
+        $bindings = array_map(function ($query) {
+            // Find binding matching role names
+            foreach ($query['bindings'] as $binding) {
+                if (in_array($binding, ['player', 'coach'])) {
+                    return $binding;
+                }
+            }
+            return null;
+        }, $roleQueries);
+
+        // Count occurrences of each binding
+        $counts = array_count_values(array_filter($bindings));
+
+        // Assert that 'player' and 'coach' roles are queried at most once each
+        $this->assertLessThanOrEqual(1, $counts['player'] ?? 0, "Duplicate query for 'player' role detected.");
+        $this->assertLessThanOrEqual(1, $counts['coach'] ?? 0, "Duplicate query for 'coach' role detected.");
+    }
 }
+

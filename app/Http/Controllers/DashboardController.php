@@ -8,6 +8,7 @@ use App\Models\Expense;
 use App\Models\PlayerFee;
 use App\Models\Sport;
 use App\Models\User;
+use App\Models\Role;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -109,9 +110,12 @@ class DashboardController extends Controller
             $net_monthly_balance = $month_fees_collected - $month_expenses;
             $total_expenses = Expense::sum('amount');
 
+            $playerRole = Role::findByName('player');
+            $coachRole = Role::findByName('coach');
+
             $stats = [
-                'total_players' => User::role('player')->count(),
-                'total_coaches' => User::role('coach')->count(),
+                'total_players' => User::role($playerRole)->count(),
+                'total_coaches' => User::role($coachRole)->count(),
                 'total_sports' => Sport::count(),
                 'total_batches' => Batch::count(),
                 'month_fees_collected' => $month_fees_collected,
@@ -121,7 +125,7 @@ class DashboardController extends Controller
                 'total_fees_pending' => $total_fees_pending,
                 'total_monthly_fees_pending' => $total_monthly_fees_pending,
                 'recent_fees' => PlayerFee::with('player')->latest()->take(5)->get(),
-                'recent_players' => User::role('player')->latest()->take(5)->get(),
+                'recent_players' => User::role($playerRole)->latest()->take(5)->get(),
                 'recent_batches' => Batch::with(['sport', 'level', 'coaches'])->latest()->take(5)->get(),
             ];
 
