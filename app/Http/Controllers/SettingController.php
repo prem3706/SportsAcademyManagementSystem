@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\SettingRequest;
 use App\Models\Role;
 use App\Models\Setting;
 use App\Models\Permission;
@@ -45,7 +46,7 @@ class SettingController extends Controller
     /**
      * Update Penalty Settings.
      */
-    public function updatePenalty(Request $request)
+    public function updatePenalty(SettingRequest $request)
     {
         abort_if(! Auth::user()->can('setting_edit'), 403);
 
@@ -55,19 +56,7 @@ class SettingController extends Controller
             // If allow_penalty is checked, it will be sent, otherwise we set to false
             $allowPenalty = $request->has('allow_penalty');
 
-            $rules = [
-                'allow_penalty' => 'nullable',
-            ];
-
-            if ($allowPenalty) {
-                $rules = array_merge($rules, [
-                    'penalty_days' => 'required|integer|min:0',
-                    'penalty_type' => 'required|in:fixed,percentage',
-                    'penalty_amount' => 'required|numeric|min:0',
-                ]);
-            }
-
-            $request->validate($rules);
+            $request->validated();
 
             $settings->update([
                 'allow_penalty' => $allowPenalty,
@@ -92,29 +81,14 @@ class SettingController extends Controller
     /**
      * Update Discount Settings.
      */
-    public function updateDiscount(Request $request)
+    public function updateDiscount(SettingRequest $request)
     {
         abort_if(! Auth::user()->can('setting_edit'), 403);
 
         try {
             $settings = Setting::firstOrCreate(['id' => 1]);
 
-            $rules = [
-                'discount_type' => 'required|in:fixed,percentage',
-                'discount_monthly' => 'required|numeric|min:0',
-                'discount_quarterly' => 'required|numeric|min:0',
-                'discount_half_yearly' => 'required|numeric|min:0',
-                'discount_yearly' => 'required|numeric|min:0',
-            ];
-
-            if ($request->discount_type === 'percentage') {
-                $rules['discount_monthly'] .= '|max:100';
-                $rules['discount_quarterly'] .= '|max:100';
-                $rules['discount_half_yearly'] .= '|max:100';
-                $rules['discount_yearly'] .= '|max:100';
-            }
-
-            $request->validate($rules);
+            $request->validated();
 
             $settings->update([
                 'discount_type' => $request->discount_type,

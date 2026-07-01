@@ -3,12 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\DataTables\ExpenseCategoriesDataTable;
+use App\Http\Requests\ExpenseCategoryRequest;
 use App\Models\ExpenseCategory;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
-use Exception;
 
 class ExpenseCategoriesController extends Controller
 {
@@ -22,7 +22,8 @@ class ExpenseCategoriesController extends Controller
         try {
             return $dataTable->render('expenseCategories.index');
         } catch (Exception $e) {
-            Log::error('ExpenseCategory Index Error: ' . $e->getMessage());
+            Log::error('ExpenseCategory Index Error: '.$e->getMessage());
+
             return back()->with('error', 'Something went wrong.');
         }
     }
@@ -37,7 +38,8 @@ class ExpenseCategoriesController extends Controller
         try {
             return view('expenseCategories.addExpenseCategoryForm');
         } catch (Exception $e) {
-            Log::error('ExpenseCategory Create Form Error: ' . $e->getMessage());
+            Log::error('ExpenseCategory Create Form Error: '.$e->getMessage());
+
             return abort(500);
         }
     }
@@ -45,45 +47,20 @@ class ExpenseCategoriesController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(ExpenseCategoryRequest $request)
     {
         abort_if(! Auth::user()->can('expense_category_create'), 403);
 
         try {
-            $request->merge([
-                'slug' => Str::slug($request->input('name')),
-            ]);
-
-            $validator = validator($request->all(), [
-                'name' => 'required|string|max:255',
-                'slug' => 'required|string|max:255|unique:expense_categories,slug',
-                'description' => 'nullable|string|max:1000',
-                'status' => 'required|in:1,0',
-            ], [
-                'slug.unique' => 'This category name has already been taken.',
-            ]);
-
-            if ($validator->fails()) {
-                $errors = $validator->errors();
-
-                if ($errors->has('slug')) {
-                    $errors->add('name', $errors->first('slug'));
-                }
-
-                return response()->json([
-                    'message' => 'The given data was invalid.',
-                    'errors' => $errors,
-                ], 422);
-            }
-
-            ExpenseCategory::create($validator->validated());
+            ExpenseCategory::create($request->validated());
 
             return response()->json([
                 'success' => true,
                 'message' => 'Expense Category created successfully.',
             ]);
         } catch (Exception $e) {
-            Log::error('ExpenseCategory Store Error: ' . $e->getMessage());
+            Log::error('ExpenseCategory Store Error: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
                 'message' => 'Something went wrong.',
@@ -94,10 +71,10 @@ class ExpenseCategoriesController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
-    {
-        abort_if(! Auth::user()->can('expense_category_view'), 403);
-    }
+    // public function show(string $id)
+    // {
+
+    // }
 
     /**
      * Show the form for editing the specified resource.
@@ -109,7 +86,8 @@ class ExpenseCategoriesController extends Controller
         try {
             return view('expenseCategories.editExpenseCategoryForm', compact('expenseCategory'));
         } catch (Exception $e) {
-            Log::error('ExpenseCategory Edit Form Error: ' . $e->getMessage());
+            Log::error('ExpenseCategory Edit Form Error: '.$e->getMessage());
+
             return abort(500);
         }
     }
@@ -117,45 +95,20 @@ class ExpenseCategoriesController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, ExpenseCategory $expenseCategory)
+    public function update(ExpenseCategoryRequest $request, ExpenseCategory $expenseCategory)
     {
         abort_if(! Auth::user()->can('expense_category_edit'), 403);
 
         try {
-            $request->merge([
-                'slug' => Str::slug($request->input('name')),
-            ]);
-
-            $validator = validator($request->all(), [
-                'name' => 'required|string|max:255',
-                'slug' => 'required|string|max:255|unique:expense_categories,slug,' . $expenseCategory->id,
-                'description' => 'nullable|string|max:1000',
-                'status' => 'required|in:1,0',
-            ], [
-                'slug.unique' => 'This category name has already been taken.',
-            ]);
-
-            if ($validator->fails()) {
-                $errors = $validator->errors();
-
-                if ($errors->has('slug')) {
-                    $errors->add('name', $errors->first('slug'));
-                }
-
-                return response()->json([
-                    'message' => 'The given data was invalid.',
-                    'errors' => $errors,
-                ], 422);
-            }
-
-            $expenseCategory->update($validator->validated());
+            $expenseCategory->update($request->validated());
 
             return response()->json([
                 'success' => true,
                 'message' => 'Expense Category updated successfully.',
             ]);
         } catch (Exception $e) {
-            Log::error('ExpenseCategory Update Error: ' . $e->getMessage());
+            Log::error('ExpenseCategory Update Error: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
                 'message' => 'Something went wrong.',
@@ -178,7 +131,8 @@ class ExpenseCategoriesController extends Controller
                 'message' => 'Expense Category deleted successfully.',
             ]);
         } catch (Exception $e) {
-            Log::error('ExpenseCategory Delete Error: ' . $e->getMessage());
+            Log::error('ExpenseCategory Delete Error: '.$e->getMessage());
+
             return response()->json([
                 'success' => false,
                 'message' => 'Something went wrong.',
@@ -186,83 +140,15 @@ class ExpenseCategoriesController extends Controller
         }
     }
 
-    /**
-     * Bulk delete resources.
-     */
     public function bulkDelete(Request $request)
     {
-        abort_if(! Auth::user()->can('expense_category_delete'), 403);
-
-        try {
-            $ids = $request->input('select', []);
-
-            if (! is_array($ids)) {
-                $ids = array_filter(explode(',', $ids));
-            }
-
-            if (count($ids) > 0) {
-                $deletedCount = ExpenseCategory::destroy($ids);
-
-                return response()->json([
-                    'success' => true,
-                    'message' => $deletedCount . ' Expense Categories deleted successfully.',
-                ]);
-            }
-
-            return response()->json([
-                'success' => false,
-                'message' => 'No valid Expense Categories selected for deletion.',
-            ], 422);
-        } catch (Exception $e) {
-            Log::error('ExpenseCategory Bulk Delete Error: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Something went wrong.',
-            ], 500);
-        }
+        return handleBulkDelete($request, ExpenseCategory::class, 'Expense Categories', 'expense_category_delete');
     }
 
-    /**
-     * Bulk update status.
-     */
     public function bulkUpdate(Request $request)
     {
-        abort_if(! Auth::user()->can('expense_category_edit'), 403);
-
-        try {
-            $validated = $request->validate([
-                'select' => 'required',
-                'status' => 'required|in:active,inactive',
-            ]);
-
-            $ids = $request->input('select', []);
-
-            $status = $request->input('status') === 'active' ? 1 : 0;
-
-            if (! is_array($ids)) {
-                $ids = array_filter(explode(',', $ids));
-            }
-
-            if (count($ids) > 0) {
-                $updatedCount = ExpenseCategory::whereIn('id', $ids)
-                    ->update(['status' => $status]);
-
-                return response()->json([
-                    'success' => true,
-                    'message' => $updatedCount . ' Expense Categories updated successfully.',
-                ]);
-            }
-
-            return response()->json([
-                'success' => false,
-                'message' => 'No valid Expense Categories selected for update.',
-            ], 422);
-        } catch (Exception $e) {
-            Log::error('ExpenseCategory Bulk Update Error: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Something went wrong.',
-            ], 500);
-        }
+        return handleBulkUpdate($request, ExpenseCategory::class, 'Expense Categories', 'expense_category_edit', function ($status) {
+            return $status === 'active' ? 1 : 0;
+        });
     }
 }

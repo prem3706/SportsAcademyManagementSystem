@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ImportExportRequest;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -46,13 +47,11 @@ class ImportExportController extends Controller
         }
     }
 
-    public function export(Request $request)
+    public function export(ImportExportRequest $request)
     {
         abort_if(! Auth::user()->can('setting_view'), 403);
 
-        $request->validate([
-            'columns' => 'required|array',
-        ]);
+        $request->validated();
 
         try {
             return Excel::download(new CustomAllTablesExport($request->input('columns')), 'All_Tables_Export_'.now()->format('YmdHis').'.xlsx');
@@ -69,14 +68,11 @@ class ImportExportController extends Controller
         return view('settings.export-fields-form', compact('schema'));
     }
 
-    public function preview(Request $request)
+    public function preview(ImportExportRequest $request)
     {
         abort_if(! Auth::user()->can('setting_view'), 403);
 
-        // Validate the uploaded file
-        $request->validate([
-            'file' => 'required|file|mimes:xlsx,xls,csv|max:10240',
-        ]);
+        $request->validated();
 
         try {
             // Read data into a plain PHP array directly from the uploaded file
@@ -149,20 +145,11 @@ class ImportExportController extends Controller
         }
     }
 
-    public function import(Request $request)
+    public function import(ImportExportRequest $request)
     {
         abort_if(! Auth::user()->can('setting_view'), 403);
 
-        $request->validate([
-            'sports' => 'array',
-            'levels' => 'array',
-            'sport_levels' => 'array',
-            'expense_categories' => 'array',
-            'batches' => 'array',
-            'users' => 'array',
-            'expenses' => 'array',
-            'players' => 'array',
-        ]);
+        $request->validated();
 
         DB::beginTransaction();
         try {

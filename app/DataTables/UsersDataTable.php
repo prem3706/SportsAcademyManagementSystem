@@ -54,7 +54,7 @@ class UsersDataTable extends DataTable
     </button>';
                 }
 
-                return '<div class="d-flex justify-content-center gap-2">' . $editBtn . $deleteBtn . '</div>';
+                return '<div class="d-flex justify-content-center gap-2">'.$editBtn.$deleteBtn.'</div>';
             })
             ->editColumn('status', function (User $user) {
                 if ($user->status == 'active') {
@@ -70,13 +70,20 @@ class UsersDataTable extends DataTable
                 return $user->updated_at->format('Y-m-d');
             })
             ->editColumn('Name', function (User $user) {
-                $fullName = $user->firstname.' '.'('.$user->getRoleNames()->first().')';
+                $fullName = trim($user->firstname . ' ' . $user->lastname);
+                $role = $user->getRoleNames()->first();
+                if ($role) {
+                    $fullName .= ' (' . $role . ')';
+                }
 
                 if (Auth::id() === $user->id) {
                     $fullName .= ' <span class="badge bg-secondary">You</span>';
                 }
 
                 return $fullName;
+            })
+            ->editColumn('role', function (User $user) {
+                return ucfirst($user->getRoleNames()->first() ?? '');
             })
             ->setRowId('id')
             ->rawColumns(['select', 'action', 'Name', 'status']);
@@ -89,7 +96,7 @@ class UsersDataTable extends DataTable
      */
     public function query(User $model): QueryBuilder
     {
-        $query = $model->newQuery();
+        $query = $model->newQuery()->with('roles');
 
         if (request()->filled('status')) {
 
@@ -97,8 +104,7 @@ class UsersDataTable extends DataTable
         }
 
         if (request()->filled('role')) {
-
-            $query->where('role', request('role'));
+            $query->role(request('role'));
         }
 
         return $query;
@@ -148,7 +154,7 @@ class UsersDataTable extends DataTable
             Column::make('phone'),
             Column::make('gender'),
             Column::make('status')->title('Status'),
-            Column::make('role'),
+            Column::make('role')->orderable(false)->searchable(false),
         ]);
 
         if (auth()->user()->can('user_edit') || auth()->user()->can('user_delete')) {

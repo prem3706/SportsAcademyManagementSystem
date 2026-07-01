@@ -600,6 +600,11 @@ $(document).ready(function () {
         deleteResourceAjax($(this).data('url'), 'This Sport will be deleted permanently!');
     });
 
+    // Delete Sports Levels Mapping
+    $(document).on('click', '#deleteSportsLevelsBtn', function () {
+        deleteResourceAjax($(this).data('url'), 'This Sports Levels mapping will be deleted permanently!');
+    });
+
     Bulkdelete('sports', '.user-checkbox');
     BulkUpdateStatus('sports', '.user-checkbox');
 

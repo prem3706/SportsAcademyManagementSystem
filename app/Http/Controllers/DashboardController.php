@@ -8,6 +8,7 @@ use App\Models\Expense;
 use App\Models\PlayerFee;
 use App\Models\Sport;
 use App\Models\User;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -16,9 +17,35 @@ class DashboardController extends Controller
 {
     public function index(UnpaidPlayersDataTable $dataTable, Request $request)
     {
+        abort_if(! $request->user()->can('dashboard_view'), 403);
+
         try {
             // 1. Monthly Revenue collections (Last 6 Months)
-            $monthly_earnings = collect(range(5, 0))->map(function ($i) {
+            $overallStartDate = now()->subMonths(5)->startOfMonth();
+            $overallEndDate = now()->endOfMonth();
+
+            // Fetch all paid player fees within the overall 6-month period
+            $paidFees = PlayerFee::where('status', 'paid')
+                ->where('end_date', '>=', $overallStartDate->toDateString())
+                ->where('start_date', '<=', $overallEndDate->toDateString())
+                ->get(['player_id', 'batch_id', 'start_date', 'end_date']);
+
+            // Group by player_id and batch_id for fast in-memory lookup
+            $paidFeesGrouped = $paidFees->groupBy(function ($fee) {
+                return $fee->player_id . '_' . $fee->batch_id;
+            });
+
+            // Get all player-batch enrollments
+            $allEnrollments = DB::table('batch_player')
+                ->join('batches', 'batch_player.batch_id', '=', 'batches.id')
+                ->join('sports_levels', function ($join) {
+                    $join->on('batches.sport_id', '=', 'sports_levels.sport_id')
+                        ->on('batches.level_id', '=', 'sports_levels.level_id');
+                })
+                ->select('batch_player.player_id', 'batch_player.batch_id', 'batch_player.joined_at', 'sports_levels.fees')
+                ->get();
+
+            $monthly_earnings = collect(range(5, 0))->map(function ($i) use ($allEnrollments, $paidFeesGrouped) {
                 $startOfMonth = now()->subMonths($i)->startOfMonth();
                 $endOfMonth = now()->subMonths($i)->endOfMonth();
                 $monthName = $startOfMonth->format('M Y');
@@ -26,28 +53,31 @@ class DashboardController extends Controller
                 $paid = 0;
                 $pending = 0;
 
-                // Get all player-batch enrollments active in this month
-                $enrollments = DB::table('batch_player')
-                    ->join('batches', 'batch_player.batch_id', '=', 'batches.id')
-                    ->join('sports_levels', function ($join) {
-                        $join->on('batches.sport_id', '=', 'sports_levels.sport_id')
-                            ->on('batches.level_id', '=', 'sports_levels.level_id');
-                    })
-                    ->where(function ($q) use ($endOfMonth) {
-                        $q->whereNull('batch_player.joined_at')
-                            ->orWhere('batch_player.joined_at', '<=', $endOfMonth);
-                    })
-                    ->select('batch_player.player_id', 'batch_player.batch_id', 'sports_levels.fees')
-                    ->get();
+                $startOfMonthStr = $startOfMonth->toDateString();
+                $endOfMonthStr = $endOfMonth->toDateString();
+
+                // Filter enrollments active in this month
+                $enrollments = $allEnrollments->filter(function ($enrollment) use ($endOfMonthStr) {
+                    return is_null($enrollment->joined_at) || $enrollment->joined_at <= $endOfMonthStr;
+                });
 
                 foreach ($enrollments as $enrollment) {
                     // Check if player has paid for this batch for this month
-                    $hasPaid = PlayerFee::where('player_id', $enrollment->player_id)
-                        ->where('batch_id', $enrollment->batch_id)
-                        ->where('status', 'paid')
-                        ->where('start_date', '<=', $endOfMonth)
-                        ->where('end_date', '>=', $startOfMonth)
-                        ->exists();
+                    $key = $enrollment->player_id . '_' . $enrollment->batch_id;
+                    $playerBatchFees = $paidFeesGrouped->get($key);
+                    $hasPaid = false;
+
+                    if ($playerBatchFees) {
+                        foreach ($playerBatchFees as $fee) {
+                            $feeStartDate = $fee->start_date->toDateString();
+                            $feeEndDate = $fee->end_date->toDateString();
+
+                            if ($feeStartDate <= $endOfMonthStr && $feeEndDate >= $startOfMonthStr) {
+                                $hasPaid = true;
+                                break;
+                            }
+                        }
+                    }
 
                     if ($hasPaid) {
                         $paid += floatval($enrollment->fees);
@@ -80,8 +110,8 @@ class DashboardController extends Controller
             $total_expenses = Expense::sum('amount');
 
             $stats = [
-                'total_players' => User::where('role', 'player')->count(),
-                'total_coaches' => User::where('role', 'coach')->count(),
+                'total_players' => User::role('player')->count(),
+                'total_coaches' => User::role('coach')->count(),
                 'total_sports' => Sport::count(),
                 'total_batches' => Batch::count(),
                 'month_fees_collected' => $month_fees_collected,
@@ -91,7 +121,7 @@ class DashboardController extends Controller
                 'total_fees_pending' => $total_fees_pending,
                 'total_monthly_fees_pending' => $total_monthly_fees_pending,
                 'recent_fees' => PlayerFee::with('player')->latest()->take(5)->get(),
-                'recent_players' => User::where('role', 'player')->latest()->take(5)->get(),
+                'recent_players' => User::role('player')->latest()->take(5)->get(),
                 'recent_batches' => Batch::with(['sport', 'level', 'coaches'])->latest()->take(5)->get(),
             ];
 
@@ -100,14 +130,17 @@ class DashboardController extends Controller
             $unpaid_year = intval($request->query('unpaid_year', now()->year));
 
             // 3. Sport-wise Revenue distribution
-            $sports_earnings = Sport::all()->map(function ($sport) {
-                $earnings = PlayerFee::whereHas('batch', function ($q) use ($sport) {
-                    $q->where('sport_id', $sport->id);
-                })->where('status', 'paid')->sum('total_amt');
+            $sports_earnings_data = DB::table('player_fees')
+                ->join('batches', 'player_fees.batch_id', '=', 'batches.id')
+                ->where('player_fees.status', 'paid')
+                ->select('batches.sport_id', DB::raw('SUM(player_fees.total_amt) as total_earnings'))
+                ->groupBy('batches.sport_id')
+                ->pluck('total_earnings', 'sport_id');
 
+            $sports_earnings = Sport::all()->map(function ($sport) use ($sports_earnings_data) {
                 return [
                     'name' => $sport->name,
-                    'earnings' => floatval($earnings),
+                    'earnings' => floatval($sports_earnings_data->get($sport->id, 0)),
                 ];
             })->values()->toArray();
 
@@ -117,8 +150,9 @@ class DashboardController extends Controller
                 'unpaid_month' => $unpaid_month,
                 'unpaid_year' => $unpaid_year,
             ]));
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Dashboard Index Error: '.$e->getMessage());
+
             return back()->with('error', 'Something went wrong while loading the dashboard.');
         }
     }

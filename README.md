@@ -1,58 +1,226 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🏆 Sports Academy Management System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A modern Sports Academy Management System built with **Laravel**. This application helps sports academies efficiently manage players, coaches, batches, fees, roles,  and permissions from a centralized dashboard.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 📌 Features
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### 🔐 Authentication
+- Login & Logout
+- Forgot Password
+- Change Password
+- Profile Management
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### 👥 User Management
+- Create User
+- Edit User
+- Delete User
+- View User Details
+- Activate/Deactivate User
+- Role Assignment
 
-## Learning Laravel
+### 🛡️ Role & Permission Management
+- Role Management
+- Permission Management
+- Module-wise Permissions
+- Access Control using Spatie Laravel Permission
+- Admin Full Access
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### 🏃 Player Management
+- Add Player
+- Edit Player
+- Delete Player
+- Player Details
+- Player Status
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### 🧑‍🏫 Coach Management
+- Add Coach
+- Edit Coach
+- Delete Coach
+- Assign Coach to Batch
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+### 🏅 Sports Management
+- Add Sport
+- Edit Sport
+- Delete Sport
 
-## Agentic Development
+### 📚 Level Management
+- Beginner
+- Intermediate
+- Advanced
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+### 🗓️ Batch Management
+- Create Batch
+- Assign Coach
+- Assign Sport
+- Assign Level
+- Batch Capacity
+- Batch Schedule
+
+### 💰 Fee Management
+- Monthly Fees
+- Fee Collection
+- Pending Fees
+- Payment History
+
+### 🎁 Discount Management
+- Percentage Discount
+- Fixed Discount
+- Discount Configuration
+
+### ⚠️ Penalty Management
+- Late Payment Penalty
+- Penalty Configuration
+
+### 📤 Import & Export
+- Excel Import
+- Excel Export
+- Export Multiple Modules
+- Single Sheet Export
+
+### 📈 Dashboard
+- Total Users
+- Total Players
+- Total Coaches
+- Total Sports
+- Total Batches
+- Attendance Summary
+- Revenue Overview
+
+---
+
+# 🚀 Technology Stack
+
+- Laravel
+- PHP 8+
+- MySQL
+- Bootstrap 5
+- CoreUI
+- jQuery
+- AJAX
+- Yajra DataTables
+- Spatie Laravel Permission
+- Laravel Excel (Maatwebsite)
+
+---
+
+# 📦 Packages Used
+
+- spatie/laravel-permission
+- maatwebsite/excel
+- yajra/laravel-datatables
+- laravel/ui or breeze
+- sweetalert2
+
+---
+
+# ⚙️ Installation
+
+Clone the repository
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+git clone https://github.com/prem3706/sports-academy-management.git
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Go to project directory
 
-## Contributing
+```bash
+cd sports-academy-management
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Install dependencies
 
-## Code of Conduct
+```bash
+composer install
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Install Node packages
 
-## Security Vulnerabilities
+```bash
+npm install
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Copy environment file
 
-## License
+```bash
+cp .env.example .env
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Generate application key
+
+```bash
+php artisan key:generate
+```
+
+Configure your database in `.env`
+
+Run migrations
+
+```bash
+php artisan migrate
+```
+
+(Optional) Seed database
+
+```bash
+php artisan db:seed
+```
+
+Create storage link
+
+```bash
+php artisan storage:link
+```
+
+Start development server
+
+```bash
+php artisan serve
+```
+
+Compile assets
+
+```bash
+npm run dev
+```
+
+# 🔒 Security
+
+- CSRF Protection
+- Authentication
+- Authorization
+- Role-Based Access Control
+- Input Validation
+- Database Transactions
+- Password Hashing
+
+---
+
+# 📈 Future Enhancements
+
+- QR Code Attendance
+- Mobile Application
+- WhatsApp Notifications
+- SMS Notifications
+- Email Notifications
+- Payment Gateway Integration
+- AI Performance Analytics
+- Online Registration
+- REST API
+
+---
+
+
+
+# 👨‍💻 Developer
+
+**Prem**
+
+Laravel Developer
+
+GitHub: https://github.com/prem3706
+
+---
+
+⭐ If you like this project, don't forget to star the repository.

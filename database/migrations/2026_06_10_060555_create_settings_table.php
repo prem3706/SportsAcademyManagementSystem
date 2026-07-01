@@ -17,6 +17,7 @@ return new class extends Migration
             $table->integer('penalty_days')->default(0);
             $table->string('penalty_type')->default('fixed'); // fixed or percentage
             $table->decimal('penalty_amount', 10, 2)->default(0.00);
+            $table->string('discount_type')->default('percentage');
             $table->decimal('discount_monthly', 10, 2)->default(0.00);
             $table->decimal('discount_quarterly', 10, 2)->default(0.00);
             $table->decimal('discount_half_yearly', 10, 2)->default(0.00);

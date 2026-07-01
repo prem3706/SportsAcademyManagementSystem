@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\DataTables\SportsDataTable;
+use App\Http\Requests\SportRequest;
 use App\Models\Sport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 use Exception;
 
@@ -45,37 +45,12 @@ class SportsController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(SportRequest $request)
     {
         abort_if(! Auth::user()->can('sport_create'), 403);
 
         try {
-            $request->merge([
-                'slug' => Str::slug($request->input('name')),
-            ]);
-
-            $validator = validator($request->all(), [
-                'name' => 'required|string|max:255',
-                'slug' => 'required|string|max:255|unique:sports,slug',
-                'description' => 'nullable|string|max:1000',
-                'status' => 'required|in:active,inactive',
-            ], [
-                'slug.unique' => 'This sport name has already been taken.',
-            ]);
-
-            if ($validator->fails()) {
-                $errors = $validator->errors();
-                if ($errors->has('slug')) {
-                    $errors->add('name', $errors->first('slug'));
-                }
-
-                return response()->json([
-                    'message' => 'The given data was invalid.',
-                    'errors' => $errors,
-                ], 422);
-            }
-
-            Sport::create($validator->validated());
+            Sport::create($request->validated());
 
             return response()->json([
                 'success' => true,
@@ -116,37 +91,12 @@ class SportsController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Sport $sport)
+    public function update(SportRequest $request, Sport $sport)
     {
         abort_if(! Auth::user()->can('sport_edit'), 403);
 
         try {
-            $request->merge([
-                'slug' => Str::slug($request->input('name')),
-            ]);
-
-            $validator = validator($request->all(), [
-                'name' => 'required|string|max:255',
-                'slug' => 'required|string|max:255|unique:sports,slug,'.$sport->id,
-                'description' => 'nullable|string|max:1000',
-                'status' => 'required|in:active,inactive',
-            ], [
-                'slug.unique' => 'This sport name has already been taken.',
-            ]);
-
-            if ($validator->fails()) {
-                $errors = $validator->errors();
-                if ($errors->has('slug')) {
-                    $errors->add('name', $errors->first('slug'));
-                }
-
-                return response()->json([
-                    'message' => 'The given data was invalid.',
-                    'errors' => $errors,
-                ], 422);
-            }
-
-            $sport->update($validator->validated());
+            $sport->update($request->validated());
 
             return response()->json([
                 'success' => true,
@@ -186,73 +136,11 @@ class SportsController extends Controller
 
     public function bulkDelete(Request $request)
     {
-        abort_if(! Auth::user()->can('sport_delete'), 403);
-
-        try {
-            $ids = $request->input('select', []);
-
-            if (! is_array($ids)) {
-                $ids = array_filter(explode(',', $ids));
-            }
-
-            if (count($ids) > 0) {
-                $deletedCount = Sport::destroy($ids);
-
-                return response()->json([
-                    'success' => true,
-                    'message' => $deletedCount.' Sports deleted successfully.',
-                ]);
-            }
-
-            return response()->json([
-                'success' => false,
-                'message' => 'No sports selected.',
-            ], 422);
-        } catch (Exception $e) {
-            Log::error('Sport Bulk Delete Error: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Something went wrong.',
-            ], 500);
-        }
+        return handleBulkDelete($request, Sport::class, 'Sports', 'sport_delete');
     }
 
     public function bulkUpdate(Request $request)
     {
-        abort_if(! Auth::user()->can('sport_edit'), 403);
-
-        try {
-            $validated = $request->validate([
-                'select' => 'required',
-                'status' => 'required|string|in:active,inactive',
-            ]);
-
-            $ids = $request->input('select', []);
-            $status = $request->input('status');
-
-            if (! is_array($ids)) {
-                $ids = array_filter(explode(',', $ids));
-            }
-
-            if (count($ids) > 0) {
-                $updatedCount = Sport::whereIn('id', $ids)->update(['status' => $status]);
-
-                return response()->json([
-                    'success' => true,
-                    'message' => $updatedCount.' Sports updated successfully.',
-                ]);
-            }
-
-            return response()->json([
-                'success' => false,
-                'message' => 'No valid Sports selected for update.',
-            ], 422);
-        } catch (Exception $e) {
-            Log::error('Sport Bulk Update Error: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Something went wrong.',
-            ], 500);
-        }
+        return handleBulkUpdate($request, Sport::class, 'Sports', 'sport_edit');
     }
 }

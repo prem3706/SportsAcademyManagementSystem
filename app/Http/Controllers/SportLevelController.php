@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\DataTables\SportsLevelsDataTable;
+use App\Http\Requests\SportLevelRequest;
 use App\Models\Level;
 use App\Models\Sport;
 use Illuminate\Http\Request;
@@ -50,23 +51,18 @@ class SportLevelController extends Controller
                 'success' => false,
                 'message' => 'Failed to load create form.',
             ], 500);
-        }
+        }   
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(SportLevelRequest $request)
     {
         abort_if(! Auth::user()->can('sports_level_create'), 403);
 
         try {
-            $request->validate([
-                'sport_id' => 'required|exists:sports,id',
-                'levels' => 'required|array',
-                'levels.*.level_id' => 'required|exists:levels,id',
-                'levels.*.fees' => 'required|numeric|min:0',
-            ]);
+            $request->validated();
 
             $sport = Sport::findOrFail($request->sport_id);
 
@@ -139,17 +135,12 @@ class SportLevelController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, $id)
+    public function update(SportLevelRequest $request, $id)
     {
         abort_if(! Auth::user()->can('sports_level_edit'), 403);
 
         try {
-            $request->validate([
-                'sport_id' => 'required|exists:sports,id',
-                'levels' => 'required|array',
-                'levels.*.level_id' => 'required|exists:levels,id',
-                'levels.*.fees' => 'required|numeric|min:0',
-            ]);
+            $request->validated();
 
             // Find Sport
             $sport = Sport::findOrFail($id);
@@ -184,6 +175,24 @@ class SportLevelController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        abort_if(! Auth::user()->can('sports_level_delete'), 403);
+
+        try {
+            $sport = Sport::findOrFail($id);
+
+            // Detach all levels from this sport
+            $sport->levels()->detach();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Sports Levels deleted successfully.',
+            ]);
+        } catch (Exception $e) {
+            Log::error('SportLevel Destroy Error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong.',
+            ], 500);
+        }
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\RoleRequest;
 use App\Models\Permission;
 use App\Models\Role;
 use Illuminate\Http\Request;
@@ -31,24 +32,11 @@ class RoleController extends Controller
         }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function store(RoleRequest $request)
     {
         abort_if(! Auth::user()->can('setting_create'), 403);
 
         try {
-            $request->merge([
-                'name' => strtolower(trim($request->input('name'))),
-            ]);
-
-            $request->validate([
-                'name' => 'required|string|max:255|unique:roles,name',
-            ], [
-                'name.unique' => 'This role name has already been taken.',
-            ]);
-
             Role::create([
                 'name' => $request->input('name'),
                 'guard_name' => 'web',
@@ -116,7 +104,7 @@ class RoleController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, $id)
+    public function update(RoleRequest $request, string $id)
     {
         abort_if(! Auth::user()->can('setting_edit'), 403);
 
@@ -142,16 +130,6 @@ class RoleController extends Controller
                     'message' => 'Default roles cannot be modified.',
                 ], 403);
             }
-
-            $request->merge([
-                'name' => strtolower(trim($request->input('name'))),
-            ]);
-
-            $request->validate([
-                'name' => 'required|string|max:255|unique:roles,name,'.$id,
-            ], [
-                'name.unique' => 'This role name has already been taken.',
-            ]);
 
             $role->update([
                 'name' => $request->input('name'),

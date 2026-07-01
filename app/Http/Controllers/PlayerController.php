@@ -8,11 +8,15 @@ use App\Imports\PlayersImport;
 use App\Models\Batch;
 use App\Models\Level;
 use App\Models\Sport;
+use App\Http\Requests\PlayerRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+use Spatie\Permission\Models\Role;
 use Maatwebsite\Excel\Facades\Excel;
+use Nette\Schema\ValidationException;
 
 class PlayerController extends Controller
 {
@@ -53,53 +57,63 @@ class PlayerController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(PlayerRequest $request)
     {
         abort_if(! Auth::user()->can('player_create'), 403);
         try {
-            $request->validate([
-                'firstname' => 'required|string|max:255',
-                'lastname' => 'required|string|max:255',
-                'email' => 'nullable|email|unique:users,email',
-                'phone' => 'required|string|max:10|unique:users,phone',
-                'joined_at' => 'required|date',
-                'gender' => 'nullable|in:male,female,other',
-                'assignments' => 'required|array|min:1',
-                'assignments.*.sport_id' => 'required|exists:sports,id',
-                'assignments.*.level_id' => 'required|exists:levels,id',
-                'assignments.*.batch_id' => 'required|exists:batches,id',
-                'assignments.*.joined_at' => 'required|date',
-            ]);
+            $validated = $request->validated();
+
+            // Ensure the 'player' role exists
+            if (!Role::where('name', 'player')->exists()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'The player role does not exist. Please create or seed roles first.',
+                ], 422);
+            }
+
+            // Check if any of the target batches are full
+            foreach ($request->assignments as $assignment) {
+                $batch = Batch::findOrFail($assignment['batch_id']);
+                if ($batch->isFull()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => "Batch '{$batch->name}' has reached its maximum capacity of {$batch->capacity} players.",
+                    ], 422);
+                }
+            }
 
             // Generate password: firstname@123 (lowercase)
             $plainPassword = strtolower(str_replace(' ', '', $request->firstname)).'@123';
 
-            // Create user as active player
-            $player = User::create([
-                'firstname' => $request->firstname,
-                'lastname' => $request->lastname,
-                'email' => $request->email,
-                'phone' => $request->phone,
-                'password' => $plainPassword,
-                'gender' => $request->gender,
-                'role' => 'player',
-                'status' => 'active',
-                'joined_at' => $request->joined_at,
-            ]);
-            $player->assignRole('player');
-
-            // Attach player to all selected batches
-            foreach ($request->assignments as $assignment) {
-                $batch = Batch::findOrFail($assignment['batch_id']);
-                $batch->players()->attach($player->id, [
-                    'joined_at' => $assignment['joined_at'],
+            DB::transaction(function () use ($request, $plainPassword) {
+                // Create user as active player
+                $player = User::create([
+                    'firstname' => $request->firstname,
+                    'lastname' => $request->lastname,
+                    'email' => $request->email,
+                    'phone' => $request->phone,
+                    'password' => $plainPassword,
+                    'gender' => $request->gender,
+                    'status' => 'active',
+                    'joined_at' => $request->joined_at,
+                    'role' => 'player',
                 ]);
-            }
+
+                // Attach player to all selected batches
+                foreach ($request->assignments as $assignment) {
+                    $batch = Batch::findOrFail($assignment['batch_id']);
+                    $batch->players()->attach($player->id, [
+                        'joined_at' => $assignment['joined_at'],
+                    ]);
+                }
+            });
 
             return response()->json([
                 'success' => true,
                 'message' => 'Player created successfully.',
             ]);
+        } catch (ValidationException $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('PlayerController store error: '.$e->getMessage());
 
@@ -141,49 +155,61 @@ class PlayerController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(PlayerRequest $request, string $id)
     {
         abort_if(! Auth::user()->can('player_edit'), 403);
         try {
             $player = User::findOrFail($id);
 
-            $request->validate([
-                'firstname' => 'required|string|max:255',
-                'lastname' => 'required|string|max:255',
-                'email' => 'nullable|email|unique:users,email,'.$player->id,
-                'phone' => 'required|string|max:10|unique:users,phone,'.$player->id,
-                'joined_at' => 'required|date',
-                'gender' => 'nullable|in:male,female,other',
-                'status' => 'required|in:active,inactive',
-                'assignments' => 'required|array|min:1',
-                'assignments.*.batch_id' => 'required|exists:batches,id',
-                'assignments.*.joined_at' => 'required|date',
-            ]);
+            $validatedData = $request->validated();
 
-            $player->update([
-                'firstname' => $request->firstname,
-                'lastname' => $request->lastname,
-                'email' => $request->email,
-                'phone' => $request->phone,
-                'gender' => $request->gender,
-                'status' => $request->status,
-                'joined_at' => $request->joined_at,
-            ]);
-            $player->syncRoles(['player']);
-
-            // Sync batches
-            $syncBatches = [];
-            foreach ($request->assignments as $assignment) {
-                $syncBatches[$assignment['batch_id']] = [
-                    'joined_at' => $assignment['joined_at'],
-                ];
+            // Ensure the 'player' role exists
+            if (!Role::where('name', 'player')->exists()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'The player role does not exist.',
+                ], 422);
             }
-            $player->playerBatches()->sync($syncBatches);
+
+            // Check if any of the target batches are full (excluding this player)
+            foreach ($request->assignments as $assignment) {
+                $batch = Batch::findOrFail($assignment['batch_id']);
+                if ($batch->isFull($player->id)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => "Batch '{$batch->name}' has reached its maximum capacity of {$batch->capacity} players.",
+                    ], 422);
+                }
+            }
+
+            DB::transaction(function () use ($player, $request) {
+                $player->update([
+                    'firstname' => $request->firstname,
+                    'lastname' => $request->lastname,
+                    'email' => $request->email,
+                    'phone' => $request->phone,
+                    'gender' => $request->gender,
+                    'status' => $request->status,
+                    'joined_at' => $request->joined_at,
+                ]);
+                $player->syncRoles(['player']);
+
+                // Sync batches
+                $syncBatches = [];
+                foreach ($request->assignments as $assignment) {
+                    $syncBatches[$assignment['batch_id']] = [
+                        'joined_at' => $assignment['joined_at'],
+                    ];
+                }
+                $player->playerBatches()->sync($syncBatches);
+            });
 
             return response()->json([
                 'success' => true,
                 'message' => 'Player updated successfully.',
             ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('PlayerController update error: '.$e->getMessage());
 
@@ -241,82 +267,14 @@ class PlayerController extends Controller
         }
     }
 
-    /**
-     * Bulk Delete Players
-     */
     public function bulkDelete(Request $request)
     {
-        abort_if(! Auth::user()->can('player_delete'), 403);
-        try {
-            $ids = $request->input('select', []);
-
-            if (! is_array($ids)) {
-                $ids = array_filter(explode(',', $ids));
-            }
-
-            if (count($ids) > 0) {
-                $deletedCount = User::destroy($ids);
-
-                return response()->json([
-                    'success' => true,
-                    'message' => $deletedCount.' players deleted successfully.',
-                ]);
-            }
-
-            return response()->json([
-                'success' => false,
-                'message' => 'No players selected.',
-            ], 400);
-        } catch (\Exception $e) {
-            Log::error('PlayerController bulkDelete error: '.$e->getMessage());
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Error performing bulk delete: '.$e->getMessage(),
-            ], 500);
-        }
+        return handleBulkDelete($request, User::class, 'players', 'player_delete');
     }
 
-    /**
-     * Bulk Status Update Players
-     */
     public function bulkUpdate(Request $request)
     {
-        abort_if(! Auth::user()->can('player_edit'), 403);
-        try {
-            $validated = $request->validate([
-                'select' => 'required',
-                'status' => 'required|string|in:active,inactive',
-            ]);
-
-            $ids = $request->input('select', []);
-            $status = $request->input('status');
-
-            if (! is_array($ids)) {
-                $ids = array_filter(explode(',', $ids));
-            }
-
-            if (count($ids) > 0) {
-                $updatedCount = User::whereIn('id', $ids)->update(['status' => $status]);
-
-                return response()->json([
-                    'success' => true,
-                    'message' => $updatedCount.' players updated successfully.',
-                ]);
-            }
-
-            return response()->json([
-                'success' => false,
-                'message' => 'No valid players selected for update.',
-            ], 422);
-        } catch (\Exception $e) {
-            Log::error('PlayerController bulkUpdate error: '.$e->getMessage());
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Error performing bulk update: '.$e->getMessage(),
-            ], 500);
-        }
+        return handleBulkUpdate($request, User::class, 'players', 'player_edit');
     }
 
     /**
@@ -349,13 +307,9 @@ class PlayerController extends Controller
     /**
      * Import Players from Excel
      */
-    public function import(Request $request)
+    public function import(PlayerRequest $request)
     {
         abort_if(! Auth::user()->can('player_create'), 403);
-
-        $request->validate([
-            'players' => 'required|array',
-        ]);
 
         try {
             $players = $request->input('players');
@@ -397,12 +351,8 @@ class PlayerController extends Controller
         }
     }
 
-    public function readExcel(Request $request)
+    public function readExcel(PlayerRequest $request)
     {
-        // Validate the uploaded file
-        $request->validate([
-            'file' => 'required|file|mimes:xlsx,xls,csv|max:10240',
-        ]);
 
         try {
             // Read data into a plain PHP array directly from the uploaded file

@@ -77,7 +77,12 @@ class UnpaidPlayersDataTable extends DataTable
             })
             ->join('sports', 'batches.sport_id', '=', 'sports.id')
             ->join('levels', 'batches.level_id', '=', 'levels.id')
-            ->where('users.role', 'player')
+            ->join('model_has_roles', function ($join) {
+                $join->on('users.id', '=', 'model_has_roles.model_id')
+                    ->where('model_has_roles.model_type', '=', 'App\Models\User');
+            })
+            ->join('roles', 'model_has_roles.role_id', '=', 'roles.id')
+            ->where('roles.name', 'player')
             ->where('users.status', 'active')
             ->where('batches.status', 'active')
             ->where(function ($q) use ($endOfMonth) {

@@ -53,4 +53,24 @@ class Batch extends Model
             'player_id'
         )->withPivot('joined_at');
     }
+
+    /**
+     * Check if the batch has reached its player capacity.
+     *
+     * @param int|null $excludePlayerId Exclude this player's ID from count (for updates)
+     * @return bool
+     */
+    public function isFull(?int $excludePlayerId = null): bool
+    {
+        if (is_null($this->capacity)) {
+            return false;
+        }
+
+        $query = $this->players();
+        if ($excludePlayerId) {
+            $query = $query->where('users.id', '!=', $excludePlayerId);
+        }
+
+        return $query->count() >= $this->capacity;
+    }
 }
